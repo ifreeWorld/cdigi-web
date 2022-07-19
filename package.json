@@ -1,0 +1,24 @@
+{
+  "name": "nx-demo",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "start": "nx build start",
+    "start:dev": "nx start:dev server",
+    "start:debug": "nx start:debug server",
+    "start:prod": "nx start:prod server",
+    "build": "nx build server"
+  },
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {
+    "nx": "14.4.3",
+    "@nrwl/cli": "14.4.3",
+    "@nrwl/workspace": "14.4.3",
+    "typescript": "~4.7.2",
+    "prettier": "^2.6.2"
+  },
+  "workspaces": [
+    "packages/**"
+  ]
+}
