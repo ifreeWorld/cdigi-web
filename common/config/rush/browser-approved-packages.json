@@ -1,0 +1,386 @@
+// DO NOT ADD COMMENTS IN THIS FILE.  They will be lost when the Rush tool resaves it.
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
+  "packages": [
+    {
+      "name": "@ant-design/charts",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@ant-design/icons",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@ant-design/pro-card",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@ant-design/pro-cli",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@ant-design/pro-descriptions",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@ant-design/pro-form",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@ant-design/pro-layout",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@ant-design/pro-table",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@antv/data-set",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@antv/l7",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@antv/l7-maps",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@antv/l7-react",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@nestjs/cli",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@nestjs/common",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@nestjs/core",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@nestjs/platform-express",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@nestjs/schematics",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@nestjs/testing",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@playwright/test",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@rushstack/eslint-config",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@types/express",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@types/history",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@types/jest",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@types/lodash",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@types/node",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@types/react",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@types/react-dom",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@types/react-helmet",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@types/supertest",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@typescript-eslint/eslint-plugin",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@typescript-eslint/parser",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@umijs/fabric",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@umijs/openapi",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@umijs/plugin-blocks",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@umijs/plugin-esbuild",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@umijs/plugin-openapi",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@umijs/preset-ant-design-pro",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@umijs/preset-dumi",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@umijs/preset-react",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@umijs/route-utils",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "ahooks",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "antd",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "bizcharts",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "bizcharts-plugin-slider",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "classnames",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "cross-env",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "cross-port-killer",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "detect-installer",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "eslint",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "eslint-config-prettier",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "eslint-formatter-pretty",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "eslint-plugin-babel",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "eslint-plugin-jest",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "eslint-plugin-prettier",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "eslint-plugin-promise",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "eslint-plugin-react",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "eslint-plugin-react-hooks",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "eslint-plugin-unicorn",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "gg-editor",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "gh-pages",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "husky",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "jest",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "jsdom-global",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "lint-staged",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "lodash",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "lodash-decorators",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "mockjs",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "moment",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "numeral",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "nzh",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "omit.js",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "prettier",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "rc-menu",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "rc-util",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "react",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "react-dev-inspector",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "react-dom",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "react-fittext",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "react-helmet-async",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "react-router",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "reflect-metadata",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "rimraf",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "rxjs",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "source-map-support",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "stylelint",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "supertest",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "swagger-ui-dist",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "swagger-ui-react",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "ts-jest",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "ts-loader",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "ts-node",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "tsconfig-paths",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "typescript",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "umi",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "umi-serve",
+      "allowedCategories": [ "production" ]
+    }
+  ]
+}

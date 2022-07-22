@@ -1,24 +1,14 @@
 {
-  "name": "nx-demo",
-  "version": "0.0.0",
-  "license": "MIT",
+  "name": "rush-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "start": "nx build start",
-    "start:dev": "nx start:dev server",
-    "start:debug": "nx start:debug server",
-    "start:prod": "nx start:prod server",
-    "build": "nx build server"
+    "start:client": "cd packages/client && rushx start",
+    "start:server": "cd packages/server && rushx start:dev",
+    "build": "rush build"
   },
-  "private": true,
-  "dependencies": {},
-  "devDependencies": {
-    "nx": "14.4.3",
-    "@nrwl/cli": "14.4.3",
-    "@nrwl/workspace": "14.4.3",
-    "typescript": "~4.7.2",
-    "prettier": "^2.6.2"
-  },
-  "workspaces": [
-    "packages/**"
-  ]
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
