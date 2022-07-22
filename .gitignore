@@ -148,5 +148,3 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 *.build*.log
-
-cdigi-feature/

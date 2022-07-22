@@ -267,6 +267,10 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "log4js",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "mockjs",
       "allowedCategories": [ "production" ]
     },
