@@ -7,7 +7,7 @@ services:
   #     target: development
   #   command: npm run start-watch
   #   environment:
-  #     - DATABASE_DB=cdigi
+  #     - DATABASE_DB=cdigi_database
   #     - DATABASE_USER=root
   #     - DATABASE_PASSWORD=/run/secrets/db-password
   #     - DATABASE_HOST=db
@@ -44,7 +44,7 @@ services:
     networks:
       - private
     environment:
-      - MYSQL_DATABASE=cdigi
+      - MYSQL_DATABASE=cdigi_database
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
   # frontend:
   #   build:
