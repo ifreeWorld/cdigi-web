@@ -51,6 +51,10 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "@nestjs/axios",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "@nestjs/cli",
       "allowedCategories": [ "production" ]
     },
@@ -63,6 +67,14 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "@nestjs/jwt",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@nestjs/passport",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "@nestjs/platform-express",
       "allowedCategories": [ "production" ]
     },
@@ -72,6 +84,10 @@
     },
     {
       "name": "@nestjs/testing",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "@nestjs/typeorm",
       "allowedCategories": [ "production" ]
     },
     {
@@ -179,6 +195,14 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "class-transformer",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "class-validator",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "classnames",
       "allowedCategories": [ "production" ]
     },
@@ -279,6 +303,10 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "mysql2",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "numeral",
       "allowedCategories": [ "production" ]
     },
@@ -288,6 +316,18 @@
     },
     {
       "name": "omit.js",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "passport",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "passport-jwt",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "passport-local",
       "allowedCategories": [ "production" ]
     },
     {
@@ -372,6 +412,10 @@
     },
     {
       "name": "tsconfig-paths",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "typeorm",
       "allowedCategories": [ "production" ]
     },
     {
