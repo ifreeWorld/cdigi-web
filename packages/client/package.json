@@ -80,7 +80,9 @@
     "react-helmet-async": "^1.2.0",
     "react-router": "^4.3.1",
     "umi": "^3.5.0",
-    "umi-serve": "^1.9.10"
+    "umi-serve": "^1.9.10",
+    "umi-request": "~1.4.0",
+    "js-cookie": "~3.0.1"
   },
   "devDependencies": {
     "@rushstack/eslint-config": "^2.6.2",

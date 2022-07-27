@@ -47,7 +47,7 @@ export class AppLogger implements LoggerService {
     errLogger.addContext('module', context ?? this.context);
     errLogger.error(message);
     webLogger.addContext('module', context ?? this.context);
-    webLogger.error('请查看对应 ssx-error.log');
+    webLogger.error('请查看对应 cdigi-error.log');
   }
 
   log(message: any, context?: string) {

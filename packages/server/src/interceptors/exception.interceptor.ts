@@ -8,7 +8,7 @@ import {
 import { HttpException } from '@nestjs/common';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { AppException } from '../constant/error';
+import { AppException, ErrorConstant } from '../constant/error';
 import { appLogger, AppLogger } from '../logger';
 import { CallHandler } from '@nestjs/common/interfaces/features/nest-interceptor.interface';
 

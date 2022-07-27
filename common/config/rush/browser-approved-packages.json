@@ -119,6 +119,10 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "@types/passport-jwt",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "@types/react",
       "allowedCategories": [ "production" ]
     },
@@ -212,6 +216,10 @@
     },
     {
       "name": "cross-port-killer",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "dayjs",
       "allowedCategories": [ "production" ]
     },
     {
@@ -427,7 +435,15 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "umi-request",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "umi-serve",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "yargs",
       "allowedCategories": [ "production" ]
     }
   ]

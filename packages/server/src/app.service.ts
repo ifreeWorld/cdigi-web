@@ -22,7 +22,7 @@ export class AppService {
     }
     return 'Hello World!';
   }
-  getHello2(): string {
-    throw ERROR.RESOURCE_NOT_EXITS;
+  getHello2() {
+    return ERROR.RESOURCE_NOT_EXITS;
   }
 }

@@ -1,0 +1,11 @@
+{
+  "type": "mysql",
+  "host": "mysql.sqlpub.com",
+  "port": 3306,
+  "username": "wangzilong",
+  "password": "83f5c3099cb76f91",
+  "database": "cdigi_database",
+  "entities": ["dist/**/*.entity{.ts,.js}"],
+  "synchronize": true,
+  "logging": false
+}
