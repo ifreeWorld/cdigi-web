@@ -1,19 +1,27 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { UserService } from '../user/user.service';
 import { AUTH_CONFIG } from '../../constant/app.config';
-import { UserEntity } from '../user/user.entity';
+import { JwtDto } from './dto/jwt.dto';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private usersService: UserService) {
     super({
       jwtFromRequest: ExtractJwt.fromHeader('cdigi_token'),
       secretOrKey: AUTH_CONFIG.jwtSecret,
     });
   }
 
-  async validate(payload: Partial<UserEntity>) {
-    return { userId: payload.id, username: payload.username };
+  async validate(payload: JwtDto) {
+    const user = await this.usersService.findOne({
+      username: payload.username,
+      id: payload.id,
+    });
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    return user;
   }
 }

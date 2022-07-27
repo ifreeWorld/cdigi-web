@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { UserEntity } from './user.entity';
 
 @Injectable()
@@ -10,12 +10,7 @@ export class UserService {
     private repository: Repository<UserEntity>,
   ) {}
 
-  async findOne(username: string): Promise<any> {
-    const user = await this.repository.findOne({
-      where: {
-        username,
-      },
-    });
-    return user;
+  async findOne(findData: FindOptionsWhere<UserEntity>): Promise<UserEntity> {
+    return await this.repository.findOneBy(findData);
   }
 }
