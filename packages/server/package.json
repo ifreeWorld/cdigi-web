@@ -41,7 +41,9 @@
     "mysql2": "~2.3.3",
     "typeorm": "~0.3.7",
     "yargs": "~17.5.1",
-    "dayjs": "~1.11.4"
+    "dayjs": "~1.11.4",
+    "@nestjs/swagger": "~6.0.4",
+    "swagger-ui-express": "~4.5.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",

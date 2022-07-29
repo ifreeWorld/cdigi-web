@@ -1,4 +1,5 @@
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, INestApplication } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { appLogger } from './logger';
@@ -23,6 +24,14 @@ async function bootstrap() {
     new ErrorsInterceptor(),
   );
   app.useGlobalFilters(new AppExceptionFilter());
+
+  const options = new DocumentBuilder()
+    .setTitle('cdigi 接口文档')
+    .setDescription('cdigi 接口文档')
+    .setVersion('1.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, options);
+  SwaggerModule.setup('api', app, document);
   await app.listen(3000);
 }
 bootstrap();

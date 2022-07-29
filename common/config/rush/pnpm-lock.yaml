@@ -176,6 +176,7 @@ importers:
       '@nestjs/passport': ~9.0.0
       '@nestjs/platform-express': ^9.0.0
       '@nestjs/schematics': ^9.0.0
+      '@nestjs/swagger': ~6.0.4
       '@nestjs/testing': ^9.0.0
       '@nestjs/typeorm': ~9.0.0
       '@rushstack/eslint-config': ^2.6.2
@@ -205,6 +206,7 @@ importers:
       rxjs: ^7.2.0
       source-map-support: ^0.5.20
       supertest: ^6.1.3
+      swagger-ui-express: ~4.5.0
       ts-jest: 28.0.5
       ts-loader: ^9.2.3
       ts-node: ^10.0.0
@@ -219,6 +221,7 @@ importers:
       '@nestjs/jwt': registry.npmmirror.com/@nestjs/jwt/9.0.0_@nestjs+common@9.0.5
       '@nestjs/passport': registry.npmmirror.com/@nestjs/passport/9.0.0_80e6b5211ad33b0813bc0adfcbc8923a
       '@nestjs/platform-express': registry.npmmirror.com/@nestjs/platform-express/9.0.5_c1d4ffaaf4051d0f2199110c85303e4d
+      '@nestjs/swagger': registry.npmmirror.com/@nestjs/swagger/6.0.4_b66c539efb77bb1e8734aca0c5ad8e2e
       '@nestjs/typeorm': registry.npmmirror.com/@nestjs/typeorm/9.0.0_855e0b118cc555ffc25405bc4d8f2b80
       class-transformer: registry.npmmirror.com/class-transformer/0.5.1
       class-validator: registry.npmmirror.com/class-validator/0.13.2
@@ -231,6 +234,7 @@ importers:
       reflect-metadata: registry.npmmirror.com/reflect-metadata/0.1.13
       rimraf: registry.npmmirror.com/rimraf/3.0.2
       rxjs: registry.npmmirror.com/rxjs/7.5.6
+      swagger-ui-express: registry.npmmirror.com/swagger-ui-express/4.5.0
       typeorm: registry.npmmirror.com/typeorm/0.3.7_mysql2@2.3.3+ts-node@10.9.1
       yargs: registry.npmmirror.com/yargs/17.5.1
     devDependencies:
@@ -5492,6 +5496,28 @@ packages:
       jsonwebtoken: registry.npmmirror.com/jsonwebtoken/8.5.1
     dev: false
 
+  registry.npmmirror.com/@nestjs/mapped-types/1.1.0_d50ce1f469d1ec1b1ba8e08886988228:
+    resolution: {integrity: sha512-+2kSly4P1QI+9eGt+/uGyPdEG1hVz7nbpqPHWZVYgoqz8eOHljpXPag+UCVRw9zo2XCu4sgNUIGe8Uk0+OvUQg==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@nestjs/mapped-types/-/mapped-types-1.1.0.tgz}
+    id: registry.npmmirror.com/@nestjs/mapped-types/1.1.0
+    name: '@nestjs/mapped-types'
+    version: 1.1.0
+    peerDependencies:
+      '@nestjs/common': ^7.0.8 || ^8.0.0 || ^9.0.0
+      class-transformer: ^0.2.0 || ^0.3.0 || ^0.4.0 || ^0.5.0
+      class-validator: ^0.11.1 || ^0.12.0 || ^0.13.0
+      reflect-metadata: ^0.1.12
+    peerDependenciesMeta:
+      class-transformer:
+        optional: true
+      class-validator:
+        optional: true
+    dependencies:
+      '@nestjs/common': registry.npmmirror.com/@nestjs/common/9.0.5_02d66f081444430c9a02612f8d586d74
+      class-transformer: registry.npmmirror.com/class-transformer/0.5.1
+      class-validator: registry.npmmirror.com/class-validator/0.13.2
+      reflect-metadata: registry.npmmirror.com/reflect-metadata/0.1.13
+    dev: false
+
   registry.npmmirror.com/@nestjs/passport/9.0.0_80e6b5211ad33b0813bc0adfcbc8923a:
     resolution: {integrity: sha512-Gnh8n1wzFPOLSS/94X1sUP4IRAoXTgG4odl7/AO5h+uwscEGXxJFercrZfqdAwkWhqkKWbsntM3j5mRy/6ZQDA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@nestjs/passport/-/passport-9.0.0.tgz}
     id: registry.npmmirror.com/@nestjs/passport/9.0.0
@@ -5558,6 +5584,33 @@ packages:
     transitivePeerDependencies:
       - chokidar
     dev: true
+
+  registry.npmmirror.com/@nestjs/swagger/6.0.4_b66c539efb77bb1e8734aca0c5ad8e2e:
+    resolution: {integrity: sha512-YKf9RvCYHAgqkMvUG3xRr0zAcnuN8JsWPfvi7h0hzEXLRhNxByj2FT8Rzj+0fPAe6VZioWXBDpLzshO2PjE48Q==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@nestjs/swagger/-/swagger-6.0.4.tgz}
+    id: registry.npmmirror.com/@nestjs/swagger/6.0.4
+    name: '@nestjs/swagger'
+    version: 6.0.4
+    peerDependencies:
+      '@fastify/static': ^6.0.0
+      '@nestjs/common': ^9.0.0
+      '@nestjs/core': ^9.0.0
+      reflect-metadata: ^0.1.12
+    peerDependenciesMeta:
+      '@fastify/static':
+        optional: true
+    dependencies:
+      '@nestjs/common': registry.npmmirror.com/@nestjs/common/9.0.5_02d66f081444430c9a02612f8d586d74
+      '@nestjs/core': registry.npmmirror.com/@nestjs/core/9.0.5_5417280506039686aa75c8a710ba2321
+      '@nestjs/mapped-types': registry.npmmirror.com/@nestjs/mapped-types/1.1.0_d50ce1f469d1ec1b1ba8e08886988228
+      js-yaml: registry.npmmirror.com/js-yaml/4.1.0
+      lodash: registry.npmmirror.com/lodash/4.17.21
+      path-to-regexp: registry.npmmirror.com/path-to-regexp/3.2.0
+      reflect-metadata: registry.npmmirror.com/reflect-metadata/0.1.13
+      swagger-ui-dist: registry.npmmirror.com/swagger-ui-dist/4.12.0
+    transitivePeerDependencies:
+      - class-transformer
+      - class-validator
+    dev: false
 
   registry.npmmirror.com/@nestjs/testing/9.0.5_8f7ef6586d91f33865dfc8c773b5dec5:
     resolution: {integrity: sha512-/RwWhOBz0rPZzoMiKXsuyCr8FkQrtMxPUHwS+SFnZBsNa/jb56GswgUD7/UnTATU15sjcv0fFtFT3rlu6KK5Ew==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@nestjs/testing/-/testing-9.0.5.tgz}
@@ -26007,11 +26060,27 @@ packages:
       - encoding
     dev: true
 
+  registry.npmmirror.com/swagger-ui-dist/4.12.0:
+    resolution: {integrity: sha512-B0Iy2ueXtbByE6OOyHTi3lFQkpPi/L7kFOKFeKTr44za7dJIELa9kzaca6GkndCgpK1QTjArnoXG+aUy0XQp1w==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/swagger-ui-dist/-/swagger-ui-dist-4.12.0.tgz}
+    name: swagger-ui-dist
+    version: 4.12.0
+    dev: false
+
   registry.npmmirror.com/swagger-ui-dist/4.13.0:
     resolution: {integrity: sha512-5yqhkUU9uV5oT/MTMBeSgDGI0Vx6eCOU43AszQBs88poI8OB1v+FoXEFHv+NaBbEfTkXCMWlAJrH6iWyDzLETQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/swagger-ui-dist/-/swagger-ui-dist-4.13.0.tgz}
     name: swagger-ui-dist
     version: 4.13.0
-    dev: true
+
+  registry.npmmirror.com/swagger-ui-express/4.5.0:
+    resolution: {integrity: sha512-DHk3zFvsxrkcnurGvQlAcLuTDacAVN1JHKDgcba/gr2NFRE4HGwP1YeHIXMiGznkWR4AeS7X5vEblNn4QljuNA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/swagger-ui-express/-/swagger-ui-express-4.5.0.tgz}
+    name: swagger-ui-express
+    version: 4.5.0
+    engines: {node: '>= v0.10.32'}
+    peerDependencies:
+      express: '>=4.0.0'
+    dependencies:
+      swagger-ui-dist: registry.npmmirror.com/swagger-ui-dist/4.13.0
+    dev: false
 
   registry.npmmirror.com/swagger-ui-react/3.52.5_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-V2fidbSGCb6SmC1AyTXv6T8znWcLAjfVBs2CPTXUS7m7s//SqiRx3hXXPUNvGxKTEK76h+yvcBZf2GLD7kr63w==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/swagger-ui-react/-/swagger-ui-react-3.52.5.tgz}

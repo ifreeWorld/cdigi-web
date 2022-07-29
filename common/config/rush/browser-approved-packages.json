@@ -283,6 +283,10 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "js-cookie",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "jsdom-global",
       "allowedCategories": [ "production" ]
     },
