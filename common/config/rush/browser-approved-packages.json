@@ -83,6 +83,10 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "@nestjs/swagger",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "@nestjs/testing",
       "allowedCategories": [ "production" ]
     },
@@ -404,6 +408,10 @@
     },
     {
       "name": "swagger-ui-dist",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "swagger-ui-express",
       "allowedCategories": [ "production" ]
     },
     {

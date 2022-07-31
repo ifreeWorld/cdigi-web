@@ -39,10 +39,10 @@ export class AuthController {
 
   /** 退出登录 */
   @UseGuards(JwtGuard)
-  @Get('/logout')
+  @Post('/logout')
   async logout(@Res({ passthrough: true }) res: Response) {
     this.clearCookie(res);
-    return '登出成功';
+    return '退出成功';
   }
 
   /** 当前登录用户 currentUser: { cname, sname } */

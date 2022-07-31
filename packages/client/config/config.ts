@@ -66,6 +66,41 @@ export default defineConfig({
       ],
     },
     {
+      path: '/customer',
+      name: 'customer',
+      icon: 'User',
+      routes: [
+        {
+          path: '/customer',
+          redirect: '/customer/list',
+        },
+        {
+          name: 'relation',
+          icon: 'smile',
+          path: '/customer/relation',
+          component: './customer/relation',
+        },
+        {
+          name: 'list',
+          icon: 'smile',
+          path: '/customer/list',
+          component: './customer/list',
+        },
+        {
+          name: 'store',
+          icon: 'smile',
+          path: '/customer/store',
+          component: './customer/store',
+        },
+        {
+          name: 'tag',
+          icon: 'smile',
+          path: '/customer/tag',
+          component: './customer/tag',
+        },
+      ],
+    },
+    {
       path: '/dashboard',
       name: 'dashboard',
       icon: 'dashboard',
@@ -356,3 +391,12 @@ export default defineConfig({
   webpack5: {},
   exportStatic: {},
 });
+
+/*
+{
+  Vendor: '品牌商',
+  Disty: '代理商',
+  Dealer: '经销商',
+  Shop: '门店'
+}
+*/
