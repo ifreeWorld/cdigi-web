@@ -391,12 +391,3 @@ export default defineConfig({
   webpack5: {},
   exportStatic: {},
 });
-
-/*
-{
-  Vendor: '品牌商',
-  Disty: '代理商',
-  Dealer: '经销商',
-  Shop: '门店'
-}
-*/
