@@ -4,7 +4,7 @@ import { Response } from 'express';
 import * as dayjs from 'dayjs';
 import { AuthService } from './auth.service';
 import { LoginPayloadDto } from './dto/login-payload.dto';
-import { JwtGuard } from './guards';
+import { JwtGuard } from '../../guards';
 import { ERROR } from '../../constant/error';
 import { CurrentUser } from '../../decorators';
 import { UserEntity } from '../user/user.entity';

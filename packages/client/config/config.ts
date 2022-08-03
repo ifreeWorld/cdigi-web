@@ -345,7 +345,7 @@ export default defineConfig({
     },
     {
       path: '/',
-      redirect: '/dashboard/analysis',
+      redirect: '/customer',
     },
     {
       component: '404',

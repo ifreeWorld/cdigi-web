@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { ORM_CONFIG } from './constant/app.config';
 import { LoggerMiddleware, NoCacheMiddleware } from './middlewares';
 import { AuthModule } from './modules/auth/auth.module';
+import { TagModule } from './modules/tag/tag.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AuthModule } from './modules/auth/auth.module';
       maxRedirects: 5,
     }),
     AuthModule,
+    TagModule,
   ],
   providers: [AppService],
   controllers: [AppController],

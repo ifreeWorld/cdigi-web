@@ -25,4 +25,12 @@ export default class BaseEntity {
   /** 创建时间 */
   @CreateDateColumn({ type: 'datetime', comment: '创建时间' })
   create_time?: Date;
+
+  @ApiProperty({
+    example: '2010-01-02 12:00:00',
+    description: '更新时间',
+  })
+  /** 更新时间 */
+  @CreateDateColumn({ type: 'datetime', comment: '更新时间' })
+  update_time?: Date;
 }

@@ -1,93 +1,21 @@
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, message, Input, Drawer, Tag } from 'antd';
+import { Button, message, Tag } from 'antd';
+import { useRequest } from 'umi';
 import React, { useState, useRef } from 'react';
 import { PageContainer, FooterToolbar } from '@ant-design/pro-layout';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { ModalForm, ProFormText, ProFormTextArea } from '@ant-design/pro-form';
 import type { CustomerListItem } from './data';
 import { customerTypeMap } from '../../../common';
 import type { TablePagination } from '../../../common/data';
-import type { FormValueType } from './components/UpdateForm';
-import UpdateForm from './components/UpdateForm';
+import OperationModal from './components/OperationModal';
 import { getCustomer, addCustomer, updateCustomer, deleteCustomer } from './service';
-/**
- * 添加节点
- *
- * @param fields
- */
-
-const handleAdd = async (fields: CustomerListItem) => {
-  const hide = message.loading('正在添加');
-
-  try {
-    await addCustomer({ ...fields });
-    hide();
-    message.success('添加成功');
-    return true;
-  } catch (error) {
-    hide();
-    message.error('添加失败请重试！');
-    return false;
-  }
-};
-/**
- * 更新节点
- *
- * @param fields
- */
-
-const handleUpdate = async (fields: FormValueType, currentRow?: CustomerListItem) => {
-  const hide = message.loading('正在配置');
-
-  try {
-    await updateCustomer({
-      ...currentRow,
-      ...fields,
-    });
-    hide();
-    message.success('配置成功');
-    return true;
-  } catch (error) {
-    hide();
-    message.error('配置失败请重试！');
-    return false;
-  }
-};
-/**
- * 删除节点
- *
- * @param selectedRows
- */
-
-const handleRemove = async (selectedRows: CustomerListItem[]) => {
-  const hide = message.loading('正在删除');
-  if (!selectedRows) return true;
-
-  try {
-    await deleteCustomer({
-      ids: selectedRows.map((row) => row.id),
-    });
-    hide();
-    message.success('删除成功，即将刷新');
-    return true;
-  } catch (error) {
-    hide();
-    message.error('删除失败，请重试');
-    return false;
-  }
-};
 
 const TableList: React.FC = () => {
-  /** 新建窗口的弹窗 */
-  const [createModalVisible, handleModalVisible] = useState<boolean>(false);
-  /** 分布更新窗口的弹窗 */
-
-  const [updateModalVisible, handleUpdateModalVisible] = useState<boolean>(false);
+  const [visible, setVisible] = useState<boolean>(false);
   const actionRef = useRef<ActionType>();
-  const [currentRow, setCurrentRow] = useState<CustomerListItem>();
+  const [currentRow, setCurrentRow] = useState<Partial<CustomerListItem> | undefined>();
   const [selectedRowsState, setSelectedRows] = useState<CustomerListItem[]>([]);
-  /** 国际化配置 */
 
   const columns: ProColumns<CustomerListItem>[] = [
     {
@@ -98,7 +26,7 @@ const TableList: React.FC = () => {
       title: '用户类型',
       dataIndex: 'desc',
       valueType: 'select',
-      valueEnum: customerTypeMap
+      valueEnum: customerTypeMap,
     },
     {
       title: '国家',
@@ -119,14 +47,12 @@ const TableList: React.FC = () => {
         const { tags = [] } = record;
         return (
           <>
-            {
-              tags.map(tag => {
-                <Tag color={tag.tagColor}>{tag.tagName}</Tag>
-              })
-            }
+            {tags.map((tag) => {
+              <Tag color={tag.tagColor}>{tag.tagName}</Tag>;
+            })}
           </>
-        )
-      }
+        );
+      },
     },
     {
       title: '操作',
@@ -137,7 +63,7 @@ const TableList: React.FC = () => {
         <a
           key="config"
           onClick={() => {
-            handleUpdateModalVisible(true);
+            setVisible(true);
             setCurrentRow(record);
           }}
         >
@@ -145,49 +71,52 @@ const TableList: React.FC = () => {
         </a>,
       ],
     },
-    // {
-    //   title: '操作',
-    //   dataIndex: 'status',
-    //   hideInForm: true,
-    //   valueEnum: {
-    //     0: {
-    //       text: '关闭',
-    //       status: 'Default',
-    //     },
-    //     1: {
-    //       text: '运行中',
-    //       status: 'Processing',
-    //     },
-    //     2: {
-    //       text: '已上线',
-    //       status: 'Success',
-    //     },
-    //     3: {
-    //       text: '异常',
-    //       status: 'Error',
-    //     },
-    //   },
-    // },
-    // {
-    //   title: '上次调度时间',
-    //   sorter: true,
-    //   dataIndex: 'updatedAt',
-    //   valueType: 'dateTime',
-    //   renderFormItem: (item, { defaultRender, ...rest }, form) => {
-    //     const status = form.getFieldValue('status');
-
-    //     if (`${status}` === '0') {
-    //       return false;
-    //     }
-
-    //     if (`${status}` === '3') {
-    //       return <Input {...rest} placeholder="请输入异常原因！" />;
-    //     }
-
-    //     return defaultRender(item);
-    //   },
-    // },
   ];
+
+  const { loading, mutate } = useRequest(
+    () => {
+      actionRef.current?.reloadAndRest?.();
+    },
+    {
+      manual: true,
+    },
+  );
+  const { run: postRun } = useRequest(
+    async (method: 'add' | 'update' | 'remove', params) => {
+      if (method === 'remove') {
+        await deleteCustomer(params);
+        message.success('删除成功');
+      }
+      if (method === 'update') {
+        await updateCustomer(params);
+        message.success('更新成功');
+      }
+      if (method === 'add') {
+        await addCustomer(params);
+        message.success('添加成功');
+      }
+    },
+    {
+      manual: true,
+      onSuccess: (result) => {
+        mutate(result);
+      },
+      onError: (error, [method]) => {
+        message.error(`调用${method}接口失败`);
+        console.log(error);
+      },
+    },
+  );
+
+  const handleCancel = () => {
+    setVisible(false);
+    setCurrentRow({});
+  };
+
+  const handleSubmit = (values: Partial<CustomerListItem>) => {
+    const method = values?.id ? 'update' : 'add';
+    postRun(method, values);
+  };
 
   return (
     <PageContainer>
@@ -198,12 +127,13 @@ const TableList: React.FC = () => {
         search={{
           labelWidth: 120,
         }}
+        loading={loading}
         toolBarRender={() => [
           <Button
             type="primary"
             key="primary"
             onClick={() => {
-              handleModalVisible(true);
+              setVisible(true);
             }}
           >
             <PlusOutlined /> 新建
@@ -234,62 +164,23 @@ const TableList: React.FC = () => {
           }
         >
           <Button
-            onClick={async () => {
-              await handleRemove(selectedRowsState);
-              setSelectedRows([]);
-              actionRef.current?.reloadAndRest?.();
+            onClick={() => {
+              postRun('remove', {
+                ids: selectedRowsState.map((item) => {
+                  return item.id;
+                }),
+              });
             }}
           >
             批量删除
           </Button>
         </FooterToolbar>
       )}
-      <ModalForm
-        title="新建规则"
-        width="400px"
-        visible={createModalVisible}
-        onVisibleChange={handleModalVisible}
-        onFinish={async (value) => {
-          const success = await handleAdd(value as CustomerListItem);
-          if (success) {
-            handleModalVisible(false);
-            if (actionRef.current) {
-              actionRef.current.reload();
-            }
-          }
-        }}
-      >
-        <ProFormText
-          rules={[
-            {
-              required: true,
-              message: '规则名称为必填项',
-            },
-          ]}
-          width="md"
-          name="name"
-        />
-        <ProFormTextArea width="md" name="desc" />
-      </ModalForm>
-      <UpdateForm
-        onSubmit={async (value) => {
-          const success = await handleUpdate(value, currentRow);
-
-          if (success) {
-            handleUpdateModalVisible(false);
-            setCurrentRow(undefined);
-
-            if (actionRef.current) {
-              actionRef.current.reload();
-            }
-          }
-        }}
-        onCancel={() => {
-          handleUpdateModalVisible(false);
-          setCurrentRow(undefined);
-        }}
-        updateModalVisible={updateModalVisible}
-        values={currentRow || {}}
+      <OperationModal
+        visible={visible}
+        current={currentRow}
+        onCancel={handleCancel}
+        onSubmit={handleSubmit}
       />
     </PageContainer>
   );
