@@ -14,8 +14,8 @@ export class TagService {
   /**
    * 分页按条件查询
    */
-  async find(skip: number, take: number): Promise<[FrontWeekly[], number]> {
-    const where: FindConditions<FrontWeekly> = {};
+  async find(skip: number, take: number): Promise<[TagEntity[], number]> {
+    const where: FindOptionsWhere<TagEntity> = {};
     if (validator.isArray(ids)) {
       where.id = In(ids);
     }

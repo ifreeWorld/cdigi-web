@@ -11,12 +11,16 @@ export async function getTag(
     current?: number;
     /** 页面的容量 */
     pageSize?: number;
+    /* 查询字段 */
+    [key: string]: any;
   },
   options?: { [key: string]: any },
 ) {
-  return request<{ data: CustomerTag[]; total?: number }>('/api/tag/get', {
-    params,
-    method: 'POST',
+  return request<{ data: CustomerTag[]; total?: number }>('/api/tag/list', {
+    params: {
+      ...params,
+    },
+    method: 'GET',
     ...(options || {}),
   });
 }

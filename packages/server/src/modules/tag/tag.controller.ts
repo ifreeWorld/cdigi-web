@@ -13,7 +13,6 @@ import { TagService } from './tag.service';
 import { JwtGuard } from '../../guards';
 import { ERROR } from '../../constant/error';
 import { getSkip } from '../../utils';
-import { CurrentUser } from '../../decorators';
 import { UserEntity } from '../user/user.entity';
 import { PaginationDto } from '../../dto/pagination.dto';
 
@@ -24,11 +23,11 @@ export class TagController {
 
   /** 退出登录 */
   @UseGuards(JwtGuard)
-  @Get('/get')
+  @Get('/list')
   @ApiOkResponse({
     type: UserEntity,
   })
   async get(@Query() { current, pageSize }: PaginationDto) {
-    return this.tagService.find(getSkip(current, pageSize));
+    return this.tagService.find(getSkip(current, pageSize), pageSize);
   }
 }

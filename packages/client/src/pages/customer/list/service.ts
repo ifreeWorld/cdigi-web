@@ -3,7 +3,7 @@
 import { request } from 'umi';
 import { CustomerListItem } from './data';
 
-/** 获取规则列表 GET /api/customer/get */
+/** 获取规则列表 GET /api/customer/list */
 export async function getCustomer(
   params: {
     // query
@@ -14,8 +14,8 @@ export async function getCustomer(
   },
   options?: { [key: string]: any },
 ) {
-  return request<{ data: CustomerListItem[]; total?: number }>('/api/customer/get', {
-    method: 'GET',
+  return request<{ data: CustomerListItem[]; total?: number }>('/api/customer/list', {
+    method: 'POST',
     params: {
       ...params,
     },
