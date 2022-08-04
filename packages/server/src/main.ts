@@ -26,6 +26,7 @@ async function bootstrap() {
   app.useGlobalFilters(new AppExceptionFilter());
 
   const options = new DocumentBuilder()
+    .addBearerAuth()
     .setTitle('cdigi 接口文档')
     .setDescription('cdigi 接口文档')
     .setVersion('1.0')

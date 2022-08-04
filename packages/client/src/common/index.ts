@@ -1,4 +1,4 @@
-import { CustomerType } from './data.d';
+import { CustomerType } from '../types/data.d';
 export const customerTypeMap = {
   [CustomerType.vendor]: '品牌商',
   [CustomerType.disty]: '代理商',

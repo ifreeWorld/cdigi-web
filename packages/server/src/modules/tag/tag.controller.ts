@@ -7,7 +7,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { TagService } from './tag.service';
 import { Pager } from '../../interface';
 import { JwtGuard } from '../../guards';
@@ -15,6 +15,7 @@ import { getSkip } from '../../utils';
 import { SearchDto, ListResult } from './tag.dto';
 import { TagEntity } from './tag.entity';
 
+@ApiBearerAuth()
 @ApiTags('标签')
 @Controller('tag')
 export class TagController {

@@ -7,7 +7,7 @@ import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import type { CustomerListItem } from './data';
 import { customerTypeMap } from '../../../common';
-import type { TablePagination } from '../../../common/data';
+import type { TablePagination } from '../../../types/common';
 import OperationModal from './components/OperationModal';
 import { getCustomer, addCustomer, updateCustomer, deleteCustomer } from './service';
 

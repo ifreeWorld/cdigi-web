@@ -8,9 +8,3 @@ export enum CustomerType {
   disty = 'disty',
   dealer = 'dealer',
 }
-
-export interface TablePagination {
-  total: number;
-  pageSize: number;
-  current: number;
-}

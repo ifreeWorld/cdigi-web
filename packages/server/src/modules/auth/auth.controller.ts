@@ -10,13 +10,13 @@ import { CurrentUser } from '../../decorators';
 import { UserEntity } from '../user/user.entity';
 
 @ApiTags('登录')
+@ApiBearerAuth()
 @Controller('')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('/login')
   @ApiOkResponse()
-  @ApiBearerAuth()
   async login(
     @Body() { username, password }: LoginPayloadDto,
     @Res({ passthrough: true }) res: Response,

@@ -1,4 +1,4 @@
-import type { CustomerType, TablePagination } from '../../../common/data';
+import type { CustomerType, TablePagination } from '../../../types/common';
 
 export interface CustomerTag {
   id: number;

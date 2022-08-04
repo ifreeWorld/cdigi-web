@@ -7,7 +7,7 @@ import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import type { CustomerTag } from './data';
 import { customerTypeMap } from '../../../common';
-import type { TablePagination } from '../../../common/data';
+import type { TablePagination } from '../../../types/common';
 import OperationModal from './components/OperationModal';
 import { getTag, addTag, updateTag, deleteTag } from './service';
 
@@ -63,7 +63,7 @@ const TableList: React.FC = () => {
     },
     {
       title: '标签类型',
-      dataIndex: 'tagType',
+      dataIndex: 'customerType',
       valueType: 'select',
       valueEnum: customerTypeMap,
     },
@@ -133,7 +133,14 @@ const TableList: React.FC = () => {
             <PlusOutlined /> 新建
           </Button>,
         ]}
-        request={getTag}
+        request={async (params) => {
+          const res = await getTag(params);
+          return {
+            data: res.data.list,
+            total: res.data.total,
+            success: res.code === 0,
+          };
+        }}
         columns={columns}
       />
       <OperationModal

@@ -9,7 +9,7 @@ import { JwtDto } from './dto/jwt.dto';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private usersService: UserService) {
     super({
-      jwtFromRequest: ExtractJwt.fromHeader('cdigi_token'),
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: AUTH_CONFIG.jwtSecret,
     });
   }

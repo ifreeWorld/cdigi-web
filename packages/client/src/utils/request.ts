@@ -57,7 +57,7 @@ export const requestInterceptors: RequestInterceptor = (url: string, options = {
   options: {
     ...options,
     headers: {
-      cdigi_token: Cookies.get('cdigi_token') || '',
+      Authorization: `Bearer ${Cookies.get('cdigi_token') || ''}`,
     },
   },
 });

@@ -2,6 +2,7 @@
 /* eslint-disable */
 import { request } from 'umi';
 import { CustomerTag } from './data';
+import { ResultSuccessPromise, TableListData } from '../../../types/common';
 
 /** 获取标签 POST /api/tag/get */
 export async function getTag(
@@ -16,7 +17,7 @@ export async function getTag(
   },
   options?: { [key: string]: any },
 ) {
-  return request<{ data: CustomerTag[]; total?: number }>('/api/tag/list', {
+  return request<ResultSuccessPromise<TableListData<CustomerTag>>>('/api/tag/list', {
     params: {
       ...params,
     },
