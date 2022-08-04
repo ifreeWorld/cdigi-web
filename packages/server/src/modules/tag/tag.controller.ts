@@ -8,26 +8,34 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
 import { TagService } from './tag.service';
+import { Pager } from '../../interface';
 import { JwtGuard } from '../../guards';
-import { ERROR } from '../../constant/error';
 import { getSkip } from '../../utils';
-import { UserEntity } from '../user/user.entity';
-import { PaginationDto } from '../../dto/pagination.dto';
+import { SearchDto, ListResult } from './tag.dto';
+import { TagEntity } from './tag.entity';
 
 @ApiTags('标签')
 @Controller('tag')
 export class TagController {
   constructor(private tagService: TagService) {}
 
-  /** 退出登录 */
+  /** 标签列表 */
   @UseGuards(JwtGuard)
   @Get('/list')
   @ApiOkResponse({
-    type: UserEntity,
+    type: ListResult,
   })
-  async get(@Query() { current, pageSize }: PaginationDto) {
-    return this.tagService.find(getSkip(current, pageSize), pageSize);
+  async find(@Query() query: SearchDto): Promise<Pager<TagEntity>> {
+    const { current, pageSize } = query;
+    const [list, total] = await this.tagService.find(
+      getSkip(current, pageSize),
+      pageSize,
+      query,
+    );
+    return {
+      list: list,
+      total: total,
+    };
   }
 }

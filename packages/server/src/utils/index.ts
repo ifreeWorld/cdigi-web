@@ -1,4 +1,4 @@
-import { PaginationDto } from '../dto/Pagination.dto';
+import { PaginationDto } from '../dto';
 import crypto from 'crypto';
 import * as dayjs from 'dayjs';
 
