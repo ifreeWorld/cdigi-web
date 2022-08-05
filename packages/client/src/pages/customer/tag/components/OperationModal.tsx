@@ -22,7 +22,10 @@ const OperationModal: FC<OperationModalProps> = (props) => {
       title={`${isEmpty(current) ? '添加' : '编辑'}标签`}
       width={640}
       onFinish={async (values) => {
-        onSubmit(values);
+        onSubmit({
+          ...current,
+          ...values
+        });
       }}
       initialValues={current}
       trigger={<>{children}</>}
@@ -45,7 +48,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           valueEnum={customerTypeMap}
           placeholder="请选择标签类型"
         />
-        <ProFormColorPicker name="tagColor" label="标签类型" initialValue={'#2db7f5'} />
+        <ProFormColorPicker name="tagColor" label="标签颜色" initialValue={'#2db7f5'} />
       </>
     </ModalForm>
   );

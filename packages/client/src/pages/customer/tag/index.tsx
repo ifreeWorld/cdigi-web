@@ -1,5 +1,5 @@
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, message, Modal } from 'antd';
+import { Button, message, Modal, Tag } from 'antd';
 import { useRequest } from 'umi';
 import React, { useState, useRef } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
@@ -16,7 +16,7 @@ const TableList: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<Partial<CustomerTag> | undefined>();
 
-  const { loading, mutate } = useRequest(
+  const { loading } = useRequest(
     () => {
       actionRef.current?.reloadAndRest?.();
     },
@@ -41,8 +41,9 @@ const TableList: React.FC = () => {
     },
     {
       manual: true,
-      onSuccess: (result) => {
-        mutate(result);
+      onSuccess: () => {
+        setVisible(false);
+        actionRef.current?.reloadAndRest?.();
       },
       onError: (error, [method]) => {
         message.error(`调用${method}接口失败`);
@@ -53,6 +54,11 @@ const TableList: React.FC = () => {
 
   const columns: ProColumns<CustomerTag>[] = [
     {
+      dataIndex: 'id',
+      hideInTable: true,
+      hideInSearch: true,
+    },
+    {
       title: '标签名称',
       dataIndex: 'tagName',
     },
@@ -60,6 +66,9 @@ const TableList: React.FC = () => {
       title: '标签颜色',
       dataIndex: 'tagColor',
       hideInSearch: true,
+      render: (text, record) => (
+        <Tag color={record.tagColor}>{record.tagName}</Tag>
+      )
     },
     {
       title: '标签类型',
@@ -77,7 +86,12 @@ const TableList: React.FC = () => {
           key="config"
           onClick={() => {
             setVisible(true);
-            setCurrentRow(record);
+            setCurrentRow({
+              id: record.id,
+              tagName: record.tagName,
+              tagColor: record.tagColor,
+              customerType: record.customerType,
+            });
           }}
         >
           编辑
@@ -91,7 +105,9 @@ const TableList: React.FC = () => {
               okText: '确认',
               cancelText: '取消',
               onOk: () => {
-                postRun('remove', [record.id]);
+                postRun('remove', {
+                  ids: [record.id]
+                });
               },
             });
           }}

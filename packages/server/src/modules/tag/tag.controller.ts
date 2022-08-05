@@ -4,15 +4,22 @@ import {
   Get,
   Body,
   Query,
-  Res,
+  Param,
   UseGuards,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from '../../decorators';
 import { TagService } from './tag.service';
 import { Pager } from '../../interface';
 import { JwtGuard } from '../../guards';
 import { getSkip } from '../../utils';
-import { SearchDto, ListResult } from './tag.dto';
+import {
+  SearchDto,
+  ListResult,
+  CreateDto,
+  UpdateDto,
+  TagIdResult,
+} from './tag.dto';
 import { TagEntity } from './tag.entity';
 
 @ApiBearerAuth()
@@ -38,5 +45,43 @@ export class TagController {
       list: list,
       total: total,
     };
+  }
+
+  /** 更新 */
+  @UseGuards(JwtGuard)
+  @Post('/add')
+  @ApiOkResponse({
+    type: TagIdResult,
+  })
+  async insert(
+    @Body() body: CreateDto,
+    @CurrentUser() currentUser,
+  ): Promise<number> {
+    return this.tagService.insert({
+      ...body,
+      creatorId: currentUser.id,
+    });
+  }
+
+  /** 更新 */
+  @UseGuards(JwtGuard)
+  @Post('/update')
+  @ApiOkResponse({
+    type: TagIdResult,
+  })
+  async update(@Body() body: UpdateDto): Promise<number> {
+    return this.tagService.update(body.id, body);
+  }
+
+  /**
+   * 删除
+   */
+  @UseGuards(JwtGuard)
+  @Post('/delete')
+  @ApiOkResponse({
+    type: TagIdResult,
+  })
+  async delete(@Body() { ids }: { ids: number[] }) {
+    return this.tagService.delete(ids);
   }
 }

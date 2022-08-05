@@ -21,8 +21,8 @@ export class PaginationDto {
    */
   @ApiProperty()
   @IsOptional()
-  @Transform(({ value }) => (isNumberString(value) ? +value : 10))
+  @Transform(({ value }) => (isNumberString(value) ? +value : 20))
   @IsNumber()
   @Min(1)
-  pageSize?: number = 10;
+  pageSize?: number = 20;
 }
