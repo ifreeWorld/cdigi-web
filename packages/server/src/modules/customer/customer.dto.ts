@@ -10,6 +10,12 @@ export class SearchDto extends PaginationDto {
 export class CustomerAllSearchDto {
   customerType?: CustomerEntity['customerType'];
 }
+export class CustomerIdDto {
+  @IsNotEmpty({
+    message: '用户id不能为空',
+  })
+  id: CustomerEntity['id'];
+}
 export class CustomerCreateDto {
   @IsNotEmpty({
     message: '用户名称不能为空',
@@ -33,6 +39,7 @@ export class CustomerCreateDto {
 
   email?: CustomerEntity['email'];
   tags?: CustomerEntity['tags'];
+  parent?: CustomerEntity['parent'];
 }
 export class CustomerUpdateDto extends CustomerCreateDto {
   @IsNotEmpty({

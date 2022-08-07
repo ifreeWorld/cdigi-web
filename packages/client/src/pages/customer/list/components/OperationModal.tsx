@@ -108,6 +108,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
             },
           ]}
           placeholder="请输入"
+          disabled={opType === 'edit'}
         />
         <ProFormSelect
           name="customerType"

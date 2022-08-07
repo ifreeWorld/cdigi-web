@@ -1,4 +1,11 @@
-import { Column, Entity, ManyToMany, OneToMany, JoinTable } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  OneToMany,
+  JoinTable,
+  Tree,
+} from 'typeorm';
 import BaseEntity from '../../entity/base.entity';
 import { TagEntity } from '../tag/tag.entity';
 import { StoreEntity } from '../store/store.entity';
@@ -48,4 +55,21 @@ export class CustomerEntity extends BaseEntity {
   /* 门店关联，一对多 */
   @OneToMany(() => StoreEntity, (store) => store.customer)
   stores: StoreEntity[];
+
+  @ManyToMany(() => CustomerEntity, (customer) => customer.children)
+  @JoinTable({
+    name: 'tbl_customer_closure',
+    joinColumn: {
+      name: 'descendant_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'ancestor_id',
+      referencedColumnName: 'id',
+    },
+  })
+  parent: CustomerEntity[];
+
+  @ManyToMany(() => CustomerEntity, (customer) => customer.parent)
+  children: CustomerEntity[];
 }

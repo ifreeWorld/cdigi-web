@@ -90,6 +90,7 @@ const TableList: React.FC = () => {
         <a
           key="delete"
           onClick={() => {
+            // TODO 删除需要考虑有数据的情况下就不让删除
             Modal.confirm({
               title: '删除',
               content: '确定删除吗？',

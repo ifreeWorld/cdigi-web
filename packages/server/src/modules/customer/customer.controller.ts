@@ -15,6 +15,7 @@ import { JwtGuard } from '../../guards';
 import { getSkip } from '../../utils';
 import {
   SearchDto,
+  CustomerIdDto,
   CustomerAllSearchDto,
   CustomerListResult,
   CustomerCreateDto,
@@ -61,6 +62,20 @@ export class CustomerController {
   ): Promise<CustomerEntity[]> {
     const { customerType } = query;
     const list = await this.customerService.findAll(customerType);
+    return list;
+  }
+
+  /** 全量用户列表 */
+  @UseGuards(JwtGuard)
+  @Get('/findAllChildrenByNodeId')
+  @ApiOkResponse({
+    type: CustomerDataResult,
+  })
+  async findAllChildrenByNodeId(
+    @Query() query: CustomerIdDto,
+  ): Promise<CustomerEntity[]> {
+    const { id } = query;
+    const list = await this.customerService.findAllChildrenByNodeId(id);
     return list;
   }
 

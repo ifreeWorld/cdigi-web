@@ -42,6 +42,8 @@ export class CustomerService {
       skip: skip,
       relations: {
         tags: true,
+        parent: true,
+        children: true,
       },
     });
   }
@@ -62,6 +64,60 @@ export class CustomerService {
         tags: false,
       },
     });
+  }
+
+  /**
+   * 查询所有的儿子节点
+   * @param id 节点id
+   * @returns 查询所有的儿子节点 CustomerEntity[]
+   */
+  async findAllChildrenByNodeId(
+    id: CustomerEntity['id'],
+  ): Promise<CustomerEntity[]> {
+    const childrens: CustomerEntity[] = [];
+    const res = await this.loop(id, childrens);
+    return res;
+  }
+
+  /**
+   * 递归
+   * @param id 节点id
+   * @param result 临时变量
+   * @returns 查询所有的儿子节点 CustomerEntity[]
+   */
+  async loop(
+    id: CustomerEntity['id'],
+    result: CustomerEntity[],
+  ): Promise<CustomerEntity[]> {
+    const childrens = await this.findChildrenByNodeId(id);
+    if (childrens.length > 0) {
+      for (let i = 0; i < childrens.length; i++) {
+        const children = childrens[i];
+        if (result.every((item) => item.id !== children.id)) {
+          result.push(children);
+          await this.loop(children.id, result);
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
+   * 全量查询
+   */
+  async findChildrenByNodeId(
+    id: CustomerEntity['id'],
+  ): Promise<CustomerEntity[]> {
+    const res = await this.repository.findOne({
+      where: {
+        id,
+      },
+      relations: {
+        tags: false,
+        children: true,
+      },
+    });
+    return res.children;
   }
 
   /**
