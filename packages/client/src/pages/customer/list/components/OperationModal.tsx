@@ -95,11 +95,14 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           rules={[
             { required: true, message: '请输入用户名称' },
             {
-              validator(rule, value, callback) {
+              validator: async (rule, value) => {
                 if (opType === 'add' && allCustomerNames.includes(value)) {
-                  callback('命名重复');
-                } else {
-                  callback();
+                  throw new Error('命名重复');
+                } else if (
+                  opType === 'edit' &&
+                  allCustomerNames.filter((item) => item !== current?.customerName).includes(value)
+                ) {
+                  throw new Error('命名重复');
                 }
               },
             },

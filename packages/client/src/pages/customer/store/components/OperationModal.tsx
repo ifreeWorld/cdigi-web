@@ -64,17 +64,19 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           rules={[
             { required: true, message: '请输入门店名称' },
             {
-              validator(rule, value, callback) {
+              validator: async (rule, value) => {
                 if (opType === 'add' && allStoreNames.includes(value)) {
-                  callback('命名重复');
-                } else {
-                  callback();
+                  throw new Error('命名重复');
+                } else if (
+                  opType === 'edit' &&
+                  allStoreNames.filter((item) => item !== current?.storeName).includes(value)
+                ) {
+                  throw new Error('命名重复');
                 }
               },
             },
           ]}
           placeholder="请输入"
-          disabled={opType === 'edit'}
         />
         <ProFormText
           name="storeAddress"
@@ -86,6 +88,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           name="customer"
           label="所属经销商"
           placeholder="请选择"
+          rules={[{ required: true, message: '请选择所属经销商' }]}
           transform={(value: number, name) => {
             return {
               [name]: {

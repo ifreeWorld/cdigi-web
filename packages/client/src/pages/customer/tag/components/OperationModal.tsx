@@ -48,11 +48,14 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           rules={[
             { required: true, message: '请输入标签名称' },
             {
-              validator(rule, value, callback) {
+              validator: async (rule, value) => {
                 if (opType === 'add' && allTagNames.includes(value)) {
-                  callback('命名重复');
-                } else {
-                  callback();
+                  throw new Error('命名重复');
+                } else if (
+                  opType === 'edit' &&
+                  allTagNames.filter((item) => item !== current?.tagName).includes(value)
+                ) {
+                  throw new Error('命名重复');
                 }
               },
             },
@@ -65,8 +68,9 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           rules={[{ required: true, message: '请选择标签类型' }]}
           valueEnum={customerTypeMap}
           placeholder="请选择标签类型"
+          disabled={opType === 'edit'}
         />
-        <ProFormColorPicker name="tagColor" label="标签颜色" initialValue={'#2db7f5'} />
+        <ProFormColorPicker name="tagColor" label="标签颜色" />
       </>
     </ModalForm>
   );
