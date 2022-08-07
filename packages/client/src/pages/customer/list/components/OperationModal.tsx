@@ -1,9 +1,11 @@
 import type { FC } from 'react';
+import { useRef } from 'react';
 import { Tag } from 'antd';
+import type { ProFormInstance } from '@ant-design/pro-form';
 import { ModalForm, ProFormSelect, ProFormText } from '@ant-design/pro-form';
 import { isEmpty } from 'lodash';
-import { getTag } from '../../tag/service';
 import type { CustomerListItem } from '../data.d';
+import type { CustomerTag } from '../../tag/data.d';
 import { customerTypeMap } from '../../../../common';
 
 type OperationModalProps = {
@@ -11,23 +13,37 @@ type OperationModalProps = {
   current: Partial<CustomerListItem> | undefined;
   onCancel: () => void;
   onSubmit: (values: CustomerListItem) => void;
+  allTagList: CustomerTag[] | undefined;
+  allCustomerNames: string[] | undefined;
 };
 
 const OperationModal: FC<OperationModalProps> = (props) => {
-  const { visible, current, onCancel, onSubmit, children } = props;
+  const formRef = useRef<ProFormInstance>();
+  const {
+    visible,
+    current,
+    allTagList = [],
+    allCustomerNames = [],
+    onCancel,
+    onSubmit,
+    children,
+  } = props;
   if (!visible) {
     return null;
   }
+  const opType = isEmpty(current) ? 'add' : 'edit';
 
   const tagRender = (tagProps: any) => {
     const { label, value, closable, onClose } = tagProps;
+    const cur = allTagList.find((item) => item.id === value * 1);
+
     const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
       event.preventDefault();
       event.stopPropagation();
     };
     return (
       <Tag
-        color={value}
+        color={cur?.tagColor}
         onMouseDown={onPreventMouseDown}
         closable={closable}
         onClose={onClose}
@@ -40,24 +56,54 @@ const OperationModal: FC<OperationModalProps> = (props) => {
 
   return (
     <ModalForm<CustomerListItem>
+      formRef={formRef}
       visible={visible}
-      title={`${isEmpty(current) ? '添加' : '编辑'}客户`}
+      title={`${opType === 'add' ? '添加' : '编辑'}客户`}
       width={640}
       onFinish={async (values) => {
-        onSubmit(values);
+        if (opType === 'add') {
+          onSubmit(values);
+        } else {
+          onSubmit({
+            ...values,
+            // @ts-ignore
+            id: current.id,
+          });
+        }
       }}
-      initialValues={current}
+      initialValues={{
+        ...current,
+        tags: current?.tags?.map((item) => item.id),
+      }}
       trigger={<>{children}</>}
       modalProps={{
         onCancel: () => onCancel(),
         destroyOnClose: true,
+      }}
+      onValuesChange={(changeValues) => {
+        if (changeValues.customerType) {
+          formRef?.current?.setFieldsValue?.({
+            tags: [],
+          });
+        }
       }}
     >
       <>
         <ProFormText
           name="customerName"
           label="用户名称"
-          rules={[{ required: true, message: '请输入用户名称' }]}
+          rules={[
+            { required: true, message: '请输入用户名称' },
+            {
+              validator(rule, value, callback) {
+                if (opType === 'add' && allCustomerNames.includes(value)) {
+                  callback('命名重复');
+                } else {
+                  callback();
+                }
+              },
+            },
+          ]}
           placeholder="请输入"
         />
         <ProFormSelect
@@ -66,6 +112,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           rules={[{ required: true, message: '请选择用户类型' }]}
           valueEnum={customerTypeMap}
           placeholder="请选择用户类型"
+          disabled={opType === 'edit'}
         />
         <ProFormText
           name="country"
@@ -79,19 +126,40 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           rules={[{ required: true, message: '请输入区域' }]}
           placeholder="请输入区域"
         />
+        <ProFormText
+          name="email"
+          label="邮箱"
+          rules={[{ required: true, message: '请输入邮箱' }]}
+          placeholder="请输入邮箱"
+        />
         <ProFormSelect
-          name="tag"
+          name="tags"
+          mode="tags"
           label="标签"
           tooltip="请先选择用户类型，再选择标签"
           placeholder="请先选择用户类型，再选择标签"
           dependencies={['customerType']}
+          transform={(values: number[], name) => {
+            return {
+              [name]: values.map((id) => ({
+                id,
+              })),
+            };
+          }}
           request={async (params) => {
             const { customerType } = params;
             if (!customerType) {
               return [];
             }
-            const res = await getTag({});
-            return res.data;
+            const res = allTagList
+              .filter((item) => item.customerType === customerType)
+              .map((item) => {
+                return {
+                  label: item.tagName,
+                  value: item.id,
+                };
+              });
+            return res;
           }}
           fieldProps={{ tagRender }}
         />

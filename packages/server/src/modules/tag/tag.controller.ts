@@ -15,10 +15,13 @@ import { JwtGuard } from '../../guards';
 import { getSkip } from '../../utils';
 import {
   SearchDto,
-  ListResult,
-  CreateDto,
-  UpdateDto,
+  TagSearchAllDto,
+  TagListResult,
+  TagCreateDto,
+  TagUpdateDto,
+  TagDeleteDto,
   TagIdResult,
+  TagDataResult,
 } from './tag.dto';
 import { TagEntity } from './tag.entity';
 
@@ -32,7 +35,7 @@ export class TagController {
   @UseGuards(JwtGuard)
   @Get('/list')
   @ApiOkResponse({
-    type: ListResult,
+    type: TagListResult,
   })
   async find(@Query() query: SearchDto): Promise<Pager<TagEntity>> {
     const { current, pageSize } = query;
@@ -47,6 +50,18 @@ export class TagController {
     };
   }
 
+  /** 全量用户列表 */
+  @UseGuards(JwtGuard)
+  @Get('/all')
+  @ApiOkResponse({
+    type: TagDataResult,
+  })
+  async findAll(@Query() query: TagSearchAllDto): Promise<TagEntity[]> {
+    const { customerType } = query;
+    const list = await this.tagService.findAll(customerType);
+    return list;
+  }
+
   /** 更新 */
   @UseGuards(JwtGuard)
   @Post('/add')
@@ -54,7 +69,7 @@ export class TagController {
     type: TagIdResult,
   })
   async insert(
-    @Body() body: CreateDto,
+    @Body() body: TagCreateDto,
     @CurrentUser() currentUser,
   ): Promise<number> {
     return this.tagService.insert({
@@ -69,7 +84,7 @@ export class TagController {
   @ApiOkResponse({
     type: TagIdResult,
   })
-  async update(@Body() body: UpdateDto): Promise<number> {
+  async update(@Body() body: TagUpdateDto): Promise<number> {
     return this.tagService.update(body.id, body);
   }
 
@@ -81,7 +96,7 @@ export class TagController {
   @ApiOkResponse({
     type: TagIdResult,
   })
-  async delete(@Body() { ids }: { ids: number[] }) {
+  async delete(@Body() { ids }: TagDeleteDto) {
     return this.tagService.delete(ids);
   }
 }

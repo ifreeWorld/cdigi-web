@@ -1,6 +1,7 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, ManyToMany } from 'typeorm';
 import BaseEntity from '../../entity/base.entity';
 import { CustomerType } from './customerType.enum';
+import { CustomerEntity } from '../customer/customer.entity';
 
 @Entity({
   name: 'tbl_tag',
@@ -17,4 +18,8 @@ export class TagEntity extends BaseEntity {
   /** 标签类型 */
   @Column({ name: 'customer_type', comment: '标签类型' })
   customerType: CustomerType;
+
+  /** 标签关联，多对多 */
+  @ManyToMany(() => CustomerEntity, (customer) => customer.tags)
+  customers: CustomerEntity[];
 }

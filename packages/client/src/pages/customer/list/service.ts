@@ -2,8 +2,10 @@
 /* eslint-disable */
 import { request } from 'umi';
 import { CustomerListItem } from './data';
+import { ResultSuccessPromise, TableListData } from '../../../types/common';
+import { CustomerType } from '../../../types/data.d';
 
-/** 获取规则列表 GET /api/customer/list */
+/** 获取标签 POST /api/customer/list */
 export async function getCustomer(
   params: {
     // query
@@ -11,15 +13,26 @@ export async function getCustomer(
     current?: number;
     /** 页面的容量 */
     pageSize?: number;
+    /* 查询字段 */
+    [key: string]: any;
   },
   options?: { [key: string]: any },
 ) {
-  return request<{ data: CustomerListItem[]; total?: number }>('/api/customer/list', {
-    method: 'POST',
+  return request<ResultSuccessPromise<TableListData<CustomerListItem>>>('/api/customer/list', {
     params: {
       ...params,
     },
+    method: 'GET',
     ...(options || {}),
+  });
+}
+/** 获取标签 POST /api/customer/all */
+export async function getAllCustomer(params: { customerType?: CustomerType }) {
+  return request<ResultSuccessPromise<CustomerListItem[]>>('/api/customer/all', {
+    params: {
+      ...params,
+    },
+    method: 'GET',
   });
 }
 

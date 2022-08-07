@@ -4,7 +4,7 @@ import { request } from 'umi';
 import { CustomerTag } from './data';
 import { ResultSuccessPromise, TableListData } from '../../../types/common';
 
-/** 获取标签 POST /api/tag/get */
+/** 获取标签 POST /api/tag/list */
 export async function getTag(
   params: {
     // query
@@ -23,6 +23,13 @@ export async function getTag(
     },
     method: 'GET',
     ...(options || {}),
+  });
+}
+
+/** 获取标签 POST /api/tag/all */
+export async function getAllTag() {
+  return request<ResultSuccessPromise<CustomerTag[]>>('/api/tag/all', {
+    method: 'GET',
   });
 }
 

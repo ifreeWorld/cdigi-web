@@ -2,17 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import * as validator from 'class-validator';
-import { TagEntity } from './tag.entity';
-import { CustomerEntity } from '../customer/customer.entity';
-import { SearchDto, TagCreateDto, TagUpdateDto } from './tag.dto';
+import { StoreEntity } from './store.entity';
+import { SearchDto, StoreCreateDto, StoreUpdateDto } from './store.dto';
 import { ERROR } from 'src/constant/error';
 import { indexOfLike } from '../../utils';
 
 @Injectable()
-export class TagService {
+export class StoreService {
   constructor(
-    @InjectRepository(TagEntity)
-    private repository: Repository<TagEntity>,
+    @InjectRepository(StoreEntity)
+    private repository: Repository<StoreEntity>,
   ) {}
 
   /**
@@ -22,39 +21,21 @@ export class TagService {
     skip: number,
     take: number,
     query: SearchDto,
-  ): Promise<[TagEntity[], number]> {
-    const where: FindOptionsWhere<TagEntity> = {};
-    const { tagName, customerType } = query;
-    if (validator.isNotEmpty(tagName)) {
-      where.tagName = indexOfLike(tagName);
+  ): Promise<[StoreEntity[], number]> {
+    const where: FindOptionsWhere<StoreEntity> = {};
+    const { storeName, customer } = query;
+    if (validator.isNotEmpty(storeName)) {
+      where.storeName = indexOfLike(storeName);
     }
-    if (validator.isNotEmpty(customerType)) {
-      where.customerType = customerType;
+    if (validator.isNotEmpty(customer)) {
+      where.customer = customer;
     }
     return await this.repository.findAndCount({
       where: where,
       take: take,
       skip: skip,
       relations: {
-        customers: true,
-      },
-    });
-  }
-
-  /**
-   * 全量查询
-   */
-  async findAll(
-    customerType: CustomerEntity['customerType'],
-  ): Promise<TagEntity[]> {
-    const where: FindOptionsWhere<TagEntity> = {};
-    if (validator.isNotEmpty(customerType)) {
-      where.customerType = customerType;
-    }
-    return await this.repository.find({
-      where: where,
-      relations: {
-        customers: false,
+        customer: true,
       },
     });
   }
@@ -63,11 +44,26 @@ export class TagService {
    * 新增
    */
   async insert(
-    info: TagCreateDto & {
+    info: StoreCreateDto & {
       creatorId: number;
     },
   ): Promise<number> {
     const time = new Date();
+
+    // const res = await this.repository
+    //   .createQueryBuilder('tbl_store')
+    //   .insert()
+    //   .into(StoreEntity)
+    //   .values({
+    //     ...info,
+    //     createTime: time,
+    //     updateTime: time,
+    //     customer: {
+    //       id: info.customerId,
+    //     },
+    //   })
+    //   .execute();
+
     const res = await this.repository.insert({
       ...info,
       createTime: time,
@@ -77,13 +73,15 @@ export class TagService {
   }
 
   /** 修改 */
-  async update(id: number, data: Partial<TagUpdateDto>): Promise<number> {
+  async update(id: number, data: Partial<StoreUpdateDto>): Promise<number> {
     const info = await this.repository.findOneBy({
       id,
     });
+
     if (!info) {
       throw ERROR.RESOURCE_NOT_EXITS;
     }
+
     await this.repository.update(id, {
       ...info,
       ...data,

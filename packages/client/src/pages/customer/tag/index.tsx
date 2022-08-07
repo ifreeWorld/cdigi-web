@@ -1,7 +1,7 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, message, Modal, Tag } from 'antd';
 import { useRequest } from 'umi';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
@@ -16,14 +16,15 @@ const TableList: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<Partial<CustomerTag> | undefined>();
 
-  const { loading } = useRequest(
-    () => {
-      actionRef.current?.reloadAndRest?.();
+  const { data: tagRes, run } = useRequest(
+    async (params) => {
+      return await getTag(params);
     },
     {
       manual: true,
     },
   );
+
   const { run: postRun } = useRequest(
     async (method: 'add' | 'update' | 'remove', params) => {
       if (method === 'remove') {
@@ -66,9 +67,7 @@ const TableList: React.FC = () => {
       title: '标签颜色',
       dataIndex: 'tagColor',
       hideInSearch: true,
-      render: (text, record) => (
-        <Tag color={record.tagColor}>{record.tagName}</Tag>
-      )
+      render: (text, record) => <Tag color={record.tagColor}>{record.tagName}</Tag>,
     },
     {
       title: '标签类型',
@@ -83,7 +82,7 @@ const TableList: React.FC = () => {
       hideInForm: true,
       render: (_, record) => [
         <a
-          key="config"
+          key="edit"
           onClick={() => {
             setVisible(true);
             setCurrentRow({
@@ -97,16 +96,24 @@ const TableList: React.FC = () => {
           编辑
         </a>,
         <a
-          key="config"
+          key="delete"
           onClick={() => {
+            if (record.customers.length > 0) {
+              const name = record.customers.map((item) => item.customerName).join('、');
+              message.warning(
+                `${record.tagName}这个标签已经绑定了${name}，如需删除，请先删除绑定关系`,
+                3,
+              );
+              return;
+            }
             Modal.confirm({
-              title: '删除任务',
-              content: '确定删除该任务吗？',
+              title: '删除',
+              content: '确定删除吗？',
               okText: '确认',
               cancelText: '取消',
               onOk: () => {
                 postRun('remove', {
-                  ids: [record.id]
+                  ids: [record.id],
                 });
               },
             });
@@ -128,6 +135,15 @@ const TableList: React.FC = () => {
     postRun(method, values);
   };
 
+  const allTagNames = useMemo(() => {
+    if (tagRes?.list) {
+      return tagRes?.list.map((item) => {
+        return item.tagName;
+      });
+    }
+    return [];
+  }, [tagRes?.list]);
+
   return (
     <PageContainer>
       <ProTable<CustomerTag, TablePagination>
@@ -137,7 +153,6 @@ const TableList: React.FC = () => {
         search={{
           labelWidth: 120,
         }}
-        loading={loading}
         toolBarRender={() => [
           <Button
             type="primary"
@@ -150,11 +165,11 @@ const TableList: React.FC = () => {
           </Button>,
         ]}
         request={async (params) => {
-          const res = await getTag(params);
+          const res = await run(params);
           return {
-            data: res.data.list,
-            total: res.data.total,
-            success: res.code === 0,
+            data: res.list,
+            total: res.total,
+            success: true,
           };
         }}
         columns={columns}
@@ -164,6 +179,7 @@ const TableList: React.FC = () => {
         current={currentRow}
         onCancel={handleCancel}
         onSubmit={handleSubmit}
+        allTagNames={allTagNames}
       />
     </PageContainer>
   );

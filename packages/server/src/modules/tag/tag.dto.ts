@@ -7,7 +7,11 @@ export class SearchDto extends PaginationDto {
   tagName?: TagEntity['tagName'];
   customerType?: TagEntity['customerType'];
 }
-export class CreateDto {
+
+export class TagSearchAllDto {
+  customerType?: TagEntity['customerType'];
+}
+export class TagCreateDto {
   @IsNotEmpty({
     message: '标签名称不能为空',
   })
@@ -19,22 +23,32 @@ export class CreateDto {
   tagColor: TagEntity['tagColor'];
 
   @IsNotEmpty({
-    message: '修复方案不能为空',
+    message: '标签类型不能为空',
   })
   customerType: TagEntity['customerType'];
 }
-export class UpdateDto extends CreateDto {
+export class TagUpdateDto extends TagCreateDto {
   @IsNotEmpty({
     message: 'id不能为空',
   })
   id: TagEntity['id'];
 }
+export class TagDeleteDto {
+  @IsNotEmpty({
+    message: 'ids不能为空',
+  })
+  ids: TagEntity['id'][];
+}
 
-export class ListResult extends BaseResult {
+export class TagListResult extends BaseResult {
   data: {
     list: TagEntity[];
     total: number;
   };
+}
+
+export class TagDataResult extends BaseResult {
+  data: TagEntity[];
 }
 export class TagIdResult extends BaseResult {
   data: number;

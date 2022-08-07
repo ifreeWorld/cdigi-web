@@ -9,23 +9,30 @@ type OperationModalProps = {
   current: Partial<CustomerTag> | undefined;
   onCancel: () => void;
   onSubmit: (values: CustomerTag) => void;
+  allTagNames: string[] | undefined;
 };
 
 const OperationModal: FC<OperationModalProps> = (props) => {
-  const { visible, current, onCancel, onSubmit, children } = props;
+  const { visible, current, onCancel, onSubmit, allTagNames = [], children } = props;
+  const opType = isEmpty(current) ? 'add' : 'edit';
   if (!visible) {
     return null;
   }
   return (
     <ModalForm<CustomerTag>
       visible={visible}
-      title={`${isEmpty(current) ? '添加' : '编辑'}标签`}
+      title={`${opType === 'add' ? '添加' : '编辑'}标签`}
       width={640}
       onFinish={async (values) => {
-        onSubmit({
-          ...current,
-          ...values
-        });
+        if (opType === 'add') {
+          onSubmit(values);
+        } else {
+          onSubmit({
+            ...values,
+            // @ts-ignore
+            id: current.id,
+          });
+        }
       }}
       initialValues={current}
       trigger={<>{children}</>}
@@ -38,7 +45,18 @@ const OperationModal: FC<OperationModalProps> = (props) => {
         <ProFormText
           name="tagName"
           label="标签名称"
-          rules={[{ required: true, message: '请输入标签名称' }]}
+          rules={[
+            { required: true, message: '请输入标签名称' },
+            {
+              validator(rule, value, callback) {
+                if (opType === 'add' && allTagNames.includes(value)) {
+                  callback('命名重复');
+                } else {
+                  callback();
+                }
+              },
+            },
+          ]}
           placeholder="请输入标签名称"
         />
         <ProFormSelect

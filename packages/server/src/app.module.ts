@@ -7,6 +7,8 @@ import { ORM_CONFIG } from './constant/app.config';
 import { LoggerMiddleware, NoCacheMiddleware } from './middlewares';
 import { AuthModule } from './modules/auth/auth.module';
 import { TagModule } from './modules/tag/tag.module';
+import { StoreModule } from './modules/store/store.module';
+import { CustomerModule } from './modules/customer/customer.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { TagModule } from './modules/tag/tag.module';
     }),
     AuthModule,
     TagModule,
+    CustomerModule,
+    StoreModule,
   ],
   providers: [AppService],
   controllers: [AppController],
