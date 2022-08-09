@@ -1,4 +1,4 @@
-import type { CustomerType, TablePagination } from '../../../types/common';
+import type { TablePagination, CustomerType } from '../../../types/common';
 import type { CustomerListItem } from '../list/data';
 
 export interface CustomerTag {

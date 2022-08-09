@@ -16,7 +16,12 @@ export class TagEntity extends BaseEntity {
   tagColor: string;
 
   /** 标签类型 */
-  @Column({ name: 'customer_type', comment: '标签类型' })
+  @Column({
+    name: 'customer_type',
+    type: 'enum',
+    enum: CustomerType,
+    comment: '用户类型 1|品牌商 2|代理商 3|经销商',
+  })
   customerType: CustomerType;
 
   /** 标签关联，多对多 */

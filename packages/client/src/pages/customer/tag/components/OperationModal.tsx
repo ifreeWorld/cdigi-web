@@ -70,7 +70,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           placeholder="请选择标签类型"
           disabled={opType === 'edit'}
         />
-        <ProFormColorPicker name="tagColor" label="标签颜色" />
+        <ProFormColorPicker name="tagColor" label="标签颜色" initialValue={'#2db7f5'} />
       </>
     </ModalForm>
   );

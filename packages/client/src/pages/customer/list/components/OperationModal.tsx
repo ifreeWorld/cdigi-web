@@ -14,6 +14,7 @@ type OperationModalProps = {
   onCancel: () => void;
   onSubmit: (values: CustomerListItem) => void;
   allTagList: CustomerTag[] | undefined;
+  allCustomerList: CustomerListItem[] | undefined;
   allCustomerNames: string[] | undefined;
 };
 
@@ -23,6 +24,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
     visible,
     current,
     allTagList = [],
+    allCustomerList = [],
     allCustomerNames = [],
     onCancel,
     onSubmit,
@@ -74,6 +76,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
       initialValues={{
         ...current,
         tags: current?.tags?.map((item) => item.id),
+        parent: current?.parent?.map((item) => item.id),
       }}
       trigger={<>{children}</>}
       modalProps={{
@@ -84,6 +87,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
         if (changeValues.customerType) {
           formRef?.current?.setFieldsValue?.({
             tags: [],
+            parent: [],
           });
         }
       }}
@@ -166,6 +170,33 @@ const OperationModal: FC<OperationModalProps> = (props) => {
             return res;
           }}
           fieldProps={{ tagRender }}
+        />
+        <ProFormSelect
+          name="parent"
+          mode="tags"
+          label="所属用户"
+          tooltip="请先选择用户类型，再选择所属用户"
+          placeholder="请先选择用户类型，再选择所属用户"
+          transform={(value, name) => {
+            return {
+              [name]: value.map((v: number) => ({
+                id: v,
+              })),
+            };
+          }}
+          dependencies={['customerType']}
+          request={async (params) => {
+            const { customerType } = params;
+            const res = allCustomerList
+              .filter((item) => item.customerType < customerType)
+              .map((item) => {
+                return {
+                  label: item.customerName,
+                  value: item.id,
+                };
+              });
+            return res;
+          }}
         />
       </>
     </ModalForm>

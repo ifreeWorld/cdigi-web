@@ -39,6 +39,10 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "@antv/g6",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "@antv/l7",
       "allowedCategories": [ "production" ]
     },

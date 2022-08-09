@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsEnum } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { PaginationDto } from '../../dto';
 import { CustomerEntity } from './customer.entity';
 import { BaseResult } from 'src/interface/base.interface';
@@ -6,6 +7,12 @@ import { BaseResult } from 'src/interface/base.interface';
 export class SearchDto extends PaginationDto {
   customerName?: CustomerEntity['customerName'];
   customerType?: CustomerEntity['customerType'];
+
+  @Transform(({ value }) => !!value)
+  parent?: boolean;
+
+  @Transform(({ value }) => !!value)
+  children?: boolean;
 }
 export class CustomerAllSearchDto {
   customerType?: CustomerEntity['customerType'];

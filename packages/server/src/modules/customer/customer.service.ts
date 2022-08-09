@@ -42,8 +42,8 @@ export class CustomerService {
       skip: skip,
       relations: {
         tags: true,
-        parent: true,
-        children: true,
+        parent: query.parent,
+        children: query.children,
       },
     });
   }
@@ -62,6 +62,8 @@ export class CustomerService {
       where: where,
       relations: {
         tags: false,
+        parent: false,
+        children: false,
       },
     });
   }
@@ -128,11 +130,8 @@ export class CustomerService {
       creatorId: number;
     },
   ): Promise<number> {
-    const time = new Date();
     const entity = plainToInstance(CustomerEntity, {
       ...info,
-      createTime: time,
-      updateTime: time,
     });
     const res = await this.dataSource.manager.save(entity);
     return res.id;
@@ -149,7 +148,6 @@ export class CustomerService {
     const entity = plainToInstance(CustomerEntity, {
       ...info,
       ...data,
-      updateTime: new Date(),
     });
     const res = await this.dataSource.manager.save(entity);
     return res.id;

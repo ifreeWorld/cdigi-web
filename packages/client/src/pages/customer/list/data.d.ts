@@ -1,4 +1,3 @@
-import type { CustomerType } from '../../../types/common';
 import type { CustomerTag } from '../tag/data';
 
 export interface CustomerListItem {
@@ -9,4 +8,6 @@ export interface CustomerListItem {
   region: string;
   email: string;
   tags: CustomerTag[];
+  parent: CustomerListItem[];
+  children: CustomerListItem[];
 }

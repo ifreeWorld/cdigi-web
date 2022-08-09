@@ -3,7 +3,7 @@
 import { request } from 'umi';
 import { CustomerListItem } from './data';
 import { ResultSuccessPromise, TableListData } from '../../../types/common';
-import { CustomerType } from '../../../types/data.d';
+import { CustomerType } from '../../../types/common';
 
 /** 获取标签 POST /api/customer/list */
 export async function getCustomer(
@@ -13,6 +13,8 @@ export async function getCustomer(
     current?: number;
     /** 页面的容量 */
     pageSize?: number;
+    // 是否带上父节点
+    parent?: boolean;
     /* 查询字段 */
     [key: string]: any;
   },

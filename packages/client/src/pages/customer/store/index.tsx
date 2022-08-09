@@ -63,6 +63,7 @@ const TableList: React.FC = () => {
     {
       title: '所属经销商',
       dataIndex: 'customer',
+      hideInSearch: true,
       render: (text, record: StoreListItem) => {
         return record?.customer?.customerName || '';
       },

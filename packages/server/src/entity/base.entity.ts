@@ -1,4 +1,9 @@
-import { Column, CreateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
 export default class BaseEntity {
@@ -35,7 +40,7 @@ export default class BaseEntity {
     description: '更新时间',
   })
   /** 更新时间 */
-  @CreateDateColumn({
+  @UpdateDateColumn({
     name: 'update_time',
     type: 'datetime',
     comment: '更新时间',

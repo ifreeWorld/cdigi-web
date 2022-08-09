@@ -4,7 +4,7 @@
  *  dealer 经销商
  */
 export enum CustomerType {
-  vendor = 'vendor',
-  disty = 'disty',
-  dealer = 'dealer',
+  vendor = 1,
+  disty = 2,
+  dealer = 3,
 }

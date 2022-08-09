@@ -4,7 +4,7 @@ import type { ProFormInstance } from '@ant-design/pro-form';
 import { ModalForm, ProFormSelect, ProFormText } from '@ant-design/pro-form';
 import { isEmpty } from 'lodash';
 import type { StoreListItem } from '../data.d';
-import { CustomerType } from '../../../../types/data.d';
+import { CustomerType } from '../../../../types/common.d';
 import { getAllCustomer } from '../../list/service';
 
 type OperationModalProps = {

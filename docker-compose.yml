@@ -51,7 +51,7 @@ services:
   #     context: frontend
   #     target: development
   #   ports:
-  #     - 3000:3000
+  #     - 30000:30000
   #   volumes:
   #     - ./frontend/src:/code/src
   #     - /code/node_modules

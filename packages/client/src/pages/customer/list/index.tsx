@@ -10,18 +10,28 @@ import { customerTypeMap } from '../../../common';
 import type { TablePagination } from '../../../types/common';
 import OperationModal from './components/OperationModal';
 import { getAllTag } from '../tag/service';
-import { getCustomer, addCustomer, updateCustomer, deleteCustomer } from './service';
+import {
+  getCustomer,
+  getAllCustomer,
+  addCustomer,
+  updateCustomer,
+  deleteCustomer,
+} from './service';
 
 const TableList: React.FC = () => {
   const [visible, setVisible] = useState<boolean>(false);
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<Partial<CustomerListItem> | undefined>();
 
-  const { data: tagRes } = useRequest(() => {
-    return getAllTag();
+  const { data: tagRes } = useRequest(async () => {
+    return await getAllTag();
   });
 
-  const { data: customerRes, run } = useRequest(
+  const { run: runAll, data: allCustomerList } = useRequest(async () => {
+    return await getAllCustomer({});
+  });
+
+  const { run } = useRequest(
     async (params) => {
       return await getCustomer(params);
     },
@@ -71,18 +81,22 @@ const TableList: React.FC = () => {
     {
       title: '国家',
       dataIndex: 'country',
+      hideInSearch: true,
     },
     {
       title: '区域',
       dataIndex: 'region',
+      hideInSearch: true,
     },
     {
       title: '用户邮箱',
       dataIndex: 'email',
+      hideInSearch: true,
     },
     {
       title: '标签',
       dataIndex: 'tag',
+      hideInSearch: true,
       render: (text, record: CustomerListItem) => {
         const { tags = [] } = record;
         return (
@@ -114,6 +128,7 @@ const TableList: React.FC = () => {
               region: record.region,
               email: record.email,
               tags: record.tags,
+              parent: record.parent,
             });
           }}
         >
@@ -153,13 +168,13 @@ const TableList: React.FC = () => {
   };
 
   const allCustomerNames = useMemo(() => {
-    if (customerRes?.list) {
-      return customerRes?.list.map((item) => {
+    if (allCustomerList) {
+      return allCustomerList.map((item) => {
         return item.customerName;
       });
     }
     return [];
-  }, [customerRes?.list]);
+  }, [allCustomerList]);
 
   return (
     <PageContainer>
@@ -182,7 +197,11 @@ const TableList: React.FC = () => {
           </Button>,
         ]}
         request={async (params) => {
-          const res = await run(params);
+          runAll();
+          const res = await run({
+            ...params,
+            parent: true,
+          });
           return {
             data: res.list,
             total: res.total,
@@ -197,6 +216,7 @@ const TableList: React.FC = () => {
         onCancel={handleCancel}
         onSubmit={handleSubmit}
         allTagList={tagRes}
+        allCustomerList={allCustomerList}
         allCustomerNames={allCustomerNames}
       />
     </PageContainer>

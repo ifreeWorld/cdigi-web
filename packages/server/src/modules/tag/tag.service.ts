@@ -67,11 +67,8 @@ export class TagService {
       creatorId: number;
     },
   ): Promise<number> {
-    const time = new Date();
     const res = await this.repository.insert({
       ...info,
-      createTime: time,
-      updateTime: time,
     });
     return res.raw.insertId;
   }
@@ -87,7 +84,6 @@ export class TagService {
     await this.repository.update(id, {
       ...info,
       ...data,
-      updateTime: new Date(),
     });
     return id;
   }
