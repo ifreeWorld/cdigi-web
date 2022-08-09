@@ -8,6 +8,8 @@ import {
   SearchDto,
   CustomerCreateDto,
   CustomerUpdateDto,
+  CustomerRelationResult,
+  CustomerRelationEdges,
 } from './customer.dto';
 import { ERROR } from 'src/constant/error';
 import { indexOfLike } from '../../utils';
@@ -52,7 +54,7 @@ export class CustomerService {
    * 全量查询
    */
   async findAll(
-    customerType: CustomerEntity['customerType'],
+    customerType?: CustomerEntity['customerType'],
   ): Promise<CustomerEntity[]> {
     const where: FindOptionsWhere<CustomerEntity> = {};
     if (validator.isNotEmpty(customerType)) {
@@ -120,6 +122,20 @@ export class CustomerService {
       },
     });
     return res.children;
+  }
+
+  /**
+   * 查询关系图数据
+   */
+  async findRelations(): Promise<CustomerRelationResult['data']> {
+    const nodes = await this.findAll();
+    const edges: CustomerRelationEdges[] = await this.dataSource.manager.query(
+      'select ancestor_id as source, descendant_id as target from tbl_customer_closure',
+    );
+    return {
+      nodes,
+      edges,
+    };
   }
 
   /**

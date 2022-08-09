@@ -23,6 +23,7 @@ import {
   CustomerDeleteDto,
   CustomerIdResult,
   CustomerDataResult,
+  CustomerRelationResult,
 } from './customer.dto';
 import { CustomerEntity } from './customer.entity';
 
@@ -77,6 +78,17 @@ export class CustomerController {
     const { id } = query;
     const list = await this.customerService.findAllChildrenByNodeId(id);
     return list;
+  }
+
+  /** 关系图数据 */
+  @UseGuards(JwtGuard)
+  @Get('/relations')
+  @ApiOkResponse({
+    type: CustomerRelationResult,
+  })
+  async findRelation(): Promise<CustomerRelationResult['data']> {
+    const res = await this.customerService.findRelations();
+    return res;
   }
 
   /** 更新 */

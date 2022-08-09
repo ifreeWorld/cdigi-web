@@ -55,10 +55,17 @@ export class CustomerUpdateDto extends CustomerCreateDto {
   id: CustomerEntity['id'];
 }
 export class CustomerDeleteDto {
-  @IsNotEmpty({
-    message: 'ids不能为空',
-  })
   ids: CustomerEntity['id'][];
+}
+export class CustomerRelationEdges {
+  /**
+   * 父节点id  ancestor_id
+   */
+  source: number;
+  /**
+   * 子节点id  descendant_id
+   */
+  target: number;
 }
 
 export class CustomerListResult extends BaseResult {
@@ -72,4 +79,11 @@ export class CustomerDataResult extends BaseResult {
 }
 export class CustomerIdResult extends BaseResult {
   data: number;
+}
+
+export class CustomerRelationResult extends BaseResult {
+  data: {
+    nodes: CustomerEntity[];
+    edges: CustomerRelationEdges[];
+  };
 }
