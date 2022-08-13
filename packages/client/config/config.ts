@@ -101,6 +101,29 @@ export default defineConfig({
       ],
     },
     {
+      path: '/dataimport',
+      name: 'dataimport',
+      icon: 'table',
+      routes: [
+        {
+          path: '/dataimport',
+          redirect: '/dataimport/product',
+        },
+        {
+          name: 'product',
+          icon: 'smile',
+          path: '/dataimport/product',
+          component: './dataimport/product',
+        },
+        {
+          name: 'channel',
+          icon: 'smile',
+          path: '/dataimport/channel',
+          component: './dataimport/channel',
+        },
+      ],
+    },
+    {
       path: '/dashboard',
       name: 'dashboard',
       icon: 'dashboard',

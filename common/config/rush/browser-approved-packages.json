@@ -55,6 +55,10 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "@liaoliaots/nestjs-redis",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "@nestjs/axios",
       "allowedCategories": [ "production" ]
     },
@@ -287,6 +291,10 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "ioredis",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "jest",
       "allowedCategories": [ "production" ]
     },
@@ -324,6 +332,10 @@
     },
     {
       "name": "mysql2",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "nestjs-redis",
       "allowedCategories": [ "production" ]
     },
     {

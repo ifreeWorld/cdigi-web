@@ -170,6 +170,7 @@ importers:
 
   ../../packages/server:
     specifiers:
+      '@liaoliaots/nestjs-redis': ~9.0.1
       '@nestjs/axios': ~0.1.0
       '@nestjs/cli': ^9.0.0
       '@nestjs/common': ^9.0.0
@@ -196,6 +197,7 @@ importers:
       eslint: ^8.0.1
       eslint-config-prettier: ^8.3.0
       eslint-plugin-prettier: ^4.0.0
+      ioredis: ~5.2.2
       jest: 28.1.2
       log4js: ^6.3.0
       mysql2: ~2.3.3
@@ -217,6 +219,7 @@ importers:
       typescript: ^4.3.5
       yargs: ~17.5.1
     dependencies:
+      '@liaoliaots/nestjs-redis': registry.npmmirror.com/@liaoliaots/nestjs-redis/9.0.1_a732396f7e196d66afd57abac60425a3
       '@nestjs/axios': registry.npmmirror.com/@nestjs/axios/0.1.0_9fad833c066e70b3b5e6d773402fdc0f
       '@nestjs/common': registry.npmmirror.com/@nestjs/common/9.0.8_02d66f081444430c9a02612f8d586d74
       '@nestjs/core': registry.npmmirror.com/@nestjs/core/9.0.8_c35d86f87bf3a7cc37ac4f8bf6b48294
@@ -228,6 +231,7 @@ importers:
       class-transformer: registry.npmmirror.com/class-transformer/0.5.1
       class-validator: registry.npmmirror.com/class-validator/0.13.2
       dayjs: registry.npmmirror.com/dayjs/1.11.4
+      ioredis: registry.npmmirror.com/ioredis/5.2.2
       log4js: registry.npmmirror.com/log4js/6.6.1
       mysql2: registry.npmmirror.com/mysql2/2.3.3
       passport: registry.npmmirror.com/passport/0.6.0
@@ -237,7 +241,7 @@ importers:
       rimraf: registry.npmmirror.com/rimraf/3.0.2
       rxjs: registry.npmmirror.com/rxjs/7.5.6
       swagger-ui-express: registry.npmmirror.com/swagger-ui-express/4.5.0
-      typeorm: registry.npmmirror.com/typeorm/0.3.7_mysql2@2.3.3+ts-node@10.9.1
+      typeorm: registry.npmmirror.com/typeorm/0.3.7_5e0ef54e8c6c608b7634fbbe433b526f
       yargs: registry.npmmirror.com/yargs/17.5.1
     devDependencies:
       '@nestjs/cli': registry.npmmirror.com/@nestjs/cli/9.0.0
@@ -4877,6 +4881,12 @@ packages:
     version: 1.2.1
     dev: true
 
+  registry.npmmirror.com/@ioredis/commands/1.2.0:
+    resolution: {integrity: sha512-Sx1pU8EM64o2BrqNpEO1CNLtKQwyhuXuqyfH7oGKCk+1a33d2r5saW8zNwm3j6BTExtjrv2BxTgzzkMwts6vGg==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@ioredis/commands/-/commands-1.2.0.tgz}
+    name: '@ioredis/commands'
+    version: 1.2.0
+    dev: false
+
   registry.npmmirror.com/@istanbuljs/load-nyc-config/1.1.0:
     resolution: {integrity: sha512-VjeHSlIzpv/NyD3N0YuHfXOPDIixcA1q2ZV98wsMqcYlPmv2n3Yb2lYP9XMElnaFVXg5A7YLTeLu6V84uQDjmQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@istanbuljs/load-nyc-config/-/load-nyc-config-1.1.0.tgz}
     name: '@istanbuljs/load-nyc-config'
@@ -5426,6 +5436,23 @@ packages:
       stream: registry.npmmirror.com/stream/0.0.2
     dev: true
 
+  registry.npmmirror.com/@liaoliaots/nestjs-redis/9.0.1_a732396f7e196d66afd57abac60425a3:
+    resolution: {integrity: sha512-dpICyjM/6BceBci6+BKkxz2p3kBWGVai4HdHQsUi0tEWHktAVyx3uWtVMY1p7RxSDBFqTvnTcedm0r31x5V6Yw==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@liaoliaots/nestjs-redis/-/nestjs-redis-9.0.1.tgz}
+    id: registry.npmmirror.com/@liaoliaots/nestjs-redis/9.0.1
+    name: '@liaoliaots/nestjs-redis'
+    version: 9.0.1
+    engines: {node: '>=12.22.0'}
+    peerDependencies:
+      '@nestjs/common': ^9.0.0
+      '@nestjs/core': ^9.0.0
+      ioredis: ^5.0.0
+    dependencies:
+      '@nestjs/common': registry.npmmirror.com/@nestjs/common/9.0.8_02d66f081444430c9a02612f8d586d74
+      '@nestjs/core': registry.npmmirror.com/@nestjs/core/9.0.8_c35d86f87bf3a7cc37ac4f8bf6b48294
+      ioredis: registry.npmmirror.com/ioredis/5.2.2
+      tslib: registry.npmmirror.com/tslib/2.4.0
+    dev: false
+
   registry.npmmirror.com/@mapbox/geojson-rewind/0.5.2:
     resolution: {integrity: sha512-tJaT+RbYGJYStt7wI3cq4Nl4SXxG8W7JDG5DMJu97V25RnbNg3QtQtf+KD+VLjNpWKYsRvXDNmNrBgEETr1ifA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@mapbox/geojson-rewind/-/geojson-rewind-0.5.2.tgz}
     name: '@mapbox/geojson-rewind'
@@ -5817,7 +5844,7 @@ packages:
       '@nestjs/core': registry.npmmirror.com/@nestjs/core/9.0.8_c35d86f87bf3a7cc37ac4f8bf6b48294
       reflect-metadata: registry.npmmirror.com/reflect-metadata/0.1.13
       rxjs: registry.npmmirror.com/rxjs/7.5.6
-      typeorm: registry.npmmirror.com/typeorm/0.3.7_mysql2@2.3.3+ts-node@10.9.1
+      typeorm: registry.npmmirror.com/typeorm/0.3.7_5e0ef54e8c6c608b7634fbbe433b526f
       uuid: registry.npmmirror.com/uuid/8.3.2
     dev: false
 
@@ -6838,7 +6865,7 @@ packages:
   registry.npmmirror.com/@types/superagent/4.1.15:
     resolution: {integrity: sha512-iiXaOL2wSbnSY4qg0mFPWJHL9iwyEsoNYwaHF2w58/fsVAQJlj+KUfFAFZu+nzbz+b7dUprJEAc+O9vhHHhQTA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@types/superagent/-/superagent-4.1.14.tgz}
     name: '@types/superagent'
-    version: 4.1.15
+    version: 4.1.14
     deprecated: '[WARNING] Use 4.1.14 instead of 4.1.15, reason: https://github.com/DefinitelyTyped/DefinitelyTyped/issues/58445'
     dependencies:
       '@types/cookiejar': registry.npmmirror.com/@types/cookiejar/2.1.2
@@ -10938,6 +10965,13 @@ packages:
       process-nextick-args: registry.npmmirror.com/process-nextick-args/2.0.1
       readable-stream: registry.npmmirror.com/readable-stream/2.3.7
     dev: true
+
+  registry.npmmirror.com/cluster-key-slot/1.1.0:
+    resolution: {integrity: sha512-2Nii8p3RwAPiFwsnZvukotvow2rIHM+yQ6ZcBXGHdniadkYGZYiGmkHJIbZPIV9nfv7m/U1IPMVVcAhoWFeklw==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/cluster-key-slot/-/cluster-key-slot-1.1.0.tgz}
+    name: cluster-key-slot
+    version: 1.1.0
+    engines: {node: '>=0.10.0'}
+    dev: false
 
   registry.npmmirror.com/co/4.6.0:
     resolution: {integrity: sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/co/-/co-4.6.0.tgz}
@@ -16354,6 +16388,25 @@ packages:
     version: 3.0.1
     engines: {node: '>=8'}
 
+  registry.npmmirror.com/ioredis/5.2.2:
+    resolution: {integrity: sha512-wryKc1ur8PcCmNwfcGkw5evouzpbDXxxkMkzPK8wl4xQfQf7lHe11Jotell5ikMVAtikXJEu/OJVaoV51BggRQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/ioredis/-/ioredis-5.2.2.tgz}
+    name: ioredis
+    version: 5.2.2
+    engines: {node: '>=12.22.0'}
+    dependencies:
+      '@ioredis/commands': registry.npmmirror.com/@ioredis/commands/1.2.0
+      cluster-key-slot: registry.npmmirror.com/cluster-key-slot/1.1.0
+      debug: registry.npmmirror.com/debug/4.3.4
+      denque: registry.npmmirror.com/denque/2.1.0
+      lodash.defaults: registry.npmmirror.com/lodash.defaults/4.2.0
+      lodash.isarguments: registry.npmmirror.com/lodash.isarguments/3.1.0
+      redis-errors: registry.npmmirror.com/redis-errors/1.2.0
+      redis-parser: registry.npmmirror.com/redis-parser/3.0.0
+      standard-as-callback: registry.npmmirror.com/standard-as-callback/2.1.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   registry.npmmirror.com/ip/1.1.8:
     resolution: {integrity: sha512-PuExPYUiu6qMBQb4l06ecm6T6ujzhmh+MeJcW9wa89PoAz5pvd4zPgN5WJV104mb6S2T1AwNIAaB70JNrLQWhg==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/ip/-/ip-1.1.8.tgz}
     name: ip
@@ -18675,6 +18728,12 @@ packages:
     name: lodash.debounce
     version: 4.0.8
 
+  registry.npmmirror.com/lodash.defaults/4.2.0:
+    resolution: {integrity: sha512-qjxPLHd3r5DnsdGacqOMU6pb/avJzdh9tFX2ymgoZE27BmjXrNy/y4LoaiTeAb+O3gL8AfpJGtqfX/ae2leYYQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/lodash.defaults/-/lodash.defaults-4.2.0.tgz}
+    name: lodash.defaults
+    version: 4.2.0
+    dev: false
+
   registry.npmmirror.com/lodash.get/4.4.2:
     resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/lodash.get/-/lodash.get-4.4.2.tgz}
     name: lodash.get
@@ -18691,6 +18750,12 @@ packages:
     resolution: {integrity: sha512-W3Bx6mdkRTGtlJISOvVD/lbqjTlPPUDTMnlXZFnVwi9NKJ6tiAk6LVdlhZMm17VZisqhKcgzpO5Wz91PCt5b0w==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/lodash.includes/-/lodash.includes-4.3.0.tgz}
     name: lodash.includes
     version: 4.3.0
+    dev: false
+
+  registry.npmmirror.com/lodash.isarguments/3.1.0:
+    resolution: {integrity: sha512-chi4NHZlZqZD18a0imDHnZPrDeBbTtVN7GXMwuGdRH9qotxAjYs3aVLKc7zNOG9eddR5Ksd8rvFEBc9SsggPpg==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/lodash.isarguments/-/lodash.isarguments-3.1.0.tgz}
+    name: lodash.isarguments
+    version: 3.1.0
     dev: false
 
   registry.npmmirror.com/lodash.isarray/4.0.0:
@@ -23929,6 +23994,22 @@ packages:
       esprima: registry.npmmirror.com/esprima/4.0.1
     dev: false
 
+  registry.npmmirror.com/redis-errors/1.2.0:
+    resolution: {integrity: sha512-1qny3OExCf0UvUV/5wpYKf2YwPcOqXzkwKKSmKHiE6ZMQs5heeE/c8eXK+PNllPvmjgAbfnsbpkGZWy8cBpn9w==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/redis-errors/-/redis-errors-1.2.0.tgz}
+    name: redis-errors
+    version: 1.2.0
+    engines: {node: '>=4'}
+    dev: false
+
+  registry.npmmirror.com/redis-parser/3.0.0:
+    resolution: {integrity: sha512-DJnGAeenTdpMEH6uAJRK/uiyEIH9WVsUmoLwzudwGJUwZPp80PDBWPHXSAGNPwNvIXAbe7MSUB1zQFugFml66A==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/redis-parser/-/redis-parser-3.0.0.tgz}
+    name: redis-parser
+    version: 3.0.0
+    engines: {node: '>=4'}
+    dependencies:
+      redis-errors: registry.npmmirror.com/redis-errors/1.2.0
+    dev: false
+
   registry.npmmirror.com/redux-immutable/3.1.0:
     resolution: {integrity: sha512-1W+0w6jKurzRnLLpYXRSOgaBTDpJthbnFJkkRei7598uNkiRYn5BZZ4QcGDX2I5Sin8L7W3hOHzQ9ne0oO8y8A==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/redux-immutable/-/redux-immutable-3.1.0.tgz}
     name: redux-immutable
@@ -25653,6 +25734,12 @@ packages:
       react: registry.npmmirror.com/react/17.0.2
     dev: true
 
+  registry.npmmirror.com/standard-as-callback/2.1.0:
+    resolution: {integrity: sha512-qoRRSyROncaz1z0mvYqIE4lCd9p2R90i6GxW3uZv5ucSu8tU7B5HXUP1gG8pVZsYNVaXjk8ClXHPttLyxAL48A==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/standard-as-callback/-/standard-as-callback-2.1.0.tgz}
+    name: standard-as-callback
+    version: 2.1.0
+    dev: false
+
   registry.npmmirror.com/static-extend/0.1.2:
     resolution: {integrity: sha512-72E9+uLc27Mt718pMHt9VMNiAL4LMsmDbBva8mxWUCkT07fSzEGMYUCk0XWY6lp0j6RBAG4cJ3mWuZv2OE3s0g==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/static-extend/-/static-extend-0.1.2.tgz}
     name: static-extend
@@ -27178,7 +27265,7 @@ packages:
     name: typedarray
     version: 0.0.6
 
-  registry.npmmirror.com/typeorm/0.3.7_mysql2@2.3.3+ts-node@10.9.1:
+  registry.npmmirror.com/typeorm/0.3.7_5e0ef54e8c6c608b7634fbbe433b526f:
     resolution: {integrity: sha512-MsPJeP6Zuwfe64c++l80+VRqpGEGxf0CkztIEnehQ+CMmQPSHjOnFbFxwBuZ2jiLqZTjLk2ZqQdVF0RmvxNF3Q==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/typeorm/-/typeorm-0.3.7.tgz}
     id: registry.npmmirror.com/typeorm/0.3.7
     name: typeorm
@@ -27248,6 +27335,7 @@ packages:
       debug: registry.npmmirror.com/debug/4.3.4
       dotenv: registry.npmmirror.com/dotenv/16.0.1
       glob: registry.npmmirror.com/glob/7.2.3
+      ioredis: registry.npmmirror.com/ioredis/5.2.2
       js-yaml: registry.npmmirror.com/js-yaml/4.1.0
       mkdirp: registry.npmmirror.com/mkdirp/1.0.4
       mysql2: registry.npmmirror.com/mysql2/2.3.3

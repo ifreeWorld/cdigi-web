@@ -8,6 +8,20 @@ pnpm start:server
 pnpm start:client
 ```
 
+没有全局安装 rush 的情况下，可以使用下面的方式来执行 rush 的命令
+
+等效于 rush install
+
+```bash
+node common/scripts/install-run-rush.js install
+```
+
+等效于 rush update
+
+```bash
+node common/scripts/install-run-rush.js update
+```
+
 ## 代码管理
 
 代码仓库管理采用 monorepo 的方式，主要使用 [rush](https://rushjs.io/zh-cn/pages/intro/get_started/) + [pnpm](https://pnpm.io/zh/installation) 的方案

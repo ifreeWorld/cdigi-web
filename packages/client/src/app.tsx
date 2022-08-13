@@ -1,14 +1,16 @@
 import type { Settings as LayoutSettings } from '@ant-design/pro-layout';
-import { SettingDrawer } from '@ant-design/pro-layout';
 import { PageLoading } from '@ant-design/pro-layout';
 import type { RequestConfig, RunTimeLayoutConfig } from 'umi';
 import { history, Link } from 'umi';
-import RightContent from '@/components/RightContent';
+import { ConfigProvider } from 'antd';
 import Footer from '@/components/Footer';
 import { currentUser as queryCurrentUser } from './services/ant-design-pro/api';
 import { BookOutlined, LinkOutlined } from '@ant-design/icons';
+import locale from 'antd/es/locale/zh_CN';
 import defaultSettings from '../config/defaultSettings';
 import { errorHandler, requestInterceptors, responseInterceptors } from './utils/request';
+import DateSetting from './components/DateSetting';
+// import RightContent from './components/RightContent';
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
@@ -86,9 +88,10 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     childrenRender: (children, props) => {
       // if (initialState?.loading) return <PageLoading />;
       return (
-        <>
+        <ConfigProvider locale={locale}>
+          {!props.location?.pathname?.includes('/login') && <DateSetting />}
           {children}
-          {!props.location?.pathname?.includes('/login') && (
+          {/* {!props.location?.pathname?.includes('/login') && (
             <SettingDrawer
               disableUrlParams
               enableDarkTheme
@@ -100,8 +103,8 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
                 }));
               }}
             />
-          )}
-        </>
+          )} */}
+        </ConfigProvider>
       );
     },
     ...initialState?.settings,

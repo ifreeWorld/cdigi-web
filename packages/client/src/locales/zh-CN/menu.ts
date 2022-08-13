@@ -55,4 +55,8 @@ export default {
   'menu.customer.list': '用户列表',
   'menu.customer.store': '门店列表',
   'menu.customer.tag': '标签管理',
+  // 自定义
+  'menu.dataimport': '数据输入',
+  'menu.dataimport.product': '产品数据输入',
+  'menu.dataimport.channel': '渠道数据输入',
 };

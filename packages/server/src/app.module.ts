@@ -1,6 +1,7 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { RedisModule } from '@liaoliaots/nestjs-redis';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ORM_CONFIG } from './constant/app.config';
@@ -9,6 +10,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { TagModule } from './modules/tag/tag.module';
 import { StoreModule } from './modules/store/store.module';
 import { CustomerModule } from './modules/customer/customer.module';
+import { ConfigModule } from './modules/config/config.module';
+import { REDIS_CONFIG } from './constant/app.config';
 
 @Module({
   imports: [
@@ -24,6 +27,15 @@ import { CustomerModule } from './modules/customer/customer.module';
     TagModule,
     CustomerModule,
     StoreModule,
+    ConfigModule,
+    RedisModule.forRoot({
+      config: {
+        port: REDIS_CONFIG.port,
+        host: REDIS_CONFIG.host,
+        password: REDIS_CONFIG.password,
+        username: REDIS_CONFIG.username,
+      },
+    }),
   ],
   providers: [AppService],
   controllers: [AppController],

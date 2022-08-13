@@ -43,7 +43,9 @@
     "yargs": "~17.5.1",
     "dayjs": "~1.11.4",
     "@nestjs/swagger": "~6.0.4",
-    "swagger-ui-express": "~4.5.0"
+    "swagger-ui-express": "~4.5.0",
+    "@liaoliaots/nestjs-redis": "~9.0.1",
+    "ioredis": "~5.2.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",
