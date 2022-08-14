@@ -11,6 +11,8 @@ import { TagModule } from './modules/tag/tag.module';
 import { StoreModule } from './modules/store/store.module';
 import { CustomerModule } from './modules/customer/customer.module';
 import { ConfigModule } from './modules/config/config.module';
+import { ProductModule } from './modules/product/product.module';
+import { StockModule } from './modules/stock/stock.module';
 import { REDIS_CONFIG } from './constant/app.config';
 
 @Module({
@@ -28,6 +30,8 @@ import { REDIS_CONFIG } from './constant/app.config';
     CustomerModule,
     StoreModule,
     ConfigModule,
+    ProductModule,
+    StockModule,
     RedisModule.forRoot({
       config: {
         port: REDIS_CONFIG.port,

@@ -28,7 +28,7 @@ export async function getCustomer(
     ...(options || {}),
   });
 }
-/** 获取标签 POST /api/customer/all */
+/** 获取全部用户 POST /api/customer/all */
 export async function getAllCustomer(params: { customerType?: CustomerType }) {
   return request<ResultSuccessPromise<CustomerListItem[]>>('/api/customer/all', {
     params: {

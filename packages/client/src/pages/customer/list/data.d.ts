@@ -1,4 +1,5 @@
 import type { CustomerTag } from '../tag/data';
+import type { CustomerType } from '../../../types/common';
 
 export interface CustomerListItem {
   id: number;

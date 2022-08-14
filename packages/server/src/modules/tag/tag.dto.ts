@@ -5,12 +5,9 @@ import { BaseResult } from 'src/interface/base.interface';
 
 export class SearchDto extends PaginationDto {
   tagName?: TagEntity['tagName'];
-  customerType?: TagEntity['customerType'];
 }
 
-export class TagSearchAllDto {
-  customerType?: TagEntity['customerType'];
-}
+export class TagSearchAllDto {}
 export class TagCreateDto {
   @IsNotEmpty({
     message: '标签名称不能为空',
@@ -21,11 +18,6 @@ export class TagCreateDto {
     message: '标签名称不能为空',
   })
   tagColor: TagEntity['tagColor'];
-
-  @IsNotEmpty({
-    message: '标签类型不能为空',
-  })
-  customerType: TagEntity['customerType'];
 }
 export class TagUpdateDto extends TagCreateDto {
   @IsNotEmpty({

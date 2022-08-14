@@ -1,36 +1,36 @@
 import { Controller, Post, Get, Body, Query, UseGuards } from '@nestjs/common';
 import { ApiOkResponse, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../decorators';
-import { TagService } from './tag.service';
+import { ProductService } from './product.service';
 import { Pager } from '../../interface';
 import { JwtGuard } from '../../guards';
 import { getSkip } from '../../utils';
 import {
   SearchDto,
-  TagListResult,
-  TagCreateDto,
-  TagUpdateDto,
-  TagDeleteDto,
-  TagIdResult,
-  TagDataResult,
-} from './tag.dto';
-import { TagEntity } from './tag.entity';
+  ProductListResult,
+  ProductCreateDto,
+  ProductUpdateDto,
+  ProductDeleteDto,
+  ProductIdResult,
+  ProductDataResult,
+} from './product.dto';
+import { ProductEntity } from './product.entity';
 
 @ApiBearerAuth()
-@ApiTags('标签')
-@Controller('tag')
-export class TagController {
-  constructor(private tagService: TagService) {}
+@ApiTags('产品')
+@Controller('product')
+export class ProductController {
+  constructor(private productService: ProductService) {}
 
   /** 标签列表 */
   @UseGuards(JwtGuard)
   @Get('/list')
   @ApiOkResponse({
-    type: TagListResult,
+    type: ProductListResult,
   })
-  async find(@Query() query: SearchDto): Promise<Pager<TagEntity>> {
+  async find(@Query() query: SearchDto): Promise<Pager<ProductEntity>> {
     const { current, pageSize } = query;
-    const [list, total] = await this.tagService.find(
+    const [list, total] = await this.productService.find(
       getSkip(current, pageSize),
       pageSize,
       query,
@@ -45,10 +45,10 @@ export class TagController {
   @UseGuards(JwtGuard)
   @Get('/all')
   @ApiOkResponse({
-    type: TagDataResult,
+    type: ProductDataResult,
   })
-  async findAll(): Promise<TagEntity[]> {
-    const list = await this.tagService.findAll();
+  async findAll(@Query() query: SearchDto): Promise<ProductEntity[]> {
+    const list = await this.productService.findAll(query);
     return list;
   }
 
@@ -56,13 +56,13 @@ export class TagController {
   @UseGuards(JwtGuard)
   @Post('/add')
   @ApiOkResponse({
-    type: TagIdResult,
+    type: ProductIdResult,
   })
   async insert(
-    @Body() body: TagCreateDto,
+    @Body() body: ProductCreateDto,
     @CurrentUser() currentUser,
   ): Promise<number> {
-    return this.tagService.insert({
+    return this.productService.insert({
       ...body,
       creatorId: currentUser.id,
     });
@@ -72,10 +72,10 @@ export class TagController {
   @UseGuards(JwtGuard)
   @Post('/update')
   @ApiOkResponse({
-    type: TagIdResult,
+    type: ProductIdResult,
   })
-  async update(@Body() body: TagUpdateDto): Promise<number> {
-    return this.tagService.update(body.id, body);
+  async update(@Body() body: ProductUpdateDto): Promise<number> {
+    return this.productService.update(body.id, body);
   }
 
   /**
@@ -84,9 +84,9 @@ export class TagController {
   @UseGuards(JwtGuard)
   @Post('/delete')
   @ApiOkResponse({
-    type: TagIdResult,
+    type: ProductIdResult,
   })
-  async delete(@Body() { ids }: TagDeleteDto) {
-    return this.tagService.delete(ids);
+  async delete(@Body() { ids }: ProductDeleteDto) {
+    return this.productService.delete(ids);
   }
 }

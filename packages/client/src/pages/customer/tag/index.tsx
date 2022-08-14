@@ -6,7 +6,6 @@ import { PageContainer } from '@ant-design/pro-layout';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import type { CustomerTag } from './data';
-import { customerTypeMap } from '../../../common';
 import type { TablePagination } from '../../../types/common';
 import OperationModal from './components/OperationModal';
 import { getTag, addTag, updateTag, deleteTag } from './service';
@@ -70,12 +69,6 @@ const TableList: React.FC = () => {
       render: (text, record) => <Tag color={record.tagColor}>{record.tagName}</Tag>,
     },
     {
-      title: '标签类型',
-      dataIndex: 'customerType',
-      valueType: 'select',
-      valueEnum: customerTypeMap,
-    },
-    {
       title: '操作',
       dataIndex: 'option',
       valueType: 'option',
@@ -89,7 +82,8 @@ const TableList: React.FC = () => {
               id: record.id,
               tagName: record.tagName,
               tagColor: record.tagColor,
-              customerType: record.customerType,
+              // @ts-ignore
+              customerType: String(record.customerType),
             });
           }}
         >
@@ -100,6 +94,7 @@ const TableList: React.FC = () => {
           onClick={() => {
             if (record.customers.length > 0) {
               const name = record.customers.map((item) => item.customerName).join('、');
+              // TODO products
               message.warning(
                 `${record.tagName}这个标签已经绑定了${name}，如需删除，请先删除绑定关系`,
                 3,

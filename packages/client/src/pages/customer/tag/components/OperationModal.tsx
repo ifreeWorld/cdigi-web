@@ -1,8 +1,7 @@
 import type { FC } from 'react';
-import { ModalForm, ProFormSelect, ProFormText, ProFormColorPicker } from '@ant-design/pro-form';
+import { ModalForm, ProFormText, ProFormColorPicker } from '@ant-design/pro-form';
 import { isEmpty } from 'lodash';
 import type { CustomerTag } from '../data.d';
-import { customerTypeMap } from '../../../../common';
 
 type OperationModalProps = {
   visible: boolean;
@@ -61,14 +60,6 @@ const OperationModal: FC<OperationModalProps> = (props) => {
             },
           ]}
           placeholder="请输入标签名称"
-        />
-        <ProFormSelect
-          name="customerType"
-          label="标签类型"
-          rules={[{ required: true, message: '请选择标签类型' }]}
-          valueEnum={customerTypeMap}
-          placeholder="请选择标签类型"
-          disabled={opType === 'edit'}
         />
         <ProFormColorPicker name="tagColor" label="标签颜色" initialValue={'#2db7f5'} />
       </>

@@ -127,6 +127,10 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "@types/multer",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "@types/node",
       "allowedCategories": [ "production" ]
     },
@@ -468,6 +472,10 @@
     },
     {
       "name": "umi-serve",
+      "allowedCategories": [ "production" ]
+    },
+    {
+      "name": "xlsx",
       "allowedCategories": [ "production" ]
     },
     {

@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import * as validator from 'class-validator';
 import { TagEntity } from './tag.entity';
-import { CustomerEntity } from '../customer/customer.entity';
 import { SearchDto, TagCreateDto, TagUpdateDto } from './tag.dto';
 import { ERROR } from 'src/constant/error';
 import { indexOfLike } from '../../utils';
@@ -24,12 +23,9 @@ export class TagService {
     query: SearchDto,
   ): Promise<[TagEntity[], number]> {
     const where: FindOptionsWhere<TagEntity> = {};
-    const { tagName, customerType } = query;
+    const { tagName } = query;
     if (validator.isNotEmpty(tagName)) {
       where.tagName = indexOfLike(tagName);
-    }
-    if (validator.isNotEmpty(customerType)) {
-      where.customerType = customerType;
     }
     return await this.repository.findAndCount({
       where: where,
@@ -37,6 +33,7 @@ export class TagService {
       skip: skip,
       relations: {
         customers: true,
+        products: true,
       },
     });
   }
@@ -44,17 +41,11 @@ export class TagService {
   /**
    * 全量查询
    */
-  async findAll(
-    customerType: CustomerEntity['customerType'],
-  ): Promise<TagEntity[]> {
-    const where: FindOptionsWhere<TagEntity> = {};
-    if (validator.isNotEmpty(customerType)) {
-      where.customerType = customerType;
-    }
+  async findAll(): Promise<TagEntity[]> {
     return await this.repository.find({
-      where: where,
       relations: {
         customers: false,
+        products: false,
       },
     });
   }

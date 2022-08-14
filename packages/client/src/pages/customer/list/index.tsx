@@ -123,7 +123,8 @@ const TableList: React.FC = () => {
             setCurrentRow({
               id: record.id,
               customerName: record.customerName,
-              customerType: record.customerType,
+              // @ts-ignore
+              customerType: String(record.customerType),
               country: record.country,
               region: record.region,
               email: record.email,

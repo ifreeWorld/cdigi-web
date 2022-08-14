@@ -4,18 +4,16 @@ import { Tag } from 'antd';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import { ModalForm, ProFormSelect, ProFormText } from '@ant-design/pro-form';
 import { isEmpty } from 'lodash';
-import type { CustomerListItem } from '../data.d';
-import type { CustomerTag } from '../../tag/data.d';
-import { customerTypeMap } from '../../../../common';
+import type { ProductListItem } from '../data.d';
+import type { CustomerTag } from '../../../customer/tag/data.d';
 
 type OperationModalProps = {
   visible: boolean;
-  current: Partial<CustomerListItem> | undefined;
+  current: Partial<ProductListItem> | undefined;
   onCancel: () => void;
-  onSubmit: (values: CustomerListItem) => void;
+  onSubmit: (values: ProductListItem) => void;
   allTagList: CustomerTag[] | undefined;
-  allCustomerList: CustomerListItem[] | undefined;
-  allCustomerNames: string[] | undefined;
+  allProductNames: string[] | undefined;
 };
 
 const OperationModal: FC<OperationModalProps> = (props) => {
@@ -24,8 +22,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
     visible,
     current,
     allTagList = [],
-    allCustomerList = [],
-    allCustomerNames = [],
+    allProductNames = [],
     onCancel,
     onSubmit,
     children,
@@ -57,7 +54,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
   };
 
   return (
-    <ModalForm<CustomerListItem>
+    <ModalForm<ProductListItem>
       formRef={formRef}
       visible={visible}
       title={`${opType === 'add' ? '添加' : '编辑'}客户`}
@@ -76,7 +73,6 @@ const OperationModal: FC<OperationModalProps> = (props) => {
       initialValues={{
         ...current,
         tags: current?.tags?.map((item) => item.id),
-        parent: current?.parent?.map((item) => item.id),
       }}
       trigger={<>{children}</>}
       modalProps={{
@@ -84,7 +80,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
         destroyOnClose: true,
       }}
       onValuesChange={(changeValues) => {
-        if (changeValues.customerType) {
+        if (changeValues.productType) {
           formRef?.current?.setFieldsValue?.({
             tags: [],
             parent: [],
@@ -94,17 +90,17 @@ const OperationModal: FC<OperationModalProps> = (props) => {
     >
       <>
         <ProFormText
-          name="customerName"
-          label="用户名称"
+          name="productName"
+          label="产品型号"
           rules={[
-            { required: true, message: '请输入用户名称' },
+            { required: true, message: '请输入产品型号' },
             {
               validator: async (rule, value) => {
-                if (opType === 'add' && allCustomerNames.includes(value)) {
+                if (opType === 'add' && allProductNames.includes(value)) {
                   throw new Error('命名重复');
                 } else if (
                   opType === 'edit' &&
-                  allCustomerNames.filter((item) => item !== current?.customerName).includes(value)
+                  allProductNames.filter((item) => item !== current?.productName).includes(value)
                 ) {
                   throw new Error('命名重复');
                 }
@@ -114,31 +110,29 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           placeholder="请输入"
           disabled={opType === 'edit'}
         />
-        <ProFormSelect
-          name="customerType"
-          label="用户类型"
-          rules={[{ required: true, message: '请选择用户类型' }]}
-          valueEnum={customerTypeMap}
-          placeholder="请选择用户类型"
-          disabled={opType === 'edit'}
+        <ProFormText
+          name="vendorName"
+          label="品牌"
+          rules={[{ required: true, message: '请输入品牌' }]}
+          placeholder="请输入品牌"
         />
         <ProFormText
-          name="country"
-          label="国家"
-          rules={[{ required: true, message: '请输入国家' }]}
-          placeholder="请输入国家"
+          name="categoryFirstName"
+          label="一级分类"
+          rules={[{ required: true, message: '请输入一级分类' }]}
+          placeholder="请输入一级分类"
         />
         <ProFormText
-          name="region"
-          label="区域"
-          rules={[{ required: true, message: '请输入区域' }]}
-          placeholder="请输入区域"
+          name="categorySecondName"
+          label="二级分类"
+          rules={[{ required: true, message: '请输入二级分类' }]}
+          placeholder="请输入二级分类"
         />
         <ProFormText
-          name="email"
-          label="邮箱"
-          rules={[{ required: true, message: '请输入邮箱' }]}
-          placeholder="请输入邮箱"
+          name="categoryThirdName"
+          label="三级分类"
+          rules={[{ required: true, message: '请输入三级分类' }]}
+          placeholder="请输入三级分类"
         />
         <ProFormSelect
           name="tags"
@@ -146,7 +140,6 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           label="标签"
           tooltip="请先选择用户类型，再选择标签"
           placeholder="请先选择用户类型，再选择标签"
-          dependencies={['customerType']}
           transform={(values: number[], name) => {
             return {
               [name]: values.map((id) => ({
@@ -154,11 +147,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
               })),
             };
           }}
-          request={async (params) => {
-            const { customerType } = params;
-            if (!customerType) {
-              return [];
-            }
+          request={async () => {
             const res = allTagList.map((item) => {
               return {
                 label: item.tagName,
@@ -168,33 +157,6 @@ const OperationModal: FC<OperationModalProps> = (props) => {
             return res;
           }}
           fieldProps={{ tagRender }}
-        />
-        <ProFormSelect
-          name="parent"
-          mode="tags"
-          label="所属用户"
-          tooltip="请先选择用户类型，再选择所属用户"
-          placeholder="请先选择用户类型，再选择所属用户"
-          transform={(value, name) => {
-            return {
-              [name]: value.map((v: number) => ({
-                id: v,
-              })),
-            };
-          }}
-          dependencies={['customerType']}
-          request={async (params) => {
-            const { customerType } = params;
-            const res = allCustomerList
-              .filter((item) => item.customerType < customerType)
-              .map((item) => {
-                return {
-                  label: item.customerName,
-                  value: item.id,
-                };
-              });
-            return res;
-          }}
         />
       </>
     </ModalForm>
