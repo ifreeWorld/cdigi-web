@@ -38,6 +38,10 @@ export class StoreDeleteDto {
   ids: StoreEntity['id'][];
 }
 
+export class StoreDataResult extends BaseResult {
+  data: StoreEntity[];
+}
+
 export class StoreListResult extends BaseResult {
   data: {
     list: StoreEntity[];

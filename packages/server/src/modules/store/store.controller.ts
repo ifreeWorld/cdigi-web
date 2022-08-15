@@ -16,6 +16,7 @@ import { getSkip } from '../../utils';
 import {
   SearchDto,
   StoreListResult,
+  StoreDataResult,
   StoreCreateDto,
   StoreUpdateDto,
   StoreDeleteDto,
@@ -46,6 +47,17 @@ export class StoreController {
       list: list,
       total: total,
     };
+  }
+
+  /** 全量列表 */
+  @UseGuards(JwtGuard)
+  @Get('/all')
+  @ApiOkResponse({
+    type: StoreDataResult,
+  })
+  async findAll(@Query() query: SearchDto): Promise<StoreEntity[]> {
+    const list = await this.storeService.findAll(query);
+    return list;
   }
 
   /** 更新 */

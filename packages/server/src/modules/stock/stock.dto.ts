@@ -7,6 +7,12 @@ export class SearchDto extends PaginationDto {
   week?: StockEntity['week'];
 }
 
+export class StockParseDto {
+  weekStartDate: StockEntity['weekStartDate'];
+  weekEndDate: StockEntity['weekEndDate'];
+  week: StockEntity['week'];
+}
+
 // export class StockCreateDto {
 //   @IsNotEmpty({
 //     message: '产品型号不能为空',

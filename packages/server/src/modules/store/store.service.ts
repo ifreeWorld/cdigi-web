@@ -44,6 +44,26 @@ export class StoreService {
   }
 
   /**
+   * 全量查询
+   */
+  async findAll(query: SearchDto): Promise<StoreEntity[]> {
+    const where: FindOptionsWhere<StoreEntity> = {};
+    const { storeName, storeAddress, customer } = query;
+    if (validator.isNotEmpty(storeName)) {
+      where.storeName = indexOfLike(storeName);
+    }
+    if (validator.isNotEmpty(storeAddress)) {
+      where.storeAddress = indexOfLike(storeAddress);
+    }
+    if (validator.isNotEmpty(customer)) {
+      where.customer = customer;
+    }
+    return await this.repository.find({
+      where: where,
+    });
+  }
+
+  /**
    * 新增
    */
   async insert(

@@ -26,12 +26,4 @@ export default class ChannelEntity extends BaseEntity {
     comment: '周。格式：2022-12',
   })
   week: string;
-
-  /** 日 */
-  @Column({
-    name: 'date',
-    type: 'date',
-    comment: '日。格式：2022-12-01，用户上传数据中带时间才会有',
-  })
-  date?: Date;
 }

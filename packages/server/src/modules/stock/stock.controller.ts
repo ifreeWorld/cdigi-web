@@ -25,17 +25,22 @@ import { Pager } from '../../interface';
 import { JwtGuard } from '../../guards';
 import { getSkip } from '../../utils';
 import { FileUploadDto } from '../../dto';
+import { CustomResponse, ErrorConstant } from 'src/constant/error';
 import {
   SearchDto,
   StockListResult,
-  // StockCreateDto,
-  // StockUpdateDto,
+  StockParseDto,
   StockDeleteDto,
   StockIdResult,
   StockDataResult,
 } from './stock.dto';
 import { StockEntity } from './stock.entity';
-import { mimeType, stockSheetName } from '../../constant/file';
+import {
+  mimeType,
+  stockSheetName,
+  saleSheetName,
+  onPassageStockSheetName,
+} from '../../constant/file';
 
 @ApiBearerAuth()
 @ApiTags('库存')
@@ -77,9 +82,23 @@ export class StockController {
   @UseGuards(JwtGuard)
   @Post('/parseFile')
   @ApiConsumes('multipart/form-data')
+  // @ApiBody({
+  //   description: 'List of cats',
+  //   type: FileUploadDto,
+  // })
   @ApiBody({
-    description: 'List of cats',
-    type: FileUploadDto,
+    schema: {
+      type: 'object',
+      properties: {
+        weekStartDate: { type: 'string' },
+        weekEndDate: { type: 'string' },
+        week: { type: 'string' },
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
   })
   @ApiOkResponse({
     type: StockIdResult,
@@ -96,11 +115,28 @@ export class StockController {
       }),
     )
     file: Express.Multer.File,
+    @Body() body: StockParseDto,
   ) {
+    console.log(body);
     const workbook = read(file.buffer, { type: 'buffer' });
-    workbook.SheetNames.forEach((sheetName) => {
-      const sheet = workbook.Sheets[sheetName];
-    });
+    const { SheetNames: sheetNames, Sheets: sheets } = workbook;
+    let flag = 0;
+
+    for (let i = 0; i < sheetNames.length; i++) {
+      const sheetName = sheetNames[i];
+      const sheet = sheets[sheetName];
+      if (sheetName === stockSheetName) {
+        flag = 1;
+        const res = await this.stockService.parseSheet(sheet);
+        if (res instanceof ErrorConstant) {
+          return res;
+        }
+      }
+      // TODO 销售、在途库存
+    }
+    if (!flag) {
+      throw new CustomResponse('sheet页名称不正确');
+    }
     return true;
   }
 
