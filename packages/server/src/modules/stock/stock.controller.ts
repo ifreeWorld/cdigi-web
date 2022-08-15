@@ -35,7 +35,7 @@ import {
   StockDataResult,
 } from './stock.dto';
 import { StockEntity } from './stock.entity';
-import { mimeType, stockHeaderMap } from '../../constant/file';
+import { mimeType, stockSheetName } from '../../constant/file';
 
 @ApiBearerAuth()
 @ApiTags('库存')
@@ -100,18 +100,6 @@ export class StockController {
     const workbook = read(file.buffer, { type: 'buffer' });
     workbook.SheetNames.forEach((sheetName) => {
       const sheet = workbook.Sheets[sheetName];
-      const data = utils.sheet_to_json(sheet);
-      const result = data.map((item) => {
-        const temp = {};
-        for (const oldKey in stockHeaderMap) {
-          if (item.hasOwnProperty(oldKey)) {
-            const newKey = stockHeaderMap[oldKey];
-            temp[newKey] = item[oldKey];
-          }
-        }
-        return temp;
-      });
-      console.log(JSON.stringify(result));
     });
     return true;
   }
