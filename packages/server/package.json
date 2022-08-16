@@ -46,7 +46,8 @@
     "swagger-ui-express": "~4.5.0",
     "@liaoliaots/nestjs-redis": "~9.0.1",
     "ioredis": "~5.2.2",
-    "xlsx": "file:vendor\\xlsx-0.18.10.tgz"
+    "xlsx": "file:vendor\\xlsx-0.18.10.tgz",
+    "moment": "~2.29.4"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",

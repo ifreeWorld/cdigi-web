@@ -1,10 +1,12 @@
 import { ValidationPipe, INestApplication } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NestFactory } from '@nestjs/core';
+import * as fs from 'fs';
 import { AppModule } from './app.module';
 import { appLogger } from './logger';
 import { AppExceptionFilter } from './filter/exception.filter';
 import { ErrorsInterceptor, TransformInterceptor } from './interceptors';
+import { tmpPath } from './constant/file';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -32,6 +34,11 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('api', app, document);
+
+  if (!fs.existsSync(tmpPath)) {
+    fs.mkdirSync(tmpPath);
+    appLogger.log(`create tmp path: ${tmpPath}`);
+  }
   await app.listen(30000);
 }
 bootstrap();

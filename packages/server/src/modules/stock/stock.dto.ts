@@ -1,6 +1,7 @@
 import { IsNotEmpty } from 'class-validator';
 import { PaginationDto } from '../../dto';
 import { StockEntity } from './stock.entity';
+import { CustomerEntity } from '../customer/customer.entity';
 import { BaseResult } from 'src/interface/base.interface';
 
 export class SearchDto extends PaginationDto {
@@ -11,6 +12,7 @@ export class StockParseDto {
   weekStartDate: StockEntity['weekStartDate'];
   weekEndDate: StockEntity['weekEndDate'];
   week: StockEntity['week'];
+  customerId: CustomerEntity['id'];
 }
 
 // export class StockCreateDto {
@@ -58,6 +60,10 @@ export class StockListResult extends BaseResult {
 export class StockDataResult extends BaseResult {
   data: StockEntity[];
 }
+export class StockParseResult extends BaseResult {
+  data: string | boolean;
+}
+
 export class StockIdResult extends BaseResult {
   data: number;
 }

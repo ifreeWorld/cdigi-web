@@ -1,3 +1,6 @@
+import * as path from 'path';
+export const tmpPath = path.join(__dirname, '../../tmp');
+
 export const mimeType = {
   xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 };
@@ -8,7 +11,6 @@ export const stockHeaderMap = {
   '库存 - 数量': 'quantity',
   '库存 - 价格': 'price',
   '库存 - 总额': 'total',
-  '库存 - 时间': 'date',
   '库存 - 门店': 'storeName',
 };
 

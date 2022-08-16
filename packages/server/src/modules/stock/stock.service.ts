@@ -4,13 +4,16 @@ import { FindOptionsWhere, Repository, DataSource } from 'typeorm';
 import * as validator from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { WorkBook, WorkSheet, utils, write } from 'xlsx';
+import * as fs from 'fs';
+import * as moment from 'moment';
 import { StockEntity } from './stock.entity';
-import { SearchDto } from './stock.dto';
+import { SearchDto, StockParseDto } from './stock.dto';
 import { ERROR, CustomResponse, ErrorConstant } from 'src/constant/error';
 import { indexOfLike } from '../../utils';
-import { stockHeaderMap, stockSheetName } from '../../constant/file';
+import { stockHeaderMap, stockSheetName, tmpPath } from '../../constant/file';
 import { ProductService } from '../product/product.service';
 import { StoreService } from '../store/store.service';
+import { appLogger } from 'src/logger';
 
 @Injectable()
 export class StockService {
@@ -56,10 +59,18 @@ export class StockService {
     });
   }
 
+  // TODO 先校验本周有没有数据，需要返回状态true和false，false前端得提示覆盖，true前端直接调用第二个接口
+
   /**
    * 解析数据插入数据
    */
-  async parseSheet(sheet: WorkSheet): Promise<number | ErrorConstant> {
+  async parseSheet(
+    sheet: WorkSheet,
+    fileName: string,
+    body: StockParseDto,
+  ): Promise<number | ErrorConstant> {
+    const { weekStartDate, weekEndDate, week, customerId } = body;
+
     const arrs = utils.sheet_to_json<any[]>(sheet, { header: 1 });
     if (arrs.length === 0) {
       return;
@@ -77,7 +88,11 @@ export class StockService {
 
     const data = utils.sheet_to_json(sheet);
     const result = data.map((item) => {
-      const temp = {};
+      const temp: Partial<StockEntity> = {
+        weekStartDate,
+        weekEndDate,
+        week,
+      };
       for (const oldKey in stockHeaderMap) {
         if (item.hasOwnProperty(oldKey)) {
           const newKey = stockHeaderMap[oldKey];
@@ -89,7 +104,9 @@ export class StockService {
     const entities = plainToInstance(StockEntity, result);
     const allProduct = await this.productService.findAll({});
     const allProductNames = allProduct.map((item) => item.productName);
-    const allStore = await this.storeService.findAll({});
+    const allStore = await this.storeService.findAll({
+      customer: { id: customerId },
+    });
     const allStoreNames = allStore.map((item) => item.storeName);
 
     // 校验
@@ -111,7 +128,7 @@ export class StockService {
         errorsTemp.push(errMsg);
       }
 
-      // 门店名称不在系统内
+      // 门店名称不在系统内，allStoreNames是关联的经销商的门店
       if (storeName && !allStoreNames.includes(storeName)) {
         const errMsg = `位置: ${position} 门店名称"${storeName}"不在系统内`;
         errorsTemp.push(errMsg);
@@ -145,6 +162,7 @@ export class StockService {
     if (errors.length > 0) {
       const errorSheet = utils.json_to_sheet(data);
       const workbook = utils.book_new();
+      appLogger.error(errors.join('\n'));
       utils.book_append_sheet(
         workbook,
         errorSheet,
@@ -152,13 +170,22 @@ export class StockService {
       );
 
       const buf = write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      const errorFileName = `${fileName}_${moment().format(
+        'YYYY_MM_DD_hh_mm_ss',
+      )}.xlsx`;
+      const errorFilePath = `${tmpPath}/${errorFileName}`;
+      fs.writeFileSync(errorFilePath, buf);
       // TODO 将buf写入文件中，data给文件路径，文件系统可以参考https://github.com/codebrewlab/nestjs-storage，但是nestjs-storage是不支持nestjs 9的，需要测试下或者自己重写
       // TODO 一个接口只能单一职责，要么返回json数据，要么返回xlsx文件，解析的接口返回数据比较好
       // TODO 返回xlsx文件的方式可以参考https://progressivecoder.com/nestjs-file-download-stream-explained-with-examples/
-      const e = new ErrorConstant(6, '文件校验失败，详情请查看下载的文件');
+      const e = new ErrorConstant(
+        6,
+        '文件校验失败，详情请查看下载的文件',
+        errorFilePath,
+      );
       return e;
     }
-
+    // TODO 增加一个事务，先删除，再保存
     const res = await this.dataSource.manager.save(entities);
     return res.length;
   }

@@ -32,6 +32,7 @@ import {
   StockParseDto,
   StockDeleteDto,
   StockIdResult,
+  StockParseResult,
   StockDataResult,
 } from './stock.dto';
 import { StockEntity } from './stock.entity';
@@ -101,7 +102,7 @@ export class StockController {
     },
   })
   @ApiOkResponse({
-    type: StockIdResult,
+    type: StockParseResult,
   })
   @UseInterceptors(FileInterceptor('file'))
   async parseFile(
@@ -117,9 +118,9 @@ export class StockController {
     file: Express.Multer.File,
     @Body() body: StockParseDto,
   ) {
-    console.log(body);
     const workbook = read(file.buffer, { type: 'buffer' });
     const { SheetNames: sheetNames, Sheets: sheets } = workbook;
+    const fileName = Buffer.from(file.originalname, 'latin1').toString('utf8');
     let flag = 0;
 
     for (let i = 0; i < sheetNames.length; i++) {
@@ -127,13 +128,14 @@ export class StockController {
       const sheet = sheets[sheetName];
       if (sheetName === stockSheetName) {
         flag = 1;
-        const res = await this.stockService.parseSheet(sheet);
+        const res = await this.stockService.parseSheet(sheet, fileName, body);
         if (res instanceof ErrorConstant) {
           return res;
         }
       }
       // TODO 销售、在途库存
     }
+
     if (!flag) {
       throw new CustomResponse('sheet页名称不正确');
     }
