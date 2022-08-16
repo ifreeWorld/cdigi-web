@@ -21,6 +21,7 @@ import { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { read, utils } from 'xlsx';
 import { StockService } from './stock.service';
+import { CurrentUser } from '../../decorators';
 import { Pager } from '../../interface';
 import { JwtGuard } from '../../guards';
 import { getSkip } from '../../utils';
@@ -34,6 +35,7 @@ import {
   StockIdResult,
   StockParseResult,
   StockDataResult,
+  StockBooleanResult,
 } from './stock.dto';
 import { StockEntity } from './stock.entity';
 import {
@@ -79,28 +81,21 @@ export class StockController {
     return list;
   }
 
+  /** 查询本周是否有数据 */
+  @UseGuards(JwtGuard)
+  @Get('/hasData')
+  @ApiOkResponse({
+    type: StockBooleanResult,
+  })
+  async hasData(@Query() query: SearchDto): Promise<boolean> {
+    const number = await this.stockService.findCount(query);
+    return number > 0;
+  }
+
   /** 解析文件 */
   @UseGuards(JwtGuard)
   @Post('/parseFile')
   @ApiConsumes('multipart/form-data')
-  // @ApiBody({
-  //   description: 'List of cats',
-  //   type: FileUploadDto,
-  // })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        weekStartDate: { type: 'string' },
-        weekEndDate: { type: 'string' },
-        week: { type: 'string' },
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
   @ApiOkResponse({
     type: StockParseResult,
   })
@@ -117,6 +112,7 @@ export class StockController {
     )
     file: Express.Multer.File,
     @Body() body: StockParseDto,
+    @CurrentUser() currentUser,
   ) {
     const workbook = read(file.buffer, { type: 'buffer' });
     const { SheetNames: sheetNames, Sheets: sheets } = workbook;
@@ -128,7 +124,12 @@ export class StockController {
       const sheet = sheets[sheetName];
       if (sheetName === stockSheetName) {
         flag = 1;
-        const res = await this.stockService.parseSheet(sheet, fileName, body);
+        const res = await this.stockService.parseSheet(
+          sheet,
+          fileName,
+          body,
+          currentUser.id,
+        );
         if (res instanceof ErrorConstant) {
           return res;
         }
@@ -141,32 +142,6 @@ export class StockController {
     }
     return true;
   }
-
-  // /** 插入 */
-  // @UseGuards(JwtGuard)
-  // @Post('/add')
-  // @ApiOkResponse({
-  //   type: StockIdResult,
-  // })
-  // async batchInsert(
-  //   @Body() body: StockCreateDto,
-  //   @CurrentUser() currentUser,
-  // ): Promise<number> {
-  //   return this.stockService.batchInsert({
-  //     ...body,
-  //     creatorId: currentUser.id,
-  //   });
-  // }
-
-  // /** 更新 */
-  // @UseGuards(JwtGuard)
-  // @Post('/update')
-  // @ApiOkResponse({
-  //   type: StockIdResult,
-  // })
-  // async update(@Body() body: StockUpdateDto): Promise<number> {
-  //   return this.stockService.update(body.id, body);
-  // }
 
   /**
    * 删除

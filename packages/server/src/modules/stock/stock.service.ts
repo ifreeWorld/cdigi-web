@@ -59,7 +59,19 @@ export class StockService {
     });
   }
 
-  // TODO 先校验本周有没有数据，需要返回状态true和false，false前端得提示覆盖，true前端直接调用第二个接口
+  /**
+   * 全量查询数量
+   */
+  async findCount(query: SearchDto): Promise<number> {
+    const where: FindOptionsWhere<StockEntity> = {};
+    const { week } = query;
+    if (validator.isNotEmpty(week)) {
+      where.week = week;
+    }
+    return await this.repository.count({
+      where: where,
+    });
+  }
 
   /**
    * 解析数据插入数据
@@ -68,6 +80,7 @@ export class StockService {
     sheet: WorkSheet,
     fileName: string,
     body: StockParseDto,
+    creatorId: number,
   ): Promise<number | ErrorConstant> {
     const { weekStartDate, weekEndDate, week, customerId } = body;
 
@@ -92,6 +105,7 @@ export class StockService {
         weekStartDate,
         weekEndDate,
         week,
+        creatorId,
       };
       for (const oldKey in stockHeaderMap) {
         if (item.hasOwnProperty(oldKey)) {
@@ -175,51 +189,41 @@ export class StockService {
       )}.xlsx`;
       const errorFilePath = `${tmpPath}/${errorFileName}`;
       fs.writeFileSync(errorFilePath, buf);
-      // TODO 将buf写入文件中，data给文件路径，文件系统可以参考https://github.com/codebrewlab/nestjs-storage，但是nestjs-storage是不支持nestjs 9的，需要测试下或者自己重写
-      // TODO 一个接口只能单一职责，要么返回json数据，要么返回xlsx文件，解析的接口返回数据比较好
-      // TODO 返回xlsx文件的方式可以参考https://progressivecoder.com/nestjs-file-download-stream-explained-with-examples/
       const e = new ErrorConstant(
         6,
         '文件校验失败，详情请查看下载的文件',
-        errorFilePath,
+        errorFileName,
       );
       return e;
     }
-    // TODO 增加一个事务，先删除，再保存
-    const res = await this.dataSource.manager.save(entities);
+
+    // 增加一个事务，先删除，再保存
+    let res;
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      await queryRunner.manager
+        .createQueryBuilder()
+        .delete()
+        .from(StockEntity)
+        .where('week = :week', { week })
+        .execute();
+      res = await queryRunner.manager.save(entities);
+      await queryRunner.commitTransaction();
+    } catch (err) {
+      // since we have errors lets rollback the changes we made
+      appLogger.error(err);
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      // you need to release a queryRunner which was manually instantiated
+      await queryRunner.release();
+    }
+
     return res.length;
   }
 
-  // /**
-  //  * 新增
-  //  */
-  // async batchInsert(
-  //   info: StockCreateDto & {
-  //     creatorId: number;
-  //   },
-  // ): Promise<number> {
-  //   const entity = plainToInstance(StockEntity, {
-  //     ...info,
-  //   });
-  //   const res = await this.dataSource.manager.save(entity);
-  //   return res.id;
-  // }
-
-  // /** 修改 */
-  // async update(id: number, data: Partial<StockUpdateDto>): Promise<number> {
-  //   const info = await this.repository.findOneBy({
-  //     id,
-  //   });
-  //   if (!info) {
-  //     throw ERROR.RESOURCE_NOT_EXITS;
-  //   }
-  //   const entity = plainToInstance(StockEntity, {
-  //     ...info,
-  //     ...data,
-  //   });
-  //   const res = await this.dataSource.manager.save(entity);
-  //   return res.id;
-  // }
   /**
    * 根据 ids 删除
    * @param ids

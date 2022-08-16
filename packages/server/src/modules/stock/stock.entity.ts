@@ -14,15 +14,15 @@ export class StockEntity extends ChannelEntity {
   quantity: number;
 
   /** 价格 */
-  @Column({ name: 'price', comment: '价格' })
+  @Column({ name: 'price', comment: '价格', nullable: true })
   price?: number;
 
   /** 总额 */
-  @Column({ name: 'total', comment: '总价' })
+  @Column({ name: 'total', comment: '总价', nullable: true })
   total?: number;
 
   /** 门店名称 */
-  @Column({ name: 'store_name', comment: '门店名称' })
+  @Column({ name: 'store_name', comment: '门店名称', nullable: true })
   storeName?: string;
 
   // /** 日 销售才有 */

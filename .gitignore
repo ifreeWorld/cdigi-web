@@ -149,3 +149,4 @@ lerna-debug.log*
 *.build*.log
 
 cdigi-feature/
+packages/server/tmp/*

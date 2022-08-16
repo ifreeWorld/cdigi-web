@@ -1,4 +1,5 @@
 import { IsNotEmpty } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import { PaginationDto } from '../../dto';
 import { StockEntity } from './stock.entity';
 import { CustomerEntity } from '../customer/customer.entity';
@@ -13,8 +14,9 @@ export class StockParseDto {
   weekEndDate: StockEntity['weekEndDate'];
   week: StockEntity['week'];
   customerId: CustomerEntity['id'];
+  @ApiProperty({ type: 'string', format: 'binary' })
+  file?: any;
 }
-
 // export class StockCreateDto {
 //   @IsNotEmpty({
 //     message: '产品型号不能为空',
@@ -66,4 +68,8 @@ export class StockParseResult extends BaseResult {
 
 export class StockIdResult extends BaseResult {
   data: number;
+}
+
+export class StockBooleanResult extends BaseResult {
+  data: boolean;
 }

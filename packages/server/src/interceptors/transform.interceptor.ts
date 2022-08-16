@@ -1,4 +1,9 @@
-import { Injectable, NestInterceptor, ExecutionContext } from '@nestjs/common';
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  StreamableFile,
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AppException, ERROR, ErrorConstant } from '../constant/error';
@@ -33,6 +38,9 @@ export class TransformInterceptor<T>
         }
         if (data instanceof ErrorConstant) {
           throw new AppException(data);
+        }
+        if (data instanceof StreamableFile) {
+          return data;
         }
         return { code: 0, message: 'success', data: data };
       }),

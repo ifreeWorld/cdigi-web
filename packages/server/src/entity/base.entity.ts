@@ -20,7 +20,7 @@ export default class BaseEntity {
     example: 1,
     description: '创建者 id',
   })
-  @Column({ name: 'creator_id', comment: '创建者 id' })
+  @Column({ name: 'creator_id', comment: '创建者 id', nullable: true })
   creatorId: number;
 
   @ApiProperty({
