@@ -1,5 +1,6 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, ManyToOne, JoinColumn } from 'typeorm';
 import ChannelEntity from '../../entity/channel.entity';
+import { CustomerEntity } from '../customer/customer.entity';
 
 @Entity({
   name: 'tbl_stock',

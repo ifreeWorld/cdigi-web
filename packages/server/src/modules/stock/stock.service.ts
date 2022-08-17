@@ -34,12 +34,14 @@ export class StockService {
     query: SearchDto,
   ): Promise<[StockEntity[], number]> {
     const where: FindOptionsWhere<StockEntity> = {};
-    const { week, customer } = query;
+    const { week, customerId } = query;
     if (validator.isNotEmpty(week)) {
       where.week = week;
     }
-    if (validator.isNotEmpty(customer)) {
-      where.customer = customer;
+    if (validator.isNotEmpty(customerId)) {
+      where.customer = {
+        id: customerId,
+      };
     }
     return await this.repository.findAndCount({
       where: where,
@@ -53,12 +55,14 @@ export class StockService {
    */
   async findAll(query: SearchDto): Promise<StockEntity[]> {
     const where: FindOptionsWhere<StockEntity> = {};
-    const { week, customer } = query;
+    const { week, customerId } = query;
     if (validator.isNotEmpty(week)) {
       where.week = week;
     }
-    if (validator.isNotEmpty(customer)) {
-      where.customer = customer;
+    if (validator.isNotEmpty(customerId)) {
+      where.customer = {
+        id: customerId,
+      };
     }
     return await this.repository.find({
       where: where,
@@ -127,7 +131,7 @@ export class StockService {
     const allProduct = await this.productService.findAll({});
     const allProductNames = allProduct.map((item) => item.productName);
     const allStore = await this.storeService.findAll({
-      customer: { id: customerId },
+      customerId,
     });
     const allStoreNames = allStore.map((item) => item.storeName);
 

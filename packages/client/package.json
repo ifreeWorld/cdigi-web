@@ -24,7 +24,7 @@
     "serve": "umi-serve",
     "clean-cache": "rm -rf ./src/.umi/.cache",
     "start": "cross-env UMI_ENV=dev umi dev",
-    "start:dev": "cross-env REACT_APP_ENV=dev MOCK=none UMI_ENV=dev umi dev",
+    "start:dev": "cross-env NODE_OPTIONS=--max-old-space-size=8192 REACT_APP_ENV=dev MOCK=none UMI_ENV=dev umi dev",
     "start:no-mock": "cross-env MOCK=none UMI_ENV=dev umi dev",
     "start:no-ui": "cross-env UMI_UI=none UMI_ENV=dev umi dev",
     "start:pre": "cross-env REACT_APP_ENV=pre UMI_ENV=dev umi dev",

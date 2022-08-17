@@ -6,9 +6,7 @@ import { BaseResult } from 'src/interface/base.interface';
 export class SearchDto extends PaginationDto {
   storeName?: StoreEntity['storeName'];
   storeAddress?: StoreEntity['storeAddress'];
-  customer?: {
-    id: StoreEntity['customer']['id'];
-  };
+  customerId?: StoreEntity['customer']['id'];
 }
 export class StoreCreateDto {
   @IsNotEmpty({

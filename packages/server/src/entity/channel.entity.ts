@@ -1,5 +1,4 @@
 import { Column, ManyToOne, JoinColumn } from 'typeorm';
-import { ApiProperty } from '@nestjs/swagger';
 import BaseEntity from './base.entity';
 import { CustomerEntity } from '../modules/customer/customer.entity';
 
@@ -29,9 +28,7 @@ export default class ChannelEntity extends BaseEntity {
   week: string;
 
   /** 所属客户，多对一 */
-  @ManyToOne(() => CustomerEntity, (customer) => customer.stores, {
-    cascade: true,
-  })
+  @ManyToOne(() => CustomerEntity)
   @JoinColumn({
     name: 'customer_id',
   })

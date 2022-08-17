@@ -7,9 +7,7 @@ import { BaseResult } from 'src/interface/base.interface';
 
 export class SearchDto extends PaginationDto {
   week?: StockEntity['week'];
-  customer?: {
-    id: StockEntity['customer']['id'];
-  };
+  customerId?: StockEntity['customer']['id'];
 }
 
 export class StockParseDto {

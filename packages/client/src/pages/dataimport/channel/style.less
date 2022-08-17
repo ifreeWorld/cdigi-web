@@ -1,0 +1,44 @@
+.pageContainer {
+  height: 100%;
+
+  :global {
+    .ant-pro-grid-content {
+      height: calc(100% - 98px);
+
+      .ant-pro-grid-content-children {
+        height: 100%;
+
+        .ant-pro-page-container-children-content {
+          height: 100%;
+        }
+      }
+    }
+  }
+}
+
+.container {
+  display: flex;
+  height: 100%;
+}
+
+.leftTree {
+  height: 100%;
+  background-color: #fff;
+  width: 264px;
+  padding: 20px;
+
+  .treeTitle {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 18px;
+  }
+}
+
+.right {
+  margin-left: 16px;
+  height: 100%;
+  background-color: #fff;
+  width: calc(100% - 16px - 264px);
+  padding: 20px;
+  padding-top: 0;
+}

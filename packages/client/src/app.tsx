@@ -61,7 +61,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     // waterMarkProps: {
     //   content: initialState?.currentUser?.username,
     // },
-    footerRender: () => <Footer />,
+    // footerRender: () => <Footer />,
     onPageChange: () => {
       const { location } = history;
       // 如果没有登录，重定向到 login

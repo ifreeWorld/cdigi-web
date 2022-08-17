@@ -9,6 +9,7 @@ import {
 import BaseEntity from '../../entity/base.entity';
 import { TagEntity } from '../tag/tag.entity';
 import { StoreEntity } from '../store/store.entity';
+import { StockEntity } from '../stock/stock.entity';
 import { CustomerType } from '../tag/customerType.enum';
 
 @Entity({

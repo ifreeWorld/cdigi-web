@@ -23,15 +23,17 @@ export class StoreService {
     query: SearchDto,
   ): Promise<[StoreEntity[], number]> {
     const where: FindOptionsWhere<StoreEntity> = {};
-    const { storeName, storeAddress, customer } = query;
+    const { storeName, storeAddress, customerId } = query;
     if (validator.isNotEmpty(storeName)) {
       where.storeName = indexOfLike(storeName);
     }
     if (validator.isNotEmpty(storeAddress)) {
       where.storeAddress = indexOfLike(storeAddress);
     }
-    if (validator.isNotEmpty(customer)) {
-      where.customer = customer;
+    if (validator.isNotEmpty(customerId)) {
+      where.customer = {
+        id: customerId,
+      };
     }
     return await this.repository.findAndCount({
       where: where,
@@ -48,15 +50,17 @@ export class StoreService {
    */
   async findAll(query: SearchDto): Promise<StoreEntity[]> {
     const where: FindOptionsWhere<StoreEntity> = {};
-    const { storeName, storeAddress, customer } = query;
+    const { storeName, storeAddress, customerId } = query;
     if (validator.isNotEmpty(storeName)) {
       where.storeName = indexOfLike(storeName);
     }
     if (validator.isNotEmpty(storeAddress)) {
       where.storeAddress = indexOfLike(storeAddress);
     }
-    if (validator.isNotEmpty(customer)) {
-      where.customer = customer;
+    if (validator.isNotEmpty(customerId)) {
+      where.customer = {
+        id: customerId,
+      };
     }
     return await this.repository.find({
       where: where,

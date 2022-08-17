@@ -1,41 +1,93 @@
-// import { PlusOutlined } from '@ant-design/icons';
-import { DatePicker, Tree } from 'antd';
-import type { DatePickerProps } from 'antd';
-import React, { useState, useRef, useMemo } from 'react';
+import { Tree, Tabs } from 'antd';
+import type { DataNode, TreeProps } from 'antd/es/tree';
+import { useRequest } from 'umi';
+import React, { useState, useMemo } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
-import moment from 'moment';
-// import type { CustomerTag } from './data';
-// import { getTag, addTag, updateTag, deleteTag } from './service';
-const format = 'YYYY-MM-DD';
-window.moment = moment;
-const TableList: React.FC = () => {
-  const onChange = (date, dateString) => {
-    const weekStr = date.format('gggg-w');
-    const year = weekStr.split('-')[0];
-    const week = weekStr.split('-')[1];
-    const startDate = date.startOf('week').format(format);
-    const endDate = date.endOf('week').format(format);
-    console.log(date, dateString);
-    console.log('year', year);
-    console.log('week', week);
-    console.log('weekStr', weekStr);
-    console.log('startDate', startDate);
-    console.log('endDate', endDate);
+import { getAllCustomer } from '../../customer/list/service';
+import Stock from './stock';
+import styles from './style.less';
 
-    console.log(moment().year(year).week(week).startOf('week').format('YYYY-MM-DD'));
-    console.log(moment().year(year).week(week).endOf('week').format('YYYY-MM-DD'));
+const { TabPane } = Tabs;
+
+const Channel: React.FC = () => {
+  const [customerId, setCustomerId] = useState<number>(0);
+  const { data: allCustomerList } = useRequest(async () => {
+    const res = await getAllCustomer({});
+    if (res.data[0] && res.data[0].id) {
+      setCustomerId(res.data[0].id);
+    }
+    return res;
+  });
+
+  const treeData: DataNode[] = useMemo(() => {
+    const result = [
+      {
+        title: '品牌商',
+        selectable: false,
+        key: 'vendor',
+        children: [],
+      },
+      {
+        title: '代理商',
+        selectable: false,
+        key: 'disty',
+        children: [],
+      },
+      {
+        title: '经销商',
+        selectable: false,
+        key: 'dealer',
+        children: [],
+      },
+    ];
+    if (allCustomerList && allCustomerList.length > 0) {
+      allCustomerList.forEach((customer) => {
+        if (customer.customerType) {
+          const child = {
+            title: customer.customerName,
+            key: customer.id,
+            selectable: true,
+          };
+          // @ts-ignore
+          result[customer.customerType - 1].children.push(child);
+        }
+      });
+    }
+    return result;
+  }, [allCustomerList]);
+
+  const onSelect: TreeProps['onSelect'] = (selectedKeys, info) => {
+    setCustomerId(info.node.key as number);
   };
 
-  const customWeekStartEndFormat: DatePickerProps['format'] = (value) =>
-    `${moment(value).startOf('week').format(format)} ~ ${moment(value)
-      .endOf('week')
-      .format(format)}`;
-
   return (
-    <PageContainer>
-      <DatePicker picker="week" onChange={onChange} format={customWeekStartEndFormat} />
+    <PageContainer className={styles.pageContainer}>
+      <div className={styles.container}>
+        <div className={styles.leftTree}>
+          <div className={styles.treeTitle}>用户选择</div>
+          <Tree
+            defaultExpandAll
+            selectedKeys={[customerId]}
+            onSelect={onSelect}
+            treeData={treeData}
+          />
+        </div>
+        <div className={styles.right}>
+          <Tabs defaultActiveKey="stock" destroyInactiveTabPane>
+            <TabPane tab="库存" key="stock">
+              <Stock customerId={customerId}></Stock>
+            </TabPane>
+            <TabPane tab="销售" key="sale">
+              销售
+            </TabPane>
+            <TabPane tab="在途库存" key="onpassage">
+              在途库存
+            </TabPane>
+          </Tabs>
+        </div>
+      </div>
     </PageContainer>
   );
 };
 
-export default TableList;
+export default Channel;
