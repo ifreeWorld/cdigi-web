@@ -1,9 +1,8 @@
 // import { PlusOutlined } from '@ant-design/icons';
-import { DatePicker, ConfigProvider } from 'antd';
+import { DatePicker, Tree } from 'antd';
 import type { DatePickerProps } from 'antd';
 import React, { useState, useRef, useMemo } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
-import locale from 'antd/es/locale/zh_CN';
 import moment from 'moment';
 // import type { CustomerTag } from './data';
 // import { getTag, addTag, updateTag, deleteTag } from './service';
@@ -34,9 +33,7 @@ const TableList: React.FC = () => {
 
   return (
     <PageContainer>
-      <ConfigProvider locale={locale}>
-        <DatePicker picker="week" onChange={onChange} format={customWeekStartEndFormat} />
-      </ConfigProvider>
+      <DatePicker picker="week" onChange={onChange} format={customWeekStartEndFormat} />
     </PageContainer>
   );
 };

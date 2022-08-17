@@ -34,9 +34,12 @@ export class StockService {
     query: SearchDto,
   ): Promise<[StockEntity[], number]> {
     const where: FindOptionsWhere<StockEntity> = {};
-    const { week } = query;
+    const { week, customer } = query;
     if (validator.isNotEmpty(week)) {
       where.week = week;
+    }
+    if (validator.isNotEmpty(customer)) {
+      where.customer = customer;
     }
     return await this.repository.findAndCount({
       where: where,
@@ -50,9 +53,12 @@ export class StockService {
    */
   async findAll(query: SearchDto): Promise<StockEntity[]> {
     const where: FindOptionsWhere<StockEntity> = {};
-    const { week } = query;
+    const { week, customer } = query;
     if (validator.isNotEmpty(week)) {
       where.week = week;
+    }
+    if (validator.isNotEmpty(customer)) {
+      where.customer = customer;
     }
     return await this.repository.find({
       where: where,
@@ -106,6 +112,8 @@ export class StockService {
         weekEndDate,
         week,
         creatorId,
+        // @ts-ignore
+        customer: { id: customerId },
       };
       for (const oldKey in stockHeaderMap) {
         if (item.hasOwnProperty(oldKey)) {

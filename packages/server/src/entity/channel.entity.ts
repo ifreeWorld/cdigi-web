@@ -1,6 +1,7 @@
-import { Column } from 'typeorm';
+import { Column, ManyToOne, JoinColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import BaseEntity from './base.entity';
+import { CustomerEntity } from '../modules/customer/customer.entity';
 
 // 渠道销售数据基础entity
 export default class ChannelEntity extends BaseEntity {
@@ -26,4 +27,13 @@ export default class ChannelEntity extends BaseEntity {
     comment: '周。格式：2022-12',
   })
   week: string;
+
+  /** 所属客户，多对一 */
+  @ManyToOne(() => CustomerEntity, (customer) => customer.stores, {
+    cascade: true,
+  })
+  @JoinColumn({
+    name: 'customer_id',
+  })
+  customer: CustomerEntity;
 }
