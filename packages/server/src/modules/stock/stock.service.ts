@@ -1,15 +1,13 @@
-import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository, DataSource } from 'typeorm';
 import * as validator from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { WorkBook, WorkSheet, utils, write } from 'xlsx';
+import { WorkSheet, utils, write } from 'xlsx';
 import * as fs from 'fs';
 import * as moment from 'moment';
 import { StockEntity } from './stock.entity';
 import { SearchDto, StockParseDto } from './stock.dto';
-import { ERROR, CustomResponse, ErrorConstant } from 'src/constant/error';
-import { indexOfLike } from '../../utils';
+import { ErrorConstant } from 'src/constant/error';
 import { stockHeaderMap, stockSheetName, tmpPath } from '../../constant/file';
 import { ProductService } from '../product/product.service';
 import { StoreService } from '../store/store.service';
@@ -47,10 +45,16 @@ export class StockService {
     }
     weekQb.take(take).skip(skip);
 
+    const asQb = this.dataSource
+      .createQueryBuilder()
+      .select()
+      .from('(' + weekQb.getQuery() + ')', 't');
+
     const entitys = await this.dataSource
       .getRepository(StockEntity)
       .createQueryBuilder('stock')
-      .where('stock.week IN (' + weekQb.getQuery() + ')')
+      .select()
+      .where('stock.week IN (' + asQb.getQuery() + ')')
       .setParameters(weekQb.getParameters())
       .getMany();
 

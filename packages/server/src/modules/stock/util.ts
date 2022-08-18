@@ -12,12 +12,10 @@ export function getTree(entities: StockEntity[]) {
         ...entity,
         children: [],
       };
+      temp[week] = parent;
     } else {
       if (quantity && validator.isNumber(quantity)) {
         parent.quantity += quantity;
-      }
-      if (price && validator.isNumber(price)) {
-        parent.price += price;
       }
       if (total && validator.isNumber(total)) {
         parent.total += total;
