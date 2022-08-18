@@ -5,16 +5,16 @@ import {
   Res,
   Body,
   Query,
-  Param,
   UseGuards,
   StreamableFile,
 } from '@nestjs/common';
+import { join } from 'path';
 import { createReadStream, existsSync } from 'fs';
 import {
   ApiOkResponse,
   ApiBearerAuth,
   ApiTags,
-  ApiParam,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { JwtGuard } from '../../guards';
 import { ConfigService } from './config.service';
@@ -53,20 +53,18 @@ export class ConfigController {
     return res;
   }
 
-  /** 下载文件 */
+  /** 下载生成的excel错误文件 */
   @UseGuards(JwtGuard)
-  @ApiParam({
-    name: 'filePath',
+  @ApiQuery({
+    name: 'fileName',
     description: '文件路径',
   })
-  @Get('/download/:filePath')
-  async hasData(
+  @Get('/downloadErrorExcel')
+  async downloadErrorExcel(
     @Res({ passthrough: true }) res,
-    @Param('filePath') filePath: string,
+    @Query('fileName') fileName: string,
   ): Promise<StreamableFile> {
-    const urlPath = `${tmpPath}/${filePath}`;
-    const arr = filePath.split('/');
-    const fileName = arr[arr.length - 1];
+    const urlPath = `${tmpPath}/${fileName}`;
     let file;
     if (!existsSync(urlPath)) {
       throw new CustomResponse('没有这个路径');
@@ -74,7 +72,31 @@ export class ConfigController {
     file = createReadStream(urlPath);
     res.set({
       'Content-Type': mimeType.xlsx,
-      'Content-Disposition': `attachment; filename="aaa.xlsx"`,
+      'Content-Disposition': `attachment; filename="error.xlsx"`,
+    });
+    return new StreamableFile(file);
+  }
+
+  /** 下载导入的excel模板 */
+  @UseGuards(JwtGuard)
+  @ApiQuery({
+    name: 'filePath',
+    description: '文件名称',
+  })
+  @Get('/downloadTemplate')
+  async downloadTemplate(
+    @Res({ passthrough: true }) res,
+    @Query('fileName') fileName: string,
+  ): Promise<StreamableFile> {
+    const urlPath = join(__dirname, `../../../template/${fileName}`);
+    let file;
+    if (!existsSync(urlPath)) {
+      throw new CustomResponse('没有这个路径');
+    }
+    file = createReadStream(urlPath);
+    res.set({
+      'Content-Type': mimeType.xlsx,
+      'Content-Disposition': `attachment; filename=stock_template.xlsx`,
     });
     return new StreamableFile(file);
   }

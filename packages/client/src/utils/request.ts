@@ -1,5 +1,6 @@
 import type { ResponseError, RequestInterceptor, ResponseInterceptor } from 'umi-request';
 import { notification } from 'antd';
+import FileSaver from 'file-saver';
 import Cookies from 'js-cookie';
 
 const codeMessage = {
@@ -27,6 +28,7 @@ const codeMessage = {
  *  @see https://beta-pro.ant.design/docs/request-cn
  */
 export const errorHandler = async (error: ResponseError) => {
+  console.log(error);
   const {
     response,
     request: { options },
@@ -35,6 +37,13 @@ export const errorHandler = async (error: ResponseError) => {
   if (options.skipErrorHandler) {
     return Promise.resolve(response);
   }
+
+  const { headers } = response;
+  let contentDisposition = headers.get('content-disposition');
+  if (contentDisposition) {
+    return Promise.resolve(response);
+  }
+
   // HTTP Error
   const { status, url, statusText } = response;
   const res = await response.clone().json();
@@ -66,6 +75,27 @@ export const requestInterceptors: RequestInterceptor = (url: string, options = {
  *  预留, 后续有需求再添加, 目前无需做 HTTP Error 之外的拦截
  */
 export const responseInterceptors: ResponseInterceptor = async (response: any) => {
+  const { headers } = response;
+  // 判断该响应是否为文件下载响应
+  let contentDisposition = headers.get('content-disposition');
+  if (contentDisposition) {
+    const fileName = headers.get('content-disposition').split('=');
+    let name = fileName[fileName.length - 1];
+    name = decodeURIComponent(name.replace(/"/g, ''));
+
+    if (!name) {
+      console.error('filename is null');
+      return response;
+    }
+
+    const data = await response.blob();
+
+    if (data instanceof Blob) {
+      FileSaver.saveAs(data, name);
+    }
+    return response;
+  }
+
   // 接口业务逻辑异常处理
   const res = await response.clone().json();
   const { code } = res;

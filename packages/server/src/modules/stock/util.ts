@@ -10,6 +10,9 @@ export function getTree(entities: StockEntity[]) {
     if (!parent) {
       parent = {
         ...entity,
+        id: week,
+        productName: '',
+        store: '',
         children: [],
       };
       temp[week] = parent;

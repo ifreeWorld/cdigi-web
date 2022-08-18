@@ -1,4 +1,5 @@
-import { message, Modal, DatePicker } from 'antd';
+import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
+import { Button, message, Modal, DatePicker } from 'antd';
 import type { DatePickerProps } from 'antd';
 import { useRequest } from 'umi';
 import { useState, useRef, useMemo, useEffect } from 'react';
@@ -7,13 +8,14 @@ import ProTable from '@ant-design/pro-table';
 import moment from 'moment';
 import type { StockItem } from './data';
 import type { TablePagination } from '../../../../types/common';
-import { getStock, deleteStock } from './service';
+import { getStock, deleteStock, downloadTemplate } from './service';
 
 const format = 'YYYY-MM-DD';
 const customWeekStartEndFormat: DatePickerProps['format'] = (value) =>
   `${moment(value).startOf('week').format(format)} ~ ${moment(value).endOf('week').format(format)}`;
 
 const Stock = ({ customerId }: { customerId: number }) => {
+  const [visible, setVisible] = useState<boolean>(false);
   const actionRef = useRef<ActionType>();
   const searchRef = useRef();
 
@@ -79,6 +81,16 @@ const Stock = ({ customerId }: { customerId: number }) => {
       hideInSearch: true,
     },
     {
+      title: '门店',
+      dataIndex: 'store',
+      hideInSearch: true,
+    },
+    {
+      title: '产品型号',
+      dataIndex: 'productName',
+      hideInSearch: true,
+    },
+    {
       title: '数量',
       dataIndex: 'quantity',
       hideInSearch: true,
@@ -109,7 +121,7 @@ const Stock = ({ customerId }: { customerId: number }) => {
               cancelText: '取消',
               onOk: () => {
                 postRun('remove', {
-                  ids: [record.id],
+                  weeks: [record.week],
                 });
               },
             });
@@ -154,8 +166,31 @@ const Stock = ({ customerId }: { customerId: number }) => {
       formRef={searchRef}
       rowKey="id"
       search={{
-        labelWidth: 120,
+        labelWidth: 'auto',
       }}
+      toolBarRender={() => [
+        <Button
+          type="primary"
+          key="primary"
+          onClick={() => {
+            setVisible(true);
+          }}
+        >
+          <UploadOutlined /> 导入
+        </Button>,
+        <Button
+          type="primary"
+          key="primary"
+          onClick={() => {
+            // 下载
+            downloadTemplate({
+              fileName: 'stock_template.xlsx',
+            });
+          }}
+        >
+          <DownloadOutlined /> 导出
+        </Button>,
+      ]}
       dateFormatter={dataFormat}
       request={async (params) => {
         if (!customerId) {

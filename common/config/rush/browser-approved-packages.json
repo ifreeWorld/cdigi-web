@@ -283,6 +283,10 @@
       "allowedCategories": [ "production" ]
     },
     {
+      "name": "file-saver",
+      "allowedCategories": [ "production" ]
+    },
+    {
       "name": "gg-editor",
       "allowedCategories": [ "production" ]
     },

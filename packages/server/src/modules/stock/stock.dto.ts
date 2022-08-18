@@ -50,7 +50,7 @@ export class StockDeleteDto {
   @IsNotEmpty({
     message: 'ids不能为空',
   })
-  ids: StockEntity['id'][];
+  weeks: StockEntity['week'][];
 }
 
 export class StockListResult extends BaseResult {

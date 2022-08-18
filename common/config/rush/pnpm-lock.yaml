@@ -57,6 +57,7 @@ importers:
       eslint-plugin-react: ^7.21.5
       eslint-plugin-react-hooks: ^4.1.2
       eslint-plugin-unicorn: ^20.0.0
+      file-saver: ~2.0.5
       gg-editor: ^2.0.2
       gh-pages: ^3.2.0
       husky: ^7.0.4
@@ -105,6 +106,7 @@ importers:
       bizcharts: registry.npmmirror.com/bizcharts/3.5.10_react@17.0.2
       bizcharts-plugin-slider: registry.npmmirror.com/bizcharts-plugin-slider/2.1.1_5ac739c922d243de1f022cc7612a588a
       classnames: registry.npmmirror.com/classnames/2.3.1
+      file-saver: registry.npmmirror.com/file-saver/2.0.5
       gg-editor: registry.npmmirror.com/gg-editor/2.0.4_react@17.0.2
       js-cookie: registry.npmmirror.com/js-cookie/3.0.1
       lodash: registry.npmmirror.com/lodash/4.17.21
@@ -14379,6 +14381,12 @@ packages:
     version: 0.1.0
     engines: {node: '>=0.10.0'}
     dev: true
+
+  registry.npmmirror.com/file-saver/2.0.5:
+    resolution: {integrity: sha512-P9bmyZ3h/PRG+Nzga+rbdI4OEpNDzAVyy74uVO9ATgzLK6VtAsYybF/+TOCvrc0MO793d6+42lLyZTw7/ArVzA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/file-saver/-/file-saver-2.0.5.tgz}
+    name: file-saver
+    version: 2.0.5
+    dev: false
 
   registry.npmmirror.com/filename-reserved-regex/2.0.0:
     resolution: {integrity: sha512-lc1bnsSr4L4Bdif8Xb/qrtokGbq5zlsms/CYH8PP+WtCkGNF65DPiQY8vG3SakEdRn8Dlnm+gW/qWKKjS5sZzQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/filename-reserved-regex/-/filename-reserved-regex-2.0.0.tgz}

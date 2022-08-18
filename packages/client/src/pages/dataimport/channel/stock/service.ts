@@ -46,14 +46,15 @@ export async function getAllStock(params: any) {
 //   });
 // }
 
-// /** 编辑库存 POST /api/stock/update */
-// export async function updateStock(data: StockItem, options?: { [key: string]: any }) {
-//   return request('/api/stock/update', {
-//     data,
-//     method: 'POST',
-//     ...(options || {}),
-//   });
-// }
+/** 下载文件 GET /api/config/downloadTemplate */
+export async function downloadTemplate(params: { fileName: string }) {
+  return request('/api/config/downloadTemplate', {
+    params: {
+      ...params,
+    },
+    method: 'GET',
+  });
+}
 
 /** 删除库存 POST /api/stock/delete */
 export async function deleteStock(data: { ids: number[] }, options?: { [key: string]: any }) {

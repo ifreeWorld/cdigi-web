@@ -35,20 +35,21 @@ export class StockService {
     const weekQb = this.dataSource
       .getRepository(StockEntity)
       .createQueryBuilder('stock')
-      .select('stock.week');
+      .select('week')
+      .distinct(true);
 
     if (validator.isNotEmpty(week)) {
       weekQb.where('stock.week = :week', { week });
     }
     if (validator.isNotEmpty(customerId)) {
-      weekQb.where('stock.customer_id = :customerId', { customerId });
+      weekQb.andWhere('stock.customer_id = :customerId', { customerId });
     }
-    weekQb.take(take).skip(skip);
+    const weeks = await weekQb.getRawMany();
 
     const asQb = this.dataSource
       .createQueryBuilder()
       .select()
-      .from('(' + weekQb.getQuery() + ')', 't');
+      .from('(' + weekQb.take(take).skip(skip).getQuery() + ')', 't');
 
     const entitys = await this.dataSource
       .getRepository(StockEntity)
@@ -60,7 +61,7 @@ export class StockService {
 
     const result = getTree(entitys);
 
-    return [result, result.length];
+    return [result, weeks.length];
   }
 
   /**
@@ -253,8 +254,13 @@ export class StockService {
    * 根据 ids 删除
    * @param ids
    */
-  async delete(ids: number[]): Promise<boolean> {
-    await this.repository.delete(ids);
+  async delete(weeks: string[]): Promise<boolean> {
+    await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from(StockEntity)
+      .where('week IN (:...weeks)', { weeks })
+      .execute();
     return true;
   }
 }
