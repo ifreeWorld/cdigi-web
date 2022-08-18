@@ -15,17 +15,15 @@ import {
   ApiBearerAuth,
   ApiTags,
   ApiConsumes,
-  ApiBody,
 } from '@nestjs/swagger';
 import { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { read, utils } from 'xlsx';
+import { read } from 'xlsx';
 import { StockService } from './stock.service';
 import { CurrentUser } from '../../decorators';
 import { Pager } from '../../interface';
 import { JwtGuard } from '../../guards';
 import { getSkip } from '../../utils';
-import { FileUploadDto } from '../../dto';
 import { CustomResponse, ErrorConstant } from 'src/constant/error';
 import {
   SearchDto,
@@ -70,7 +68,7 @@ export class StockController {
     };
   }
 
-  /** 全量用户列表 */
+  /** 全量列表 */
   @UseGuards(JwtGuard)
   @Get('/all')
   @ApiOkResponse({

@@ -1,7 +1,7 @@
 import { message, Modal, DatePicker } from 'antd';
 import type { DatePickerProps } from 'antd';
 import { useRequest } from 'umi';
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import moment from 'moment';
@@ -123,6 +123,10 @@ const Stock = ({ customerId }: { customerId: number }) => {
 
   useEffect(() => {
     actionRef.current?.reset?.();
+    // 默认切换时进入本周，注释掉就是默认切换时不选周
+    // searchRef.current?.setFieldsValue?.({
+    //   week: moment(),
+    // });
     searchRef.current?.submit?.();
   }, [customerId]);
 

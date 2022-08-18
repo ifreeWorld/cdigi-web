@@ -13,9 +13,9 @@ import { indexOfLike } from '../../utils';
 import { stockHeaderMap, stockSheetName, tmpPath } from '../../constant/file';
 import { ProductService } from '../product/product.service';
 import { StoreService } from '../store/store.service';
+import { getTree } from './util';
 import { appLogger } from 'src/logger';
 
-@Injectable()
 export class StockService {
   constructor(
     @InjectRepository(StockEntity)
@@ -33,21 +33,30 @@ export class StockService {
     take: number,
     query: SearchDto,
   ): Promise<[StockEntity[], number]> {
-    const where: FindOptionsWhere<StockEntity> = {};
     const { week, customerId } = query;
+    const weekQb = this.dataSource
+      .getRepository(StockEntity)
+      .createQueryBuilder('stock')
+      .select('stock.week');
+
     if (validator.isNotEmpty(week)) {
-      where.week = week;
+      weekQb.where('stock.week = :week', { week });
     }
     if (validator.isNotEmpty(customerId)) {
-      where.customer = {
-        id: customerId,
-      };
+      weekQb.where('stock.customer_id = :customerId', { customerId });
     }
-    return await this.repository.findAndCount({
-      where: where,
-      take: take,
-      skip: skip,
-    });
+    weekQb.take(take).skip(skip);
+
+    const entitys = await this.dataSource
+      .getRepository(StockEntity)
+      .createQueryBuilder('stock')
+      .where('stock.week IN (' + weekQb.getQuery() + ')')
+      .setParameters(weekQb.getParameters())
+      .getMany();
+
+    const result = getTree(entitys);
+
+    return [result, result.length];
   }
 
   /**
