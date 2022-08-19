@@ -37,14 +37,23 @@ export async function getAllStock(params: any) {
   });
 }
 
-// /** 添加库存 POST /api/stock/add */
-// export async function addStock(data: StockItem, options?: { [key: string]: any }) {
-//   return request('/api/stock/add', {
-//     data,
-//     method: 'POST',
-//     ...(options || {}),
-//   });
-// }
+/** 上传excel POST /api/stock/parseFile */
+export async function parseFile(data: any, options?: { [key: string]: any }) {
+  return request('/api/stock/parseFile', {
+    data,
+    method: 'POST',
+  });
+}
+
+/** 下载文件 GET /api/config/downloadTemplate */
+export async function downloadErrorExcel(params: { fileName: string }) {
+  return request('/api/config/downloadErrorExcel', {
+    params: {
+      ...params,
+    },
+    method: 'GET',
+  });
+}
 
 /** 下载文件 GET /api/config/downloadTemplate */
 export async function downloadTemplate(params: { fileName: string }) {
@@ -57,7 +66,10 @@ export async function downloadTemplate(params: { fileName: string }) {
 }
 
 /** 删除库存 POST /api/stock/delete */
-export async function deleteStock(data: { ids: number[] }, options?: { [key: string]: any }) {
+export async function deleteStock(
+  data: { ids: number[]; customerId: number },
+  options?: { [key: string]: any },
+) {
   return request('/api/stock/delete', {
     data,
     method: 'POST',

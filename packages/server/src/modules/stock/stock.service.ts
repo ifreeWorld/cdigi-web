@@ -36,7 +36,8 @@ export class StockService {
       .getRepository(StockEntity)
       .createQueryBuilder('stock')
       .select('week')
-      .distinct(true);
+      .distinct(true)
+      .orderBy('week');
 
     if (validator.isNotEmpty(week)) {
       weekQb.where('stock.week = :week', { week });
@@ -56,6 +57,7 @@ export class StockService {
       .createQueryBuilder('stock')
       .select()
       .where('stock.week IN (' + asQb.getQuery() + ')')
+      .orderBy('week')
       .setParameters(weekQb.getParameters())
       .getMany();
 
@@ -170,7 +172,7 @@ export class StockService {
 
       // 门店名称不在系统内，allStoreNames是关联的经销商的门店
       if (storeName && !allStoreNames.includes(storeName)) {
-        const errMsg = `位置: ${position} 门店名称"${storeName}"不在系统内`;
+        const errMsg = `位置: ${position} 门店名称"${storeName}"不在系统内或门店不在此用户下`;
         errorsTemp.push(errMsg);
       }
 
@@ -210,9 +212,9 @@ export class StockService {
       );
 
       const buf = write(workbook, { type: 'buffer', bookType: 'xlsx' });
-      const errorFileName = `${fileName}_${moment().format(
-        'YYYY_MM_DD_hh_mm_ss',
-      )}.xlsx`;
+      const errorFileName = `${
+        fileName.split('.xlsx')[0]
+      }_错误原因_${moment().format('YYYY_MM_DD_hh_mm_ss')}.xlsx`;
       const errorFilePath = `${tmpPath}/${errorFileName}`;
       fs.writeFileSync(errorFilePath, buf);
       const e = new ErrorConstant(
@@ -234,6 +236,7 @@ export class StockService {
         .delete()
         .from(StockEntity)
         .where('week = :week', { week })
+        .andWhere('customer_id = :customerId', { customerId })
         .execute();
       res = await queryRunner.manager.save(entities);
       await queryRunner.commitTransaction();
@@ -254,12 +257,13 @@ export class StockService {
    * 根据 ids 删除
    * @param ids
    */
-  async delete(weeks: string[]): Promise<boolean> {
+  async delete(weeks: string[], customerId: number): Promise<boolean> {
     await this.dataSource
       .createQueryBuilder()
       .delete()
       .from(StockEntity)
       .where('week IN (:...weeks)', { weeks })
+      .andWhere('customer_id = :customerId', { customerId })
       .execute();
     return true;
   }

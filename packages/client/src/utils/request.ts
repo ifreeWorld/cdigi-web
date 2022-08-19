@@ -61,15 +61,18 @@ export const errorHandler = async (error: ResponseError) => {
 /**
  *  请求拦截器
  */
-export const requestInterceptors: RequestInterceptor = (url: string, options = {}) => ({
-  url,
-  options: {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${Cookies.get('cdigi_token') || ''}`,
+export const requestInterceptors: RequestInterceptor = (url: string, options = {}) => {
+  return {
+    url,
+    options: {
+      ...options,
+      headers: {
+        ...options.headers,
+        Authorization: `Bearer ${Cookies.get('cdigi_token') || ''}`,
+      },
     },
-  },
-});
+  };
+};
 /**
  *  响应拦截器
  *  预留, 后续有需求再添加, 目前无需做 HTTP Error 之外的拦截

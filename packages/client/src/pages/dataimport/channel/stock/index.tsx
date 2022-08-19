@@ -1,15 +1,16 @@
 import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
-import { Button, message, Modal, DatePicker } from 'antd';
+import { Button, message, Modal } from 'antd';
 import { useRequest } from 'umi';
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import moment from 'moment';
 import type { StockItem } from './data';
 import type { TablePagination } from '../../../../types/common';
-import { getStock, deleteStock, downloadTemplate } from './service';
+import { getStock, parseFile, deleteStock, downloadTemplate, downloadErrorExcel } from './service';
 import OperationModal from './components/OperationModal';
 import { WeekPicker } from '../../../../components/WeekPicker';
+import { dateFormat } from '@/common/index';
 
 const Stock = ({ customerId }: { customerId: number }) => {
   const [visible, setVisible] = useState<boolean>(false);
@@ -32,7 +33,14 @@ const Stock = ({ customerId }: { customerId: number }) => {
         message.success('删除成功');
       }
       if (method === 'add') {
-        // await addTag(params);
+        const res = await parseFile(params);
+        if (res.code === 6) {
+          message.error(res.message);
+          downloadErrorExcel({
+            fileName: res.data,
+          });
+          return;
+        }
         message.success('添加成功');
       }
     },
@@ -107,26 +115,31 @@ const Stock = ({ customerId }: { customerId: number }) => {
       dataIndex: 'option',
       valueType: 'option',
       hideInForm: true,
-      render: (_, record) => [
-        <a
-          key="delete"
-          onClick={() => {
-            Modal.confirm({
-              title: '删除',
-              content: '确定删除吗？',
-              okText: '确认',
-              cancelText: '取消',
-              onOk: () => {
-                postRun('remove', {
-                  weeks: [record.week],
+      render: (_, record) => {
+        if (record.children) {
+          return [
+            <a
+              key="delete"
+              onClick={() => {
+                Modal.confirm({
+                  title: '删除',
+                  content: '确定删除吗？',
+                  okText: '确认',
+                  cancelText: '取消',
+                  onOk: () => {
+                    postRun('remove', {
+                      weeks: [record.week],
+                      customerId,
+                    });
+                  },
                 });
-              },
-            });
-          }}
-        >
-          删除
-        </a>,
-      ],
+              }}
+            >
+              删除
+            </a>,
+          ];
+        }
+      },
     },
   ];
 
@@ -143,8 +156,8 @@ const Stock = ({ customerId }: { customerId: number }) => {
     const weekStr = date.format('gggg-w');
     const year = Number(weekStr.split('-')[0]);
     const week = Number(weekStr.split('-')[1]);
-    const startDate = date.startOf('week').format(format);
-    const endDate = date.endOf('week').format(format);
+    const startDate = date.startOf('week').format(dateFormat);
+    const endDate = date.endOf('week').format(dateFormat);
     console.log(date, dateString);
     console.log('year', year);
     console.log('week', week);
@@ -161,8 +174,13 @@ const Stock = ({ customerId }: { customerId: number }) => {
     setVisible(false);
   };
 
-  const handleSubmit = (values) => {
-    postRun('add', values);
+  const handleSubmit = (values: any) => {
+    const formData = new FormData();
+    for (var key in values) {
+      formData.append(key, values[key]);
+    }
+    formData.append('customerId', customerId);
+    postRun('add', formData);
   };
 
   return (

@@ -149,7 +149,7 @@ export class StockController {
   @ApiOkResponse({
     type: StockIdResult,
   })
-  async delete(@Body() { weeks }: StockDeleteDto) {
-    return this.stockService.delete(weeks);
+  async delete(@Body() { weeks, customerId }: StockDeleteDto) {
+    return this.stockService.delete(weeks, customerId);
   }
 }

@@ -11,12 +11,28 @@ export class SearchDto extends PaginationDto {
 }
 
 export class StockParseDto {
+  @IsNotEmpty({
+    message: 'customerId不能为空',
+  })
   weekStartDate: StockEntity['weekStartDate'];
+
+  @IsNotEmpty({
+    message: 'customerId不能为空',
+  })
   weekEndDate: StockEntity['weekEndDate'];
+
+  @IsNotEmpty({
+    message: 'customerId不能为空',
+  })
   week: StockEntity['week'];
+
+  @IsNotEmpty({
+    message: 'customerId不能为空',
+  })
   customerId: CustomerEntity['id'];
+
   @ApiProperty({ type: 'string', format: 'binary' })
-  file?: any;
+  file: any;
 }
 // export class StockCreateDto {
 //   @IsNotEmpty({
@@ -51,6 +67,11 @@ export class StockDeleteDto {
     message: 'ids不能为空',
   })
   weeks: StockEntity['week'][];
+
+  @IsNotEmpty({
+    message: 'customerId不能为空',
+  })
+  customerId: CustomerEntity['id'];
 }
 
 export class StockListResult extends BaseResult {

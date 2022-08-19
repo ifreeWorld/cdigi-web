@@ -2,10 +2,12 @@ import type { DatePickerProps } from 'antd';
 import { DatePicker } from 'antd';
 import { ProFormDatePicker } from '@ant-design/pro-form';
 import moment from 'moment';
+import { dateFormat } from '../../common';
 
-const format = 'YYYY-MM-DD';
 const customWeekStartEndFormat: DatePickerProps['format'] = (value) =>
-  `${moment(value).startOf('week').format(format)} ~ ${moment(value).endOf('week').format(format)}`;
+  `${moment(value).startOf('week').format(dateFormat)} ~ ${moment(value)
+    .endOf('week')
+    .format(dateFormat)}`;
 
 export const WeekPicker = (props: any) => {
   return <DatePicker {...props} picker="week" format={customWeekStartEndFormat} />;
