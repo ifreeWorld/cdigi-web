@@ -1,6 +1,5 @@
 import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
 import { Button, message, Modal, DatePicker } from 'antd';
-import type { DatePickerProps } from 'antd';
 import { useRequest } from 'umi';
 import { useState, useRef, useMemo, useEffect } from 'react';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
@@ -9,10 +8,8 @@ import moment from 'moment';
 import type { StockItem } from './data';
 import type { TablePagination } from '../../../../types/common';
 import { getStock, deleteStock, downloadTemplate } from './service';
-
-const format = 'YYYY-MM-DD';
-const customWeekStartEndFormat: DatePickerProps['format'] = (value) =>
-  `${moment(value).startOf('week').format(format)} ~ ${moment(value).endOf('week').format(format)}`;
+import OperationModal from './components/OperationModal';
+import { WeekPicker } from '../../../../components/WeekPicker';
 
 const Stock = ({ customerId }: { customerId: number }) => {
   const [visible, setVisible] = useState<boolean>(false);
@@ -34,15 +31,15 @@ const Stock = ({ customerId }: { customerId: number }) => {
         await deleteStock(params);
         message.success('删除成功');
       }
-      // if (method === 'add') {
-      //   await addTag(params);
-      //   message.success('添加成功');
-      // }
+      if (method === 'add') {
+        // await addTag(params);
+        message.success('添加成功');
+      }
     },
     {
       manual: true,
       onSuccess: () => {
-        // setVisible(false);
+        setVisible(false);
         actionRef.current?.reloadAndRest?.();
       },
       onError: (error, [method]) => {
@@ -62,11 +59,11 @@ const Stock = ({ customerId }: { customerId: number }) => {
       title: '周',
       dataIndex: 'week',
       colSize: 2,
-      renderFormItem: (item, { type, fieldProps }, form) => {
+      renderFormItem: (item, { type, fieldProps }) => {
         if (type === 'form') {
           return null;
         }
-        return <DatePicker {...fieldProps} picker="week" format={customWeekStartEndFormat} />;
+        return <WeekPicker {...fieldProps} />;
       },
       // hideInSearch: true,
     },
@@ -160,58 +157,69 @@ const Stock = ({ customerId }: { customerId: number }) => {
     return weekStr;
   };
 
+  const handleCancel = () => {
+    setVisible(false);
+  };
+
+  const handleSubmit = (values) => {
+    postRun('add', values);
+  };
+
   return (
-    <ProTable<StockItem, TablePagination>
-      actionRef={actionRef}
-      formRef={searchRef}
-      rowKey="id"
-      search={{
-        labelWidth: 'auto',
-      }}
-      toolBarRender={() => [
-        <Button
-          type="primary"
-          key="primary"
-          onClick={() => {
-            setVisible(true);
-          }}
-        >
-          <UploadOutlined /> 导入
-        </Button>,
-        <Button
-          type="primary"
-          key="primary"
-          onClick={() => {
-            // 下载
-            downloadTemplate({
-              fileName: 'stock_template.xlsx',
-            });
-          }}
-        >
-          <DownloadOutlined /> 导出
-        </Button>,
-      ]}
-      dateFormatter={dataFormat}
-      request={async (params) => {
-        if (!customerId) {
+    <>
+      <ProTable<StockItem, TablePagination>
+        actionRef={actionRef}
+        formRef={searchRef}
+        rowKey="id"
+        search={{
+          labelWidth: 'auto',
+        }}
+        toolBarRender={() => [
+          <Button
+            type="primary"
+            key="primary"
+            onClick={() => {
+              setVisible(true);
+            }}
+          >
+            <UploadOutlined /> 导入
+          </Button>,
+          <Button
+            type="primary"
+            key="primary"
+            onClick={() => {
+              // 下载
+              downloadTemplate({
+                fileName: 'stock_template.xlsx',
+              });
+            }}
+          >
+            <DownloadOutlined /> 导出
+          </Button>,
+        ]}
+        dateFormatter={dataFormat}
+        request={async (params) => {
+          if (!customerId) {
+            return {
+              data: [],
+              total: 0,
+              success: true,
+            };
+          }
+          const res = await run({
+            ...params,
+            customerId,
+          });
           return {
-            data: [],
-            total: 0,
+            data: res.list,
+            total: res.total,
             success: true,
           };
-        }
-        const res = await run({
-          ...params,
-          customerId,
-        });
-        return {
-          data: res.list,
-          total: res.total,
-          success: true,
-        };
-      }}
-      columns={columns}
-    />
+        }}
+        columns={columns}
+      />
+      <OperationModal visible={visible} onCancel={handleCancel} onSubmit={handleSubmit} />
+    </>
   );
 };
 
