@@ -1,7 +1,7 @@
 import * as validator from 'class-validator';
-import { StockEntity } from './stock.entity';
+import { SaleEntity } from './sale.entity';
 
-export function getTree(entities: StockEntity[]) {
+export function getTree(entities: SaleEntity[]) {
   const temp = {};
 
   entities.forEach((entity) => {
@@ -13,6 +13,8 @@ export function getTree(entities: StockEntity[]) {
         id: week,
         productName: '',
         storeName: '',
+        date: '',
+        buyerName: '',
         price: null,
         children: [],
       };

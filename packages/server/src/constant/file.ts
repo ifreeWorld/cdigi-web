@@ -19,7 +19,7 @@ export const saleHeaderMap = {
   '销售 - 型号': 'productName',
   '销售 - 数量': 'quantity',
   // 客户字段是指的产品卖给了谁，需要和customer表关联
-  '销售 - 客户': 'customerName',
+  '销售 - 客户': 'buyerName',
   '销售 - 价格': 'price',
   '销售 - 总额': 'total',
   '销售 - 时间': 'date',
@@ -32,10 +32,13 @@ export const onPassageStockHeaderMap = {
   '在途库存 - 数量': 'quantity',
   '在途库存 - 价格': 'price',
   '在途库存 - 总额': 'total',
-  '在途库存 - 运输时间': 'deliveryDate',
+  // 即从上级供货商进货的时间，即上级供货商的工厂发货的时间
+  '在途库存 - 运输时间': 'shippingDate',
   '在途库存 - 预计到达时间': 'eta',
 };
 
 export const stockSheetName = '库存';
 export const saleSheetName = '销售';
 export const onPassageStockSheetName = '在途库存';
+
+export const dateFormat = 'YYYY-MM-DD';

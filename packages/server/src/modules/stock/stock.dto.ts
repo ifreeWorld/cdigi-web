@@ -12,17 +12,17 @@ export class SearchDto extends PaginationDto {
 
 export class StockParseDto {
   @IsNotEmpty({
-    message: 'customerId不能为空',
+    message: 'weekStartDate不能为空',
   })
   weekStartDate: StockEntity['weekStartDate'];
 
   @IsNotEmpty({
-    message: 'customerId不能为空',
+    message: 'weekEndDate不能为空',
   })
   weekEndDate: StockEntity['weekEndDate'];
 
   @IsNotEmpty({
-    message: 'customerId不能为空',
+    message: 'week不能为空',
   })
   week: StockEntity['week'];
 

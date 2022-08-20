@@ -19,7 +19,7 @@ import {
 import { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { read } from 'xlsx';
-import { StockService } from './stock.service';
+import { SaleService } from './sale.service';
 import { CurrentUser } from '../../decorators';
 import { Pager } from '../../interface';
 import { JwtGuard } from '../../guards';
@@ -27,32 +27,32 @@ import { getSkip } from '../../utils';
 import { CustomResponse, ErrorConstant } from 'src/constant/error';
 import {
   SearchDto,
-  StockListResult,
-  StockParseDto,
-  StockDeleteDto,
-  StockIdResult,
-  StockParseResult,
-  StockDataResult,
-  StockBooleanResult,
-} from './stock.dto';
-import { StockEntity } from './stock.entity';
-import { mimeType, stockSheetName } from '../../constant/file';
+  SaleListResult,
+  SaleParseDto,
+  SaleDeleteDto,
+  SaleIdResult,
+  SaleParseResult,
+  SaleDataResult,
+  SaleBooleanResult,
+} from './sale.dto';
+import { SaleEntity } from './sale.entity';
+import { mimeType, saleSheetName } from '../../constant/file';
 
 @ApiBearerAuth()
-@ApiTags('库存')
-@Controller('stock')
-export class StockController {
-  constructor(private stockService: StockService) {}
+@ApiTags('销售')
+@Controller('sale')
+export class SaleController {
+  constructor(private saleService: SaleService) {}
 
-  /** 标签列表 */
+  /** 销售列表 */
   @UseGuards(JwtGuard)
   @Get('/list')
   @ApiOkResponse({
-    type: StockListResult,
+    type: SaleListResult,
   })
-  async find(@Query() query: SearchDto): Promise<Pager<StockEntity>> {
+  async find(@Query() query: SearchDto): Promise<Pager<SaleEntity>> {
     const { current, pageSize } = query;
-    const [list, total] = await this.stockService.find(
+    const [list, total] = await this.saleService.find(
       getSkip(current, pageSize),
       pageSize,
       query,
@@ -67,10 +67,10 @@ export class StockController {
   @UseGuards(JwtGuard)
   @Get('/all')
   @ApiOkResponse({
-    type: StockDataResult,
+    type: SaleDataResult,
   })
-  async findAll(@Query() query: SearchDto): Promise<StockEntity[]> {
-    const list = await this.stockService.findAll(query);
+  async findAll(@Query() query: SearchDto): Promise<SaleEntity[]> {
+    const list = await this.saleService.findAll(query);
     return list;
   }
 
@@ -78,10 +78,10 @@ export class StockController {
   @UseGuards(JwtGuard)
   @Get('/hasData')
   @ApiOkResponse({
-    type: StockBooleanResult,
+    type: SaleBooleanResult,
   })
   async hasData(@Query() query: SearchDto): Promise<boolean> {
-    const number = await this.stockService.findCount(query);
+    const number = await this.saleService.findCount(query);
     return number > 0;
   }
 
@@ -90,7 +90,7 @@ export class StockController {
   @Post('/parseFile')
   @ApiConsumes('multipart/form-data')
   @ApiOkResponse({
-    type: StockParseResult,
+    type: SaleParseResult,
   })
   @UseInterceptors(FileInterceptor('file'))
   async parseFile(
@@ -104,10 +104,10 @@ export class StockController {
       }),
     )
     file: Express.Multer.File,
-    @Body() body: StockParseDto,
+    @Body() body: SaleParseDto,
     @CurrentUser() currentUser,
   ) {
-    const workbook = read(file.buffer, { type: 'buffer' });
+    const workbook = read(file.buffer, { type: 'buffer', cellDates: true });
     const { SheetNames: sheetNames, Sheets: sheets } = workbook;
     const fileName = Buffer.from(file.originalname, 'latin1').toString('utf8');
     let flag = 0;
@@ -115,9 +115,9 @@ export class StockController {
     for (let i = 0; i < sheetNames.length; i++) {
       const sheetName = sheetNames[i];
       const sheet = sheets[sheetName];
-      if (sheetName === stockSheetName) {
+      if (sheetName === saleSheetName) {
         flag = 1;
-        const res = await this.stockService.parseSheet(
+        const res = await this.saleService.parseSheet(
           sheet,
           fileName,
           body,
@@ -141,9 +141,9 @@ export class StockController {
   @UseGuards(JwtGuard)
   @Post('/delete')
   @ApiOkResponse({
-    type: StockIdResult,
+    type: SaleIdResult,
   })
-  async delete(@Body() { weeks, customerId }: StockDeleteDto) {
-    return this.stockService.delete(weeks, customerId);
+  async delete(@Body() { weeks, customerId }: SaleDeleteDto) {
+    return this.saleService.delete(weeks, customerId);
   }
 }

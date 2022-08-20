@@ -5,22 +5,31 @@ import { plainToInstance } from 'class-transformer';
 import { WorkSheet, utils, write } from 'xlsx';
 import * as fs from 'fs';
 import * as moment from 'moment';
-import { StockEntity } from './stock.entity';
-import { SearchDto, StockParseDto } from './stock.dto';
+import { SaleEntity } from './sale.entity';
+import { SearchDto, SaleParseDto } from './sale.dto';
 import { ErrorConstant } from 'src/constant/error';
-import { stockHeaderMap, stockSheetName, tmpPath } from '../../constant/file';
+import {
+  saleHeaderMap,
+  saleSheetName,
+  tmpPath,
+  dateFormat,
+} from '../../constant/file';
 import { ProductService } from '../product/product.service';
 import { StoreService } from '../store/store.service';
+import { CustomerService } from '../customer/customer.service';
+import { ConfigService } from '../config/config.service';
 import { getTree } from './util';
 import { appLogger } from 'src/logger';
 
-export class StockService {
+export class SaleService {
   constructor(
-    @InjectRepository(StockEntity)
-    private repository: Repository<StockEntity>,
+    @InjectRepository(SaleEntity)
+    private repository: Repository<SaleEntity>,
     private dataSource: DataSource,
     private productService: ProductService,
     private storeService: StoreService,
+    private customerService: CustomerService,
+    private configService: ConfigService,
   ) {}
 
   /**
@@ -30,20 +39,20 @@ export class StockService {
     skip: number,
     take: number,
     query: SearchDto,
-  ): Promise<[StockEntity[], number]> {
+  ): Promise<[SaleEntity[], number]> {
     const { week, customerId } = query;
     const weekQb = this.dataSource
-      .getRepository(StockEntity)
-      .createQueryBuilder('stock')
+      .getRepository(SaleEntity)
+      .createQueryBuilder('sale')
       .select('week')
       .distinct(true)
       .orderBy('week');
 
     if (validator.isNotEmpty(week)) {
-      weekQb.where('stock.week = :week', { week });
+      weekQb.where('sale.week = :week', { week });
     }
     if (validator.isNotEmpty(customerId)) {
-      weekQb.andWhere('stock.customer_id = :customerId', { customerId });
+      weekQb.andWhere('sale.customer_id = :customerId', { customerId });
     }
     const weeks = await weekQb.getRawMany();
 
@@ -53,10 +62,10 @@ export class StockService {
       .from('(' + weekQb.take(take).skip(skip).getQuery() + ')', 't');
 
     const entitys = await this.dataSource
-      .getRepository(StockEntity)
-      .createQueryBuilder('stock')
+      .getRepository(SaleEntity)
+      .createQueryBuilder('sale')
       .select()
-      .where('stock.week IN (' + asQb.getQuery() + ')')
+      .where('sale.week IN (' + asQb.getQuery() + ')')
       .orderBy('week')
       .setParameters(weekQb.getParameters())
       .getMany();
@@ -69,8 +78,8 @@ export class StockService {
   /**
    * 全量查询
    */
-  async findAll(query: SearchDto): Promise<StockEntity[]> {
-    const where: FindOptionsWhere<StockEntity> = {};
+  async findAll(query: SearchDto): Promise<SaleEntity[]> {
+    const where: FindOptionsWhere<SaleEntity> = {};
     const { week, customerId } = query;
     if (validator.isNotEmpty(week)) {
       where.week = week;
@@ -89,7 +98,7 @@ export class StockService {
    * 全量查询数量
    */
   async findCount(query: SearchDto): Promise<number> {
-    const where: FindOptionsWhere<StockEntity> = {};
+    const where: FindOptionsWhere<SaleEntity> = {};
     const { week, customerId } = query;
     if (validator.isNotEmpty(week)) {
       where.week = week;
@@ -110,21 +119,42 @@ export class StockService {
   async parseSheet(
     sheet: WorkSheet,
     fileName: string,
-    body: StockParseDto,
+    body: SaleParseDto,
     creatorId: number,
   ): Promise<number | ErrorConstant> {
     const { weekStartDate, weekEndDate, week, customerId } = body;
-
     const arrs = utils.sheet_to_json<any[]>(sheet, { header: 1 });
     if (arrs.length === 0) {
       return;
     }
+
+    // 类型1为基于周进行导入，类型2为基于excel中的日期进行导入，类型2需要根据“日期”字段计算出周
+    let importType = 1;
+    // week为空，说明为类型2
+    if (!week) {
+      importType = 2;
+    }
+
+    // 查询周开始日
+    let weekStartIndex = '1';
+    if (importType === 2) {
+      weekStartIndex = await this.configService.get('getWeekStartIndex');
+      if (!weekStartIndex) {
+        weekStartIndex = '1';
+      }
+      moment.locale('zh-cn', {
+        week: {
+          dow: Number(weekStartIndex),
+        },
+      });
+    }
+
     // [库存 - 型号	库存 - 门店	库存 - 数量]表头数据，顺序不一定
     const headers = arrs[0];
     // {productName: 0, 库存 - 门店: 1, 库存 - 数量: 2}
     const colMap: any = {};
     headers.forEach((header, index) => {
-      const key = stockHeaderMap[header];
+      const key = saleHeaderMap[header];
       if (key) {
         colMap[key] = index;
       }
@@ -132,7 +162,7 @@ export class StockService {
 
     const data = utils.sheet_to_json(sheet);
     const result = data.map((item) => {
-      const temp: Partial<StockEntity> = {
+      const temp: Partial<SaleEntity> = {
         weekStartDate,
         weekEndDate,
         week,
@@ -140,28 +170,49 @@ export class StockService {
         // @ts-ignore
         customer: { id: customerId },
       };
-      for (const oldKey in stockHeaderMap) {
+      for (const oldKey in saleHeaderMap) {
         if (item.hasOwnProperty(oldKey)) {
-          const newKey = stockHeaderMap[oldKey];
+          const newKey = saleHeaderMap[oldKey];
           temp[newKey] = item[oldKey];
         }
       }
+      // 类型2情况下为week、weekStartDate、weekEndDate添加值
+      if (importType === 2 && temp.date) {
+        moment(temp.date);
+        const dateMoment = moment(temp.date);
+        const weekStr = dateMoment.format('gggg-w');
+        const startDate = dateMoment.startOf('week').format(dateFormat);
+        const endDate = dateMoment.endOf('week').format(dateFormat);
+        temp.week = weekStr;
+        temp.weekStartDate = new Date(startDate);
+        temp.weekEndDate = new Date(endDate);
+      }
       return temp;
     });
-    const entities = plainToInstance(StockEntity, result);
+    const entities = plainToInstance(SaleEntity, result);
     const allProduct = await this.productService.findAll({});
     const allProductNames = allProduct.map((item) => item.productName);
     const allStore = await this.storeService.findAll({
       customerId,
     });
     const allStoreNames = allStore.map((item) => item.storeName);
+    const allCustomer = await this.customerService.findAll();
+    const allCustomerNames = allCustomer.map((item) => item.customerName);
 
     // 校验
     const errors = [];
     for (let rowIndex = 0; rowIndex < entities.length; rowIndex++) {
       const errorsTemp = [];
       const entity = entities[rowIndex];
-      const { productName, storeName, quantity, price, total } = entity;
+      const {
+        productName,
+        storeName,
+        quantity,
+        price,
+        total,
+        buyerName,
+        date,
+      } = entity;
 
       // 产品名称不在系统内，或者没填写，必填字段
       if (!productName || !allProductNames.includes(productName)) {
@@ -218,6 +269,39 @@ export class StockService {
         errorsTemp.push(errMsg);
       }
 
+      // buyerName
+      if (buyerName && !allCustomerNames.includes(buyerName)) {
+        // 单元格位置文本，A1 B2
+        const position = `${utils.encode_cell({
+          c: colMap.buyerName,
+          r: rowIndex + 1,
+        })}`;
+        const errMsg = `位置: ${position} 客户"${buyerName}"不在系统内`;
+        errorsTemp.push(errMsg);
+      }
+
+      // 时间不是日期类型
+      if (date && !validator.isDate(date)) {
+        // 单元格位置文本，A1 B2
+        const position = `${utils.encode_cell({
+          c: colMap.date,
+          r: rowIndex + 1,
+        })}`;
+        const errMsg = `位置: ${position} 时间"${date}"不是日期类型`;
+        errorsTemp.push(errMsg);
+      }
+
+      // 时间不是日期类型
+      if (importType === 2 && !date) {
+        // 单元格位置文本，A1 B2
+        const position = `${utils.encode_cell({
+          c: colMap.date,
+          r: rowIndex + 1,
+        })}`;
+        const errMsg = `位置: ${position} 时间必填`;
+        errorsTemp.push(errMsg);
+      }
+
       // 有失败的话，就在entity中添加失败原因，方便进行导出
       if (errorsTemp.length > 0) {
         data[rowIndex]['失败原因'] = errorsTemp.join('，');
@@ -229,11 +313,7 @@ export class StockService {
       const errorSheet = utils.json_to_sheet(data);
       const workbook = utils.book_new();
       appLogger.error(errors.join('\n'));
-      utils.book_append_sheet(
-        workbook,
-        errorSheet,
-        `${stockSheetName}错误原因`,
-      );
+      utils.book_append_sheet(workbook, errorSheet, `${saleSheetName}错误原因`);
 
       const buf = write(workbook, { type: 'buffer', bookType: 'xlsx' });
       const errorFileName = `${
@@ -255,13 +335,26 @@ export class StockService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      await queryRunner.manager
-        .createQueryBuilder()
-        .delete()
-        .from(StockEntity)
-        .where('week = :week', { week })
-        .andWhere('customer_id = :customerId', { customerId })
-        .execute();
+      if (importType === 1) {
+        await queryRunner.manager
+          .createQueryBuilder()
+          .delete()
+          .from(SaleEntity)
+          .where('week = :week', { week })
+          .andWhere('customer_id = :customerId', { customerId })
+          .execute();
+      } else if (importType === 2) {
+        // TODO  确认下如何做，是否直接覆盖删除
+        let weeks = entities.map((item) => item.week).filter((item) => !!item);
+        weeks = [...new Set(weeks)];
+        await queryRunner.manager
+          .createQueryBuilder()
+          .delete()
+          .from(SaleEntity)
+          .where('week IN (:...weeks)', { weeks })
+          .andWhere('customer_id = :customerId', { customerId })
+          .execute();
+      }
       res = await queryRunner.manager.save(entities);
       await queryRunner.commitTransaction();
     } catch (err) {
@@ -285,7 +378,7 @@ export class StockService {
     await this.dataSource
       .createQueryBuilder()
       .delete()
-      .from(StockEntity)
+      .from(SaleEntity)
       .where('week IN (:...weeks)', { weeks })
       .andWhere('customer_id = :customerId', { customerId })
       .execute();

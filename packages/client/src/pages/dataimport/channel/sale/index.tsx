@@ -5,21 +5,21 @@ import { useState, useRef, useEffect } from 'react';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import moment from 'moment';
-import type { StockItem } from './data';
+import type { SaleItem } from './data';
 import type { TablePagination } from '../../../../types/common';
-import { getStock, parseFile, deleteStock, downloadTemplate, downloadErrorExcel } from './service';
+import { getSale, parseFile, deleteSale, downloadTemplate, downloadErrorExcel } from './service';
 import OperationModal from './components/OperationModal';
 import { WeekPicker } from '../../../../components/WeekPicker';
 import { dateFormat } from '@/common/index';
 
-const Stock = ({ customerId }: { customerId: number }) => {
+const Sale = ({ customerId }: { customerId: number }) => {
   const [visible, setVisible] = useState<boolean>(false);
   const actionRef = useRef<ActionType>();
   const searchRef = useRef();
 
   const { run } = useRequest(
     async (params) => {
-      return await getStock(params);
+      return await getSale(params);
     },
     {
       manual: true,
@@ -29,7 +29,7 @@ const Stock = ({ customerId }: { customerId: number }) => {
   const { run: postRun } = useRequest(
     async (method: 'add' | 'remove', params) => {
       if (method === 'remove') {
-        await deleteStock(params);
+        await deleteSale(params);
         message.success('删除成功');
       }
       if (method === 'add') {
@@ -57,7 +57,7 @@ const Stock = ({ customerId }: { customerId: number }) => {
     },
   );
 
-  const columns: ProColumns<StockItem>[] = [
+  const columns: ProColumns<SaleItem>[] = [
     {
       dataIndex: 'id',
       hideInTable: true,
@@ -83,6 +83,16 @@ const Stock = ({ customerId }: { customerId: number }) => {
     {
       title: '周结束时间',
       dataIndex: 'weekEndDate',
+      hideInSearch: true,
+    },
+    {
+      title: '日期',
+      dataIndex: 'date',
+      hideInSearch: true,
+    },
+    {
+      title: '客户',
+      dataIndex: 'buyerName',
       hideInSearch: true,
     },
     {
@@ -185,7 +195,7 @@ const Stock = ({ customerId }: { customerId: number }) => {
 
   return (
     <>
-      <ProTable<StockItem, TablePagination>
+      <ProTable<SaleItem, TablePagination>
         actionRef={actionRef}
         formRef={searchRef}
         rowKey="id"
@@ -208,7 +218,7 @@ const Stock = ({ customerId }: { customerId: number }) => {
             onClick={() => {
               // 下载
               downloadTemplate({
-                fileName: 'stock_template.xlsx',
+                fileName: 'sale_template.xlsx',
               });
             }}
           >
@@ -241,4 +251,4 @@ const Stock = ({ customerId }: { customerId: number }) => {
   );
 };
 
-export default Stock;
+export default Sale;

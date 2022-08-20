@@ -3,6 +3,7 @@ import { ConfigService } from './config.service';
 import { ConfigController } from './config.controller';
 
 @Module({
+  exports: [ConfigService],
   providers: [ConfigService],
   controllers: [ConfigController],
 })
