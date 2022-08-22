@@ -170,7 +170,7 @@ export class StockService {
           c: colMap.productName,
           r: rowIndex + 1,
         })}`;
-        const errMsg = `位置: ${position} 产品名称"${productName}"不在系统内`;
+        const errMsg = `位置: ${position} 产品名称"${productName}"不在系统内或没填写`;
         errorsTemp.push(errMsg);
       }
 
@@ -192,7 +192,7 @@ export class StockService {
           c: colMap.quantity,
           r: rowIndex + 1,
         })}`;
-        const errMsg = `位置: ${position} 数量"${quantity}"不是数字类型`;
+        const errMsg = `位置: ${position} 数量"${quantity}"不是数字类型或没填写`;
         errorsTemp.push(errMsg);
       }
 
@@ -214,7 +214,7 @@ export class StockService {
           c: colMap.total,
           r: rowIndex + 1,
         })}`;
-        const errMsg = `位置: ${position} 总额"${storeName}"不是数字类型`;
+        const errMsg = `位置: ${position} 总额"${total}"不是数字类型`;
         errorsTemp.push(errMsg);
       }
 
@@ -226,7 +226,9 @@ export class StockService {
     }
 
     if (errors.length > 0) {
-      const errorSheet = utils.json_to_sheet(data);
+      const errorSheet = utils.json_to_sheet(data, {
+        header: [...headers, '失败原因'],
+      });
       const workbook = utils.book_new();
       appLogger.error(errors.join('\n'));
       utils.book_append_sheet(

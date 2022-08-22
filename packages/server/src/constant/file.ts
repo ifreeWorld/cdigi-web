@@ -27,7 +27,7 @@ export const saleHeaderMap = {
 };
 
 // 在途库存表头
-export const onPassageStockHeaderMap = {
+export const transitHeaderMap = {
   '在途库存 - 型号': 'productName',
   '在途库存 - 数量': 'quantity',
   '在途库存 - 价格': 'price',
@@ -39,6 +39,7 @@ export const onPassageStockHeaderMap = {
 
 export const stockSheetName = '库存';
 export const saleSheetName = '销售';
-export const onPassageStockSheetName = '在途库存';
+export const transitSheetName = '在途库存';
 
 export const dateFormat = 'YYYY-MM-DD';
+export const dateTimeFormat = 'YYYY-MM-DD HH:mm:ss';

@@ -14,6 +14,7 @@ import { ConfigModule } from './modules/config/config.module';
 import { ProductModule } from './modules/product/product.module';
 import { StockModule } from './modules/stock/stock.module';
 import { SaleModule } from './modules/sale/sale.module';
+import { TransitModule } from './modules/transit/transit.module';
 import { REDIS_CONFIG } from './constant/app.config';
 
 @Module({
@@ -34,6 +35,7 @@ import { REDIS_CONFIG } from './constant/app.config';
     ProductModule,
     StockModule,
     SaleModule,
+    TransitModule,
     RedisModule.forRoot({
       config: {
         port: REDIS_CONFIG.port,

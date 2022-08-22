@@ -81,7 +81,7 @@ const Channel: React.FC = () => {
             <TabPane tab="销售" key="sale">
               <Sale customerId={customerId}></Sale>
             </TabPane>
-            <TabPane tab="在途库存" key="onpassage">
+            <TabPane tab="在途库存" key="transit">
               在途库存
             </TabPane>
           </Tabs>

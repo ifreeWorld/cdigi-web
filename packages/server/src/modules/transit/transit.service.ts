@@ -1,42 +1,31 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository, DataSource, In } from 'typeorm';
+import { FindOptionsWhere, Repository, DataSource, Between } from 'typeorm';
 import * as validator from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { WorkSheet, utils, write, WorkBook } from 'xlsx';
 import * as fs from 'fs';
 import * as moment from 'moment';
-import { SaleEntity } from './sale.entity';
-import {
-  SearchDto,
-  SaleParseDto,
-  SaleSaveDto,
-  Type,
-  SaleInnerParseResult,
-} from './sale.dto';
+import { TransitEntity } from './transit.entity';
+import { SearchDto, TransitParseDto } from './transit.dto';
 import { ErrorConstant } from 'src/constant/error';
 import {
-  saleHeaderMap,
-  saleSheetName,
+  transitHeaderMap,
+  transitSheetName,
   tmpPath,
   dateFormat,
+  dateTimeFormat,
 } from '../../constant/file';
 import { ProductService } from '../product/product.service';
-import { StoreService } from '../store/store.service';
-import { CustomerService } from '../customer/customer.service';
-import { ConfigService } from '../config/config.service';
 import { getTree } from './util';
 import { fixImportedDate } from '../../utils';
 import { appLogger } from 'src/logger';
 
-export class SaleService {
+export class TransitService {
   constructor(
-    @InjectRepository(SaleEntity)
-    private repository: Repository<SaleEntity>,
+    @InjectRepository(TransitEntity)
+    private repository: Repository<TransitEntity>,
     private dataSource: DataSource,
     private productService: ProductService,
-    private storeService: StoreService,
-    private customerService: CustomerService,
-    private configService: ConfigService,
   ) {}
 
   /**
@@ -46,54 +35,51 @@ export class SaleService {
     skip: number,
     take: number,
     query: SearchDto,
-  ): Promise<[SaleEntity[], number]> {
-    const { week, customerId } = query;
-    const weekQb = this.dataSource
-      .getRepository(SaleEntity)
-      .createQueryBuilder('sale')
-      .select('week')
+  ): Promise<[TransitEntity[], number]> {
+    const { inTimeStart, inTimeEnd, customerId } = query;
+    const inTimeQb = this.dataSource
+      .getRepository(TransitEntity)
+      .createQueryBuilder('transit')
+      .select('in_time')
       .distinct(true)
-      .orderBy('week');
+      .orderBy('in_time');
 
-    if (validator.isNotEmpty(week)) {
-      weekQb.where('sale.week = :week', { week });
+    if (validator.isNotEmpty(inTimeStart) && validator.isNotEmpty(inTimeEnd)) {
+      inTimeQb.where('transit.in_time > :inTimeStart', { inTimeStart });
+      inTimeQb.andWhere('transit.in_time < :inTimeEnd', { inTimeEnd });
     }
     if (validator.isNotEmpty(customerId)) {
-      weekQb.andWhere('sale.customer_id = :customerId', { customerId });
+      inTimeQb.andWhere('transit.customer_id = :customerId', { customerId });
     }
-    const weeks = await weekQb.getRawMany();
+    const inTimes = await inTimeQb.getRawMany();
 
     const asQb = this.dataSource
       .createQueryBuilder()
       .select()
-      .from('(' + weekQb.take(take).skip(skip).getQuery() + ')', 't');
+      .from('(' + inTimeQb.take(take).skip(skip).getQuery() + ')', 't');
 
     const entitys = await this.dataSource
-      .getRepository(SaleEntity)
-      .createQueryBuilder('sale')
+      .getRepository(TransitEntity)
+      .createQueryBuilder('transit')
       .select()
-      .where('sale.week IN (' + asQb.getQuery() + ')')
-      .andWhere('sale.customer_id = :customerId', { customerId })
-      .orderBy('week')
-      .setParameters(weekQb.getParameters())
+      .where('transit.in_time IN (' + asQb.getQuery() + ')')
+      .orderBy('in_time')
+      .setParameters(inTimeQb.getParameters())
       .getMany();
 
     const result = getTree(entitys);
 
-    return [result, weeks.length];
+    return [result, inTimes.length];
   }
 
   /**
    * 全量查询
    */
-  async findAll(query: SearchDto): Promise<SaleEntity[]> {
-    const where: FindOptionsWhere<SaleEntity> = {};
-    const { week, weeks, customerId } = query;
-    if (validator.isNotEmpty(week)) {
-      where.week = week;
-    }
-    if (validator.isNotEmpty(weeks)) {
-      where.week = In(weeks);
+  async findAll(query: SearchDto): Promise<TransitEntity[]> {
+    const where: FindOptionsWhere<TransitEntity> = {};
+    const { inTimeStart, inTimeEnd, customerId } = query;
+    if (validator.isNotEmpty(inTimeStart) && validator.isNotEmpty(inTimeEnd)) {
+      where.inTime = Between(inTimeStart, inTimeEnd);
     }
     if (validator.isNotEmpty(customerId)) {
       where.customer = {
@@ -109,13 +95,10 @@ export class SaleService {
    * 全量查询数量
    */
   async findCount(query: SearchDto): Promise<number> {
-    const where: FindOptionsWhere<SaleEntity> = {};
-    const { week, weeks, customerId } = query;
-    if (validator.isNotEmpty(week)) {
-      where.week = week;
-    }
-    if (validator.isNotEmpty(weeks)) {
-      where.week = In(weeks);
+    const where: FindOptionsWhere<TransitEntity> = {};
+    const { inTimeStart, inTimeEnd, customerId } = query;
+    if (validator.isNotEmpty(inTimeStart) && validator.isNotEmpty(inTimeEnd)) {
+      where.inTime = Between(inTimeStart, inTimeEnd);
     }
     if (validator.isNotEmpty(customerId)) {
       where.customer = {
@@ -134,10 +117,10 @@ export class SaleService {
     workbook: WorkBook,
     sheet: WorkSheet,
     fileName: string,
-    body: SaleParseDto,
+    body: TransitParseDto,
     creatorId: number,
-  ): Promise<SaleInnerParseResult | ErrorConstant> {
-    const { weekStartDate, weekEndDate, week, customerId } = body;
+  ): Promise<number | ErrorConstant> {
+    const { customerId } = body;
     const arrs = utils.sheet_to_json<any[]>(sheet, {
       header: 1,
       dateNF: dateFormat,
@@ -151,47 +134,27 @@ export class SaleService {
     // {productName: 0, 库存 - 门店: 1, 库存 - 数量: 2}
     const colMap: any = {};
     headers.forEach((header, index) => {
-      const key = saleHeaderMap[header];
+      const key = transitHeaderMap[header];
       if (key) {
         colMap[key] = index;
       }
     });
 
-    // 类型1为基于周进行导入，类型2为基于excel中的日期进行导入，类型2需要根据“日期”字段计算出周
-    let importType = 1;
-    // week为空，说明为类型2
-    if (!week || colMap.hasOwnProperty('date')) {
-      importType = 2;
-    }
-
-    // 查询周开始日
-    let weekStartIndex = '1';
-    if (importType === 2) {
-      weekStartIndex = await this.configService.get('getWeekStartIndex');
-      if (!weekStartIndex) {
-        weekStartIndex = '1';
-      }
-      moment.locale('zh-cn', {
-        week: {
-          dow: Number(weekStartIndex),
-        },
-      });
-    }
     const data = utils.sheet_to_json(sheet, {
       dateNF: dateFormat,
     });
     const is_date1904 = workbook.Workbook.WBProps.date1904;
+    const inTime = moment().format(dateTimeFormat);
     const result = data.map((item) => {
-      const temp: any = {
-        weekStartDate,
-        weekEndDate,
-        week,
+      const temp: Partial<TransitEntity> = {
+        inTime,
         creatorId,
+        // @ts-ignore
         customer: { id: customerId },
       };
-      for (const oldKey in saleHeaderMap) {
+      for (const oldKey in transitHeaderMap) {
         if (item.hasOwnProperty(oldKey)) {
-          const newKey = saleHeaderMap[oldKey];
+          const newKey = transitHeaderMap[oldKey];
           temp[newKey] = item[oldKey];
           // 设置sheetjs date格式的时差，https://github.com/SheetJS/sheetjs/issues/1565
           if (temp[newKey] instanceof Date) {
@@ -201,31 +164,16 @@ export class SaleService {
       }
       return temp;
     });
-    const entities = plainToInstance(SaleEntity, result);
-    // const entities = result;
+    const entities = plainToInstance(TransitEntity, result);
     const allProduct = await this.productService.findAll({});
     const allProductNames = allProduct.map((item) => item.productName);
-    const allStore = await this.storeService.findAll({
-      customerId,
-    });
-    const allStoreNames = allStore.map((item) => item.storeName);
-    const allCustomer = await this.customerService.findAll();
-    const allCustomerNames = allCustomer.map((item) => item.customerName);
 
     // 校验
     const errors = [];
     for (let rowIndex = 0; rowIndex < entities.length; rowIndex++) {
       const errorsTemp = [];
       const entity = entities[rowIndex];
-      const {
-        productName,
-        storeName,
-        quantity,
-        price,
-        total,
-        buyerName,
-        date,
-      } = entity;
+      const { productName, quantity, price, total, eta, shippingDate } = entity;
 
       // 产品名称不在系统内，或者没填写，必填字段
       if (!productName || !allProductNames.includes(productName)) {
@@ -235,17 +183,6 @@ export class SaleService {
           r: rowIndex + 1,
         })}`;
         const errMsg = `位置: ${position} 产品名称"${productName}"不在系统内或没填写`;
-        errorsTemp.push(errMsg);
-      }
-
-      // 门店名称不在系统内，allStoreNames是关联的经销商的门店
-      if (storeName && !allStoreNames.includes(storeName)) {
-        // 单元格位置文本，A1 B2
-        const position = `${utils.encode_cell({
-          c: colMap.storeName,
-          r: rowIndex + 1,
-        })}`;
-        const errMsg = `位置: ${position} 门店名称"${storeName}"不在系统内或门店不在此用户下`;
         errorsTemp.push(errMsg);
       }
 
@@ -282,53 +219,26 @@ export class SaleService {
         errorsTemp.push(errMsg);
       }
 
-      // buyerName
-      if (buyerName && !allCustomerNames.includes(buyerName)) {
+      // 时间不是日期类型
+      if (eta && !validator.isDate(eta)) {
         // 单元格位置文本，A1 B2
         const position = `${utils.encode_cell({
-          c: colMap.buyerName,
+          c: colMap.eta,
           r: rowIndex + 1,
         })}`;
-        const errMsg = `位置: ${position} 客户"${buyerName}"不在系统内`;
+        const errMsg = `位置: ${position} 时间"${eta}"不是日期类型`;
         errorsTemp.push(errMsg);
       }
 
       // 时间不是日期类型
-      if (date && !validator.isDate(date)) {
+      if (shippingDate && !validator.isDate(shippingDate)) {
         // 单元格位置文本，A1 B2
         const position = `${utils.encode_cell({
-          c: colMap.date,
+          c: colMap.shippingDate,
           r: rowIndex + 1,
         })}`;
-        const errMsg = `位置: ${position} 时间"${date}"不是日期类型`;
+        const errMsg = `位置: ${position} 时间"${shippingDate}"不是日期类型`;
         errorsTemp.push(errMsg);
-      }
-
-      // 时间不是日期类型
-      if (importType === 2 && !date) {
-        // 单元格位置文本，A1 B2
-        const position = `${utils.encode_cell({
-          c: colMap.date,
-          r: rowIndex + 1,
-        })}`;
-        const errMsg = `位置: ${position} 有"销售 - 时间"列的时候"销售 - 时间"必填`;
-        errorsTemp.push(errMsg);
-      }
-
-      // 类型2情况下为week、weekStartDate、weekEndDate添加值
-      if (importType === 2 && date) {
-        const dateMoment = moment(date);
-        const dateStr = dateMoment.format(dateFormat);
-        const weekStr = dateMoment.format('gggg-w');
-        const startDate = dateMoment.startOf('week').format(dateFormat);
-        const endDate = dateMoment.endOf('week').format(dateFormat);
-        entity.week = weekStr;
-        // @ts-ignore
-        entity.date = dateStr;
-        // @ts-ignore
-        entity.weekStartDate = startDate;
-        // @ts-ignore
-        entity.weekEndDate = endDate;
       }
 
       // 有失败的话，就在entity中添加失败原因，方便进行导出
@@ -344,7 +254,11 @@ export class SaleService {
       });
       const workbook = utils.book_new();
       appLogger.error(errors.join('\n'));
-      utils.book_append_sheet(workbook, errorSheet, `${saleSheetName}错误原因`);
+      utils.book_append_sheet(
+        workbook,
+        errorSheet,
+        `${transitSheetName}错误原因`,
+      );
 
       const buf = write(workbook, { type: 'buffer', bookType: 'xlsx' });
       const errorFileName = `${
@@ -359,47 +273,13 @@ export class SaleService {
       );
       return e;
     }
-    let weeks = entities.map((item) => item.week).filter((item) => !!item);
-    weeks = [...new Set(weeks)];
-    const repeatData = await this.findAll({
-      customerId,
-      weeks,
-    });
-    let repeatWeeks = repeatData
-      .map((item) => item.week)
-      .filter((item) => !!item);
-    repeatWeeks = [...new Set(repeatWeeks)];
-    const repeatWeekCount = repeatWeeks.length;
 
-    return {
-      data: entities,
-      repeatWeekCount,
-      repeatWeeks,
-    };
-  }
-
-  async save({ data, customerId, type }: SaleSaveDto) {
-    const entities = plainToInstance(SaleEntity, data);
-    let weeks = entities.map((item) => item.week).filter((item) => !!item);
-    weeks = [...new Set(weeks)];
-
-    // 增加一个事务，先删除，再保存
+    // 增加一个事务，保存
     let res;
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      // 覆盖
-      if (type === Type.cover) {
-        await queryRunner.manager
-          .createQueryBuilder()
-          .delete()
-          .from(SaleEntity)
-          .where('week IN (:...weeks)', { weeks })
-          .andWhere('customer_id = :customerId', { customerId })
-          .execute();
-      }
-      // 否则直接添加
       res = await queryRunner.manager.save(entities);
       await queryRunner.commitTransaction();
     } catch (err) {
@@ -419,12 +299,15 @@ export class SaleService {
    * 根据 ids 删除
    * @param ids
    */
-  async delete(weeks: string[], customerId: number): Promise<boolean> {
+  async delete(
+    inTimes: TransitEntity['inTime'][],
+    customerId: number,
+  ): Promise<boolean> {
     await this.dataSource
       .createQueryBuilder()
       .delete()
-      .from(SaleEntity)
-      .where('week IN (:...weeks)', { weeks })
+      .from(TransitEntity)
+      .where('in_time IN (:...inTimes)', { inTimes })
       .andWhere('customer_id = :customerId', { customerId })
       .execute();
     return true;
