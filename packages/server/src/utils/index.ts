@@ -1,5 +1,6 @@
 import { PaginationDto } from '../dto';
 import crypto from 'crypto';
+import { SSF } from 'xlsx';
 import * as dayjs from 'dayjs';
 
 export * from './sqlUtil';
@@ -44,3 +45,31 @@ export const aesDecode = (data, password) => {
 
 /** 日期格式化 */
 export const formatDate = (date) => dayjs(date).format('YYYY-MM-DD hh:mm:ss');
+
+const basedate = new Date(1899, 11, 30, 0, 0, 0);
+const dnthresh =
+  basedate.getTime() +
+  (new Date().getTimezoneOffset() - basedate.getTimezoneOffset()) * 60000;
+
+const day_ms = 24 * 60 * 60 * 1000;
+const days_1462_ms = 1462 * day_ms;
+
+function datenum(v, date1904) {
+  let epoch = v.getTime();
+  if (date1904) {
+    epoch -= days_1462_ms;
+  }
+  return (epoch - dnthresh) / day_ms;
+}
+
+export function fixImportedDate(date, is_date1904) {
+  // Convert JS Date back to Excel date code and parse them using SSF module.
+  const parsed = SSF.parse_date_code(datenum(date, false), {
+    date1904: is_date1904,
+  });
+  return new Date(`${parsed.y}-${parsed.m}-${parsed.d}`);
+  // or
+  // return parsed;
+  // or if you want to stick to JS Date,
+  // return new Date(parsed.y, parsed.m, parsed.d, parsed.H, parsed.M, parsed.S);
+}

@@ -19,6 +19,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
   if (!visible) {
     return null;
   }
+  const lastWeek = moment().subtract(7, 'days');
   return (
     <ModalForm
       visible={visible}
@@ -31,6 +32,9 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           file,
         });
       }}
+      initialValues={{
+        week: lastWeek,
+      }}
       modalProps={{
         onCancel: () => onCancel(),
         destroyOnClose: true,
@@ -40,8 +44,6 @@ const OperationModal: FC<OperationModalProps> = (props) => {
         <ProFormWeekPicker
           name="week"
           label="周"
-          required={true}
-          rules={[{ required: true, message: '请选择周' }]}
           dateFormatter={1}
           transform={(value: string) => {
             const date = moment(value);

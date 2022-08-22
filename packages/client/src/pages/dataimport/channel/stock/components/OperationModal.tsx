@@ -19,6 +19,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
   if (!visible) {
     return null;
   }
+  const lastWeek = moment().subtract(7, 'days');
   return (
     <ModalForm
       visible={visible}
@@ -30,6 +31,9 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           ...values,
           file,
         });
+      }}
+      initialValues={{
+        week: lastWeek,
       }}
       modalProps={{
         onCancel: () => onCancel(),

@@ -45,6 +45,14 @@ export async function parseFile(data: any, options?: { [key: string]: any }) {
   });
 }
 
+/** 上传excel POST /api/sale/save */
+export async function save(data: any, options?: { [key: string]: any }) {
+  return request('/api/sale/save', {
+    data,
+    method: 'POST',
+  });
+}
+
 /** 下载文件 GET /api/config/downloadTemplate */
 export async function downloadErrorExcel(params: { fileName: string }) {
   return request('/api/config/downloadErrorExcel', {

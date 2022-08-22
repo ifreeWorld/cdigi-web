@@ -1,12 +1,18 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { PaginationDto } from '../../dto';
 import { SaleEntity } from './sale.entity';
 import { CustomerEntity } from '../customer/customer.entity';
 import { BaseResult } from 'src/interface/base.interface';
 
+export enum Type {
+  cover = 'cover',
+  add = 'add',
+}
+
 export class SearchDto extends PaginationDto {
   week?: SaleEntity['week'];
+  weeks?: SaleEntity['week'][];
   customerId?: SaleEntity['customer']['id'];
 }
 
@@ -16,43 +22,30 @@ export class SaleParseDto {
   })
   customerId: CustomerEntity['id'];
 
-  weekStartDate?: SaleEntity['weekStartDate'];
+  weekStartDate?: string;
 
-  weekEndDate?: SaleEntity['weekEndDate'];
+  weekEndDate?: string;
 
   week?: SaleEntity['week'];
 
   @ApiProperty({ type: 'string', format: 'binary' })
   file: any;
 }
-// export class SaleCreateDto {
-//   @IsNotEmpty({
-//     message: '产品型号不能为空',
-//   })
-//   productName: SaleEntity['productName'];
+export class SaleSaveDto {
+  data: SaleEntity[];
 
-//   @IsNotEmpty({
-//     message: '品牌不能为空',
-//   })
-//   vendorName: SaleEntity['vendorName'];
+  @IsNotEmpty({
+    message: 'customerId不能为空',
+  })
+  customerId: CustomerEntity['id'];
 
-//   @IsNotEmpty({
-//     message: '一级分类不能为空',
-//   })
-//   categoryFirstName: SaleEntity['categoryFirstName'];
+  @IsNotEmpty({
+    message: 'type能为空',
+  })
+  @IsEnum(Type)
+  type: Type;
+}
 
-//   categorySecondName?: SaleEntity['categorySecondName'];
-
-//   categoryThirdName?: SaleEntity['categoryThirdName'];
-
-//   tags?: SaleEntity['tags'];
-// }
-// export class SaleUpdateDto extends SaleCreateDto {
-//   @IsNotEmpty({
-//     message: 'id不能为空',
-//   })
-//   id: SaleEntity['id'];
-// }
 export class SaleDeleteDto {
   @IsNotEmpty({
     message: 'ids不能为空',
@@ -75,8 +68,14 @@ export class SaleListResult extends BaseResult {
 export class SaleDataResult extends BaseResult {
   data: SaleEntity[];
 }
+
+export class SaleInnerParseResult {
+  data: SaleEntity[];
+  repeatWeekCount: number;
+  repeatWeeks: string[];
+}
 export class SaleParseResult extends BaseResult {
-  data: string | boolean;
+  data: string | SaleInnerParseResult;
 }
 
 export class SaleIdResult extends BaseResult {

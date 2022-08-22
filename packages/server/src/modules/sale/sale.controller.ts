@@ -24,19 +24,20 @@ import { CurrentUser } from '../../decorators';
 import { Pager } from '../../interface';
 import { JwtGuard } from '../../guards';
 import { getSkip } from '../../utils';
-import { CustomResponse, ErrorConstant } from 'src/constant/error';
+import { CustomResponse } from 'src/constant/error';
 import {
   SearchDto,
   SaleListResult,
   SaleParseDto,
   SaleDeleteDto,
+  SaleSaveDto,
   SaleIdResult,
   SaleParseResult,
   SaleDataResult,
   SaleBooleanResult,
 } from './sale.dto';
 import { SaleEntity } from './sale.entity';
-import { mimeType, saleSheetName } from '../../constant/file';
+import { mimeType, saleSheetName, dateFormat } from '../../constant/file';
 
 @ApiBearerAuth()
 @ApiTags('销售')
@@ -107,9 +108,14 @@ export class SaleController {
     @Body() body: SaleParseDto,
     @CurrentUser() currentUser,
   ) {
-    const workbook = read(file.buffer, { type: 'buffer', cellDates: true });
+    const workbook = read(file.buffer, {
+      type: 'buffer',
+      cellDates: true,
+      cellText: false,
+    });
     const { SheetNames: sheetNames, Sheets: sheets } = workbook;
     const fileName = Buffer.from(file.originalname, 'latin1').toString('utf8');
+
     let flag = 0;
 
     for (let i = 0; i < sheetNames.length; i++) {
@@ -118,21 +124,31 @@ export class SaleController {
       if (sheetName === saleSheetName) {
         flag = 1;
         const res = await this.saleService.parseSheet(
+          workbook,
           sheet,
           fileName,
           body,
           currentUser.id,
         );
-        if (res instanceof ErrorConstant) {
-          return res;
-        }
+        return res;
       }
     }
 
     if (!flag) {
       throw new CustomResponse('sheet页名称不正确');
     }
-    return true;
+  }
+
+  /**
+   * 保存数据
+   */
+  @UseGuards(JwtGuard)
+  @Post('/save')
+  @ApiOkResponse({
+    type: Number,
+  })
+  async save(@Body() body: SaleSaveDto) {
+    return this.saleService.save(body);
   }
 
   /**

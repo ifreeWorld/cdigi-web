@@ -1,12 +1,18 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository, DataSource } from 'typeorm';
+import { FindOptionsWhere, Repository, DataSource, In } from 'typeorm';
 import * as validator from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { WorkSheet, utils, write } from 'xlsx';
+import { WorkSheet, utils, write, WorkBook } from 'xlsx';
 import * as fs from 'fs';
 import * as moment from 'moment';
 import { SaleEntity } from './sale.entity';
-import { SearchDto, SaleParseDto } from './sale.dto';
+import {
+  SearchDto,
+  SaleParseDto,
+  SaleSaveDto,
+  Type,
+  SaleInnerParseResult,
+} from './sale.dto';
 import { ErrorConstant } from 'src/constant/error';
 import {
   saleHeaderMap,
@@ -19,6 +25,7 @@ import { StoreService } from '../store/store.service';
 import { CustomerService } from '../customer/customer.service';
 import { ConfigService } from '../config/config.service';
 import { getTree } from './util';
+import { fixImportedDate } from '../../utils';
 import { appLogger } from 'src/logger';
 
 export class SaleService {
@@ -66,6 +73,7 @@ export class SaleService {
       .createQueryBuilder('sale')
       .select()
       .where('sale.week IN (' + asQb.getQuery() + ')')
+      .andWhere('sale.customer_id = :customerId', { customerId })
       .orderBy('week')
       .setParameters(weekQb.getParameters())
       .getMany();
@@ -80,9 +88,12 @@ export class SaleService {
    */
   async findAll(query: SearchDto): Promise<SaleEntity[]> {
     const where: FindOptionsWhere<SaleEntity> = {};
-    const { week, customerId } = query;
+    const { week, weeks, customerId } = query;
     if (validator.isNotEmpty(week)) {
       where.week = week;
+    }
+    if (validator.isNotEmpty(weeks)) {
+      where.week = In(weeks);
     }
     if (validator.isNotEmpty(customerId)) {
       where.customer = {
@@ -99,9 +110,12 @@ export class SaleService {
    */
   async findCount(query: SearchDto): Promise<number> {
     const where: FindOptionsWhere<SaleEntity> = {};
-    const { week, customerId } = query;
+    const { week, weeks, customerId } = query;
     if (validator.isNotEmpty(week)) {
       where.week = week;
+    }
+    if (validator.isNotEmpty(weeks)) {
+      where.week = In(weeks);
     }
     if (validator.isNotEmpty(customerId)) {
       where.customer = {
@@ -117,21 +131,36 @@ export class SaleService {
    * 解析数据插入数据
    */
   async parseSheet(
+    workbook: WorkBook,
     sheet: WorkSheet,
     fileName: string,
     body: SaleParseDto,
     creatorId: number,
-  ): Promise<number | ErrorConstant> {
+  ): Promise<SaleInnerParseResult | ErrorConstant> {
     const { weekStartDate, weekEndDate, week, customerId } = body;
-    const arrs = utils.sheet_to_json<any[]>(sheet, { header: 1 });
+    const arrs = utils.sheet_to_json<any[]>(sheet, {
+      header: 1,
+      dateNF: dateFormat,
+    });
     if (arrs.length === 0) {
       return;
     }
 
+    // [库存 - 型号	库存 - 门店	库存 - 数量]表头数据，顺序不一定
+    const headers = arrs[0];
+    // {productName: 0, 库存 - 门店: 1, 库存 - 数量: 2}
+    const colMap: any = {};
+    headers.forEach((header, index) => {
+      const key = saleHeaderMap[header];
+      if (key) {
+        colMap[key] = index;
+      }
+    });
+
     // 类型1为基于周进行导入，类型2为基于excel中的日期进行导入，类型2需要根据“日期”字段计算出周
     let importType = 1;
     // week为空，说明为类型2
-    if (!week) {
+    if (!week || colMap.hasOwnProperty('date')) {
       importType = 2;
     }
 
@@ -148,48 +177,32 @@ export class SaleService {
         },
       });
     }
-
-    // [库存 - 型号	库存 - 门店	库存 - 数量]表头数据，顺序不一定
-    const headers = arrs[0];
-    // {productName: 0, 库存 - 门店: 1, 库存 - 数量: 2}
-    const colMap: any = {};
-    headers.forEach((header, index) => {
-      const key = saleHeaderMap[header];
-      if (key) {
-        colMap[key] = index;
-      }
+    const data = utils.sheet_to_json(sheet, {
+      dateNF: dateFormat,
     });
-
-    const data = utils.sheet_to_json(sheet);
+    const is_date1904 = workbook.Workbook.WBProps.date1904;
     const result = data.map((item) => {
-      const temp: Partial<SaleEntity> = {
+      const temp: any = {
         weekStartDate,
         weekEndDate,
         week,
         creatorId,
-        // @ts-ignore
         customer: { id: customerId },
       };
       for (const oldKey in saleHeaderMap) {
         if (item.hasOwnProperty(oldKey)) {
           const newKey = saleHeaderMap[oldKey];
           temp[newKey] = item[oldKey];
+          // 设置sheetjs date格式的时差，https://github.com/SheetJS/sheetjs/issues/1565
+          if (temp[newKey] instanceof Date) {
+            temp[newKey] = fixImportedDate(temp[newKey], is_date1904);
+          }
         }
-      }
-      // 类型2情况下为week、weekStartDate、weekEndDate添加值
-      if (importType === 2 && temp.date) {
-        moment(temp.date);
-        const dateMoment = moment(temp.date);
-        const weekStr = dateMoment.format('gggg-w');
-        const startDate = dateMoment.startOf('week').format(dateFormat);
-        const endDate = dateMoment.endOf('week').format(dateFormat);
-        temp.week = weekStr;
-        temp.weekStartDate = new Date(startDate);
-        temp.weekEndDate = new Date(endDate);
       }
       return temp;
     });
     const entities = plainToInstance(SaleEntity, result);
+    // const entities = result;
     const allProduct = await this.productService.findAll({});
     const allProductNames = allProduct.map((item) => item.productName);
     const allStore = await this.storeService.findAll({
@@ -298,8 +311,24 @@ export class SaleService {
           c: colMap.date,
           r: rowIndex + 1,
         })}`;
-        const errMsg = `位置: ${position} 时间必填`;
+        const errMsg = `位置: ${position} 有"销售 - 时间"列的时候"销售 - 时间"必填`;
         errorsTemp.push(errMsg);
+      }
+
+      // 类型2情况下为week、weekStartDate、weekEndDate添加值
+      if (importType === 2 && date) {
+        const dateMoment = moment(date);
+        const dateStr = dateMoment.format(dateFormat);
+        const weekStr = dateMoment.format('gggg-w');
+        const startDate = dateMoment.startOf('week').format(dateFormat);
+        const endDate = dateMoment.endOf('week').format(dateFormat);
+        entity.week = weekStr;
+        // @ts-ignore
+        entity.date = dateStr;
+        // @ts-ignore
+        entity.weekStartDate = startDate;
+        // @ts-ignore
+        entity.weekEndDate = endDate;
       }
 
       // 有失败的话，就在entity中添加失败原因，方便进行导出
@@ -328,6 +357,29 @@ export class SaleService {
       );
       return e;
     }
+    let weeks = entities.map((item) => item.week).filter((item) => !!item);
+    weeks = [...new Set(weeks)];
+    const repeatData = await this.findAll({
+      customerId,
+      weeks,
+    });
+    let repeatWeeks = repeatData
+      .map((item) => item.week)
+      .filter((item) => !!item);
+    repeatWeeks = [...new Set(repeatWeeks)];
+    const repeatWeekCount = repeatWeeks.length;
+
+    return {
+      data: entities,
+      repeatWeekCount,
+      repeatWeeks,
+    };
+  }
+
+  async save({ data, customerId, type }: SaleSaveDto) {
+    const entities = plainToInstance(SaleEntity, data);
+    let weeks = entities.map((item) => item.week).filter((item) => !!item);
+    weeks = [...new Set(weeks)];
 
     // 增加一个事务，先删除，再保存
     let res;
@@ -335,18 +387,8 @@ export class SaleService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      if (importType === 1) {
-        await queryRunner.manager
-          .createQueryBuilder()
-          .delete()
-          .from(SaleEntity)
-          .where('week = :week', { week })
-          .andWhere('customer_id = :customerId', { customerId })
-          .execute();
-      } else if (importType === 2) {
-        // TODO  确认下如何做，是否直接覆盖删除
-        let weeks = entities.map((item) => item.week).filter((item) => !!item);
-        weeks = [...new Set(weeks)];
+      // 覆盖
+      if (type === Type.cover) {
         await queryRunner.manager
           .createQueryBuilder()
           .delete()
@@ -355,6 +397,7 @@ export class SaleService {
           .andWhere('customer_id = :customerId', { customerId })
           .execute();
       }
+      // 否则直接添加
       res = await queryRunner.manager.save(entities);
       await queryRunner.commitTransaction();
     } catch (err) {

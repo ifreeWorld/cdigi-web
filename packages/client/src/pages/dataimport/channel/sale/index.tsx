@@ -7,15 +7,63 @@ import ProTable from '@ant-design/pro-table';
 import moment from 'moment';
 import type { SaleItem } from './data';
 import type { TablePagination } from '../../../../types/common';
-import { getSale, parseFile, deleteSale, downloadTemplate, downloadErrorExcel } from './service';
+import {
+  getSale,
+  parseFile,
+  save,
+  deleteSale,
+  downloadTemplate,
+  downloadErrorExcel,
+} from './service';
 import OperationModal from './components/OperationModal';
 import { WeekPicker } from '../../../../components/WeekPicker';
 import { dateFormat } from '@/common/index';
 
 const Sale = ({ customerId }: { customerId: number }) => {
   const [visible, setVisible] = useState<boolean>(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [cacheData, setCacheData] = useState([]);
+  const [modalWeeks, setModalWeeks] = useState([]);
   const actionRef = useRef<ActionType>();
   const searchRef = useRef();
+
+  const handleModalCancel = () => {
+    setIsModalVisible(false);
+    setCacheData([]);
+    setModalWeeks([]);
+  };
+
+  const handleCover = async () => {
+    const res = await save({
+      data: cacheData,
+      customerId,
+      type: 'cover',
+    });
+    handleModalCancel();
+    if (res.code === 0) {
+      setVisible(false);
+      actionRef.current?.reloadAndRest?.();
+      message.success('覆盖数据成功');
+    } else {
+      message.error(res.msg);
+    }
+  };
+
+  const handleAdd = async (data?: any) => {
+    const res = await save({
+      data: data || cacheData,
+      customerId,
+      type: 'add',
+    });
+    handleModalCancel();
+    if (res.code === 0) {
+      setVisible(false);
+      actionRef.current?.reloadAndRest?.();
+      message.success('添加数据成功');
+    } else {
+      message.error(res.msg);
+    }
+  };
 
   const { run } = useRequest(
     async (params) => {
@@ -34,19 +82,32 @@ const Sale = ({ customerId }: { customerId: number }) => {
       }
       if (method === 'add') {
         const res = await parseFile(params);
+        // 校验失败
         if (res.code === 6) {
           message.error(res.message);
-          downloadErrorExcel({
+          await downloadErrorExcel({
             fileName: res.data,
           });
-          return;
+        } else if (res.code === 0) {
+          const { repeatWeekCount, repeatWeeks, data } = res.data;
+          // 存在重复，就提示
+          if (repeatWeekCount && repeatWeekCount !== 0) {
+            setIsModalVisible(true);
+            setCacheData(data);
+            setModalWeeks(repeatWeeks);
+          } else {
+            // 无重复，直接调用接口
+            handleAdd(data);
+          }
         }
-        message.success('添加成功');
       }
     },
     {
       manual: true,
-      onSuccess: () => {
+      onSuccess: (res: any, [method]: any) => {
+        if (method === 'add') {
+          return;
+        }
         setVisible(false);
         actionRef.current?.reloadAndRest?.();
       },
@@ -246,6 +307,30 @@ const Sale = ({ customerId }: { customerId: number }) => {
         }}
         columns={columns}
       />
+      <Modal
+        visible={isModalVisible}
+        title="周数据存在重复"
+        destroyOnClose
+        footer={[
+          <Button key="back" onClick={handleModalCancel}>
+            取消
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleCover}>
+            覆盖
+          </Button>,
+          <Button
+            key="link"
+            type="primary"
+            onClick={() => {
+              handleAdd();
+            }}
+          >
+            添加
+          </Button>,
+        ]}
+      >
+        <p>{modalWeeks.join('、')}数据存在重复</p>
+      </Modal>
       <OperationModal visible={visible} onCancel={handleCancel} onSubmit={handleSubmit} />
     </>
   );
