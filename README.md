@@ -40,6 +40,8 @@ ORM 框架使用 [typeorm](https://typeorm.io/migrations)（[中文文档](https
 
 采用 [docker-compose](https://docs.docker.com/compose/) （[中文文档](https://vuepress.mirror.docker-practice.com/compose/commands/#top)）的方案进行整合部署
 
+参考 [awesome-compose](https://github.com/docker/awesome-compose)
+
 ### 启动容器
 
 ```bash

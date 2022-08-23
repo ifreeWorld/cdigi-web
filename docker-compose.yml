@@ -49,11 +49,11 @@ services:
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
   redis:
     image: redis:alpine
-    # restart: always
+    restart: always
     networks:
       - private
     volumes:
-      - redis-data:/redis/data
+      - redis-data:/data
     ports:
       - 6379:6379
   # frontend:
