@@ -1,6 +1,6 @@
 {
-  "host": "10.19.45.0",
+  "host": "127.0.0.1",
   "port": "6379",
-  "username": "default",
-  "password": "mnbvch"
+  "username": "",
+  "password": ""
 }

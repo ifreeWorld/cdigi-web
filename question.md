@@ -1,10 +1,9 @@
-问题：
-1、推荐订单的界面设计，需要详细一些
-2、推荐订单的产品型号的设定规则是干嘛的，是不是计算公式是按照产品型号为基础来计算的
-3、周报详情中关键指标是选择的什么？具体选哪些指标？
-4、指标管理是干啥的？
-5、自定义分析和自动分析，自动分析多出来的下面的内容，业务逻辑是啥样的？多出来的内容的展示和交互是啥样的（猜测是一个表格，表格里面描述的具体周报汇总说明原因）
-6、创建自定义分析的具体细节，4 个参数分别是什么
-7、某个具体分析页面中的通过点击跳转生成事件是什么？
-8、事件模块需要整体从头到尾讲一遍
-9、事件结果回顾不理解
+问题 1：
+windows 上启动 docker compose 出现 Error response from daemon: Ports are not available: exposing port TCP 0.0.0.0:6300 -> 0.0.0.0:0: listen tcp 0.0.0.0:6300: bind: An attempt was made to access a socket in a way forbidden by its access permissions.
+
+解决：
+
+```bash
+net stop winnat
+net start winnat
+```

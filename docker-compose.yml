@@ -28,6 +28,7 @@ services:
   #     - private
   #   depends_on:
   #     - db
+  #     - redis
   db:
     # We use a mariadb image which supports both amd64 & arm64 architecture
     image: mariadb:10.6.4-focal
@@ -46,6 +47,15 @@ services:
     environment:
       - MYSQL_DATABASE=cdigi_database
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
+  redis:
+    image: redis:alpine
+    # restart: always
+    networks:
+      - private
+    volumes:
+      - redis-data:/redis/data
+    ports:
+      - 6379:6379
   # frontend:
   #   build:
   #     context: frontend
@@ -65,6 +75,7 @@ networks:
 volumes:
   back-notused:
   db-data:
+  redis-data:
 secrets:
   db-password:
     file: scripts/password.txt
