@@ -6,6 +6,7 @@ import { PageContainer } from '@ant-design/pro-layout';
 import { getAllCustomer } from '../../customer/list/service';
 import Stock from './stock';
 import Sale from './sale';
+import Transit from './transit';
 import styles from './style.less';
 
 const { TabPane } = Tabs;
@@ -82,7 +83,7 @@ const Channel: React.FC = () => {
               <Sale customerId={customerId}></Sale>
             </TabPane>
             <TabPane tab="在途库存" key="transit">
-              在途库存
+              <Transit customerId={customerId}></Transit>
             </TabPane>
           </Tabs>
         </div>

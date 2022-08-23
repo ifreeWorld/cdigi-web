@@ -299,6 +299,25 @@ export class TransitService {
    * 根据 ids 删除
    * @param ids
    */
+  async warehouse(
+    inTime: TransitEntity['inTime'],
+    customerId: number,
+    warehousingDate: TransitEntity['warehousingDate'],
+  ): Promise<boolean> {
+    await this.dataSource
+      .createQueryBuilder()
+      .update(TransitEntity)
+      .set({ warehousingDate })
+      .where('in_time = :inTime', { inTime })
+      .andWhere('customer_id = :customerId', { customerId })
+      .execute();
+    return true;
+  }
+
+  /**
+   * 根据 ids 删除
+   * @param ids
+   */
   async delete(
     inTimes: TransitEntity['inTime'][],
     customerId: number,
