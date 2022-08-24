@@ -1,3 +1,4 @@
+# 之所以镜像非常小，不包含 node_modules，是因为builder是个中间过程，最终的是基于FROM nginx:alpine，中间过程builder里的node_modules都没有了
 FROM node:14-alpine AS builder
 
 ENV PORT=80

@@ -62,9 +62,6 @@ services:
       # target: development
     ports:
       - 8001:80
-    volumes:
-      - ./packages/client/src:/code/src
-      - /code/node_modules
     networks:
       - public
     # depends_on:
