@@ -1,15 +1,25 @@
 # cdigi-web
 
-由于需要支持本地部署，所以采用 docker-compose 的方式，rush 对于 docker-compose 的集成不是很友好，rush 会整体生成一个 pnpm-lock.yaml，在做 docker-compose 的时候需要进行拆分，这个没办法做到，于是选择放弃 rush
-
 ## 项目启动
 
-切换到每个项目中
+```bash
+rush update
+pnpm start:server
+pnpm start:client
+```
+
+没有全局安装 rush 的情况下，可以使用下面的方式来执行 rush 的命令
+
+等效于 rush install
 
 ```bash
-yarn
-yarn start:dev
-yarn start:debug
+node common/scripts/install-run-rush.js install
+```
+
+等效于 rush update
+
+```bash
+node common/scripts/install-run-rush.js update
 ```
 
 ## 代码管理
@@ -64,7 +74,6 @@ docker ps -a
 
 ```bash
 docker exec -it eefdb7ea6a4d bash
-docker exec -it eefdb7ea6a4d //bin//sh
 ```
 
 ### 查看 volumes 存放的文件

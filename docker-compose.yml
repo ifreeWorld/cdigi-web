@@ -1,9 +1,9 @@
 services:
-  # backend:
+  # server:
   #   build:
   #     args:
   #     - NODE_ENV=development
-  #     context: backend
+  #     context: packages/server
   #     target: development
   #   command: npm run start-watch
   #   environment:
@@ -19,9 +19,9 @@ services:
   #   secrets:
   #     - db-password
   #   volumes:
-  #     - ./backend/src:/code/src:ro
-  #     - ./backend/package.json:/code/package.json
-  #     - ./backend/package-lock.json:/code/package-lock.json
+  #     - ./server/src:/code/src:ro
+  #     - ./server/package.json:/code/package.json
+  #     - ./server/package-lock.json:/code/package-lock.json
   #     - back-notused:/opt/app/node_modules
   #   networks:
   #     - public
@@ -56,19 +56,19 @@ services:
       - redis-data:/data
     ports:
       - 6379:6379
-  # frontend:
-  #   build:
-  #     context: frontend
-  #     target: development
-  #   ports:
-  #     - 30000:30000
-  #   volumes:
-  #     - ./frontend/src:/code/src
-  #     - /code/node_modules
-  #   networks:
-  #     - public
-  #   depends_on:
-  #     - backend
+  client:
+    build:
+      context: packages/client
+      # target: development
+    ports:
+      - 8001:80
+    volumes:
+      - ./packages/client/src:/code/src
+      - /code/node_modules
+    networks:
+      - public
+    # depends_on:
+    #   - server
 networks:
   public:
   private:
@@ -76,6 +76,7 @@ volumes:
   back-notused:
   db-data:
   redis-data:
+  client-data:
 secrets:
   db-password:
     file: scripts/password.txt
