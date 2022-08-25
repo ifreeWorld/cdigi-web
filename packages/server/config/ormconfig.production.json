@@ -1,11 +1,11 @@
 {
   "type": "mysql",
-  "host": "10.19.45.0",
+  "host": "localhost",
   "port": 3306,
   "username": "root",
-  "password": "root123456",
-  "database": "space_x",
-  "entities": [ "dist/**/*.entity{.ts,.js}" ],
+  "password": "mnbvch",
+  "database": "cdigi_database",
+  "entities": ["dist/**/*.entity{.ts,.js}"],
   "synchronize": false,
   "supportBigNumbers": true,
   "bigNumberStrings": false

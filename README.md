@@ -35,7 +35,7 @@ ORM 框架使用 [typeorm](https://typeorm.io/migrations)（[中文文档](https
 ### 启动容器
 
 ```bash
-docker compose up -d --no-recreate
+docker compose up -d
 ```
 
 - `-d` 在后台运行服务容器。
@@ -43,6 +43,7 @@ docker compose up -d --no-recreate
 - `--no-deps` 不启动服务所链接的容器。
 - `--force-recreate` 强制重新创建容器，不能与 `--no-recreate` 同时使用。
 - `--no-recreate` 如果容器已经存在了，则不重新创建，不能与 `--force-recreate` 同时使用。
+- `--build` 在启动容器之前先进行镜像构建，即使已存在也会进行构建。
 - `--no-build` 不自动构建缺失的服务镜像。
 - `-t, --timeout TIMEOUT` 停止容器时候的超时（默认为 10 秒）
 

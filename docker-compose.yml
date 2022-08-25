@@ -1,34 +1,36 @@
 services:
-  # server:
-  #   build:
-  #     args:
-  #     - NODE_ENV=development
-  #     context: packages/server
-  #     target: development
-  #   command: npm run start-watch
-  #   environment:
-  #     - DATABASE_DB=cdigi_database
-  #     - DATABASE_USER=root
-  #     - DATABASE_PASSWORD=/run/secrets/db-password
-  #     - DATABASE_HOST=db
-  #     - NODE_ENV=development
-  #   ports:
-  #     - 80:80
-  #     - 9229:9229
-  #     - 9230:9230
-  #   secrets:
-  #     - db-password
-  #   volumes:
-  #     - ./server/src:/code/src:ro
-  #     - ./server/package.json:/code/package.json
-  #     - ./server/package-lock.json:/code/package-lock.json
-  #     - back-notused:/opt/app/node_modules
-  #   networks:
-  #     - public
-  #     - private
-  #   depends_on:
-  #     - db
-  #     - redis
+  server:
+    build:
+      context: packages/server
+      args:
+      - NODE_ENV=production
+    environment:
+      - NODE_ENV=production
+      - orm_host=db
+      - orm_port=3306
+      - orm_username=root
+      - orm_password=mnbvch
+      - orm_database=cdigi_database
+      - redis_host=redis
+      - redis_port=6379
+    ports:
+      - 8002:30000
+    secrets:
+      - db-password
+    volumes:
+      # - ./server:/code
+      - server-data:/code
+    # volumes:
+    #   - ./server/src:/code/src:ro
+    #   - ./server/package.json:/code/package.json
+    #   - ./server/package-lock.json:/code/package-lock.json
+    #   - back-notused:/opt/app/node_modules
+    networks:
+      - public
+      - private
+    depends_on:
+      - db
+      - redis
   db:
     # We use a mariadb image which supports both amd64 & arm64 architecture
     image: mariadb:10.6.4-focal
@@ -64,16 +66,16 @@ services:
       - 8001:80
     networks:
       - public
-    # depends_on:
-    #   - server
+    depends_on:
+      - server
 networks:
   public:
   private:
 volumes:
-  back-notused:
+  # back-notused:
+  server-data:
   db-data:
   redis-data:
-  client-data:
 secrets:
   db-password:
     file: scripts/password.txt
