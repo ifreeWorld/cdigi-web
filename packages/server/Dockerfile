@@ -9,8 +9,7 @@ COPY yarn.lock /code/yarn.lock
 COPY vendor /code/vendor
 COPY . /code
 
-RUN npm i -g @nestjs/cli  --registry=https://registry.npmmirror.com/
-RUN yarn install --frozen-lockfile --registry=https://registry.npmmirror.com/
+RUN yarn install --production --frozen-lockfile --registry=https://registry.npmmirror.com/
 RUN yarn build
 
 CMD node dist/main.js
