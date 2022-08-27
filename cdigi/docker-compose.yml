@@ -1,9 +1,5 @@
 services:
   server:
-    build:
-      context: packages/server
-      args:
-      - NODE_ENV=production
     image: wangzilong8/cdigi-web_server
     # deploy:
     #   resources:
@@ -19,6 +15,10 @@ services:
       - redis_host=redis
       - redis_port=6379
       - TZ=Asia/Shanghai
+    command: >
+      sh -c "ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && 
+      echo $TZ > /etc/timezone &&
+      exec my-main-application"
     restart: always
     ports:
       - 8002:30000
@@ -66,8 +66,6 @@ services:
     ports:
       - 6379:6379
   client:
-    build:
-      context: packages/client
     image: wangzilong8/cdigi-web_client
     # https://stackoverflow.com/questions/61017559/building-two-differently-tagged-docker-images-with-docker-compose
     # platform: 

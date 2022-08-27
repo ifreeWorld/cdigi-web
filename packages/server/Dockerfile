@@ -1,6 +1,7 @@
 FROM node:14-alpine AS builder
 
 ENV PORT=30000
+RUN apk add tzdata
 
 WORKDIR /code
 
