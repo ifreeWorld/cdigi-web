@@ -44,8 +44,6 @@ const OperationModal: FC<OperationModalProps> = (props) => {
         <ProFormWeekPicker
           name="week"
           label="周"
-          required={true}
-          rules={[{ required: true, message: '请选择周' }]}
           dateFormatter={1}
           transform={(value: string) => {
             const date = moment(value);

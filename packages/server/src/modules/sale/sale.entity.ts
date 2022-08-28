@@ -25,7 +25,7 @@ export class SaleEntity extends ChannelEntity {
   @Column({ name: 'store_name', comment: '门店名称', nullable: true })
   storeName?: string;
 
-  /** 销售日期 销售才有 */
+  /** 日期 */
   @Column({
     name: 'date',
     type: 'date',

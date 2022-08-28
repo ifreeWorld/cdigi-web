@@ -158,7 +158,7 @@ const Sale = ({ customerId }: { customerId: number }) => {
     },
     {
       title: '门店',
-      dataIndex: 'store',
+      dataIndex: 'storeName',
       hideInSearch: true,
     },
     {

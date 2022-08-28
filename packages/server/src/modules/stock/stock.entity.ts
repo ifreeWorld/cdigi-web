@@ -26,11 +26,12 @@ export class StockEntity extends ChannelEntity {
   @Column({ name: 'store_name', comment: '门店名称', nullable: true })
   storeName?: string;
 
-  // /** 日 销售才有 */
-  // @Column({
-  //   name: 'date',
-  //   type: 'date',
-  //   comment: '日。格式：2022-12-01，用户上传数据中带时间才会有',
-  // })
-  // date?: Date;
+  /** 日期 */
+  @Column({
+    name: 'date',
+    type: 'date',
+    nullable: true,
+    comment: '日。格式：2022-12-01，用户上传数据中带时间才会有',
+  })
+  date?: Date;
 }

@@ -34,6 +34,7 @@ import {
   StockParseResult,
   StockDataResult,
   StockBooleanResult,
+  StockSaveDto,
 } from './stock.dto';
 import { StockEntity } from './stock.entity';
 import { mimeType, stockSheetName } from '../../constant/file';
@@ -107,7 +108,11 @@ export class StockController {
     @Body() body: StockParseDto,
     @CurrentUser() currentUser,
   ) {
-    const workbook = read(file.buffer, { type: 'buffer' });
+    const workbook = read(file.buffer, {
+      type: 'buffer',
+      cellDates: true,
+      cellText: false,
+    });
     const { SheetNames: sheetNames, Sheets: sheets } = workbook;
     const fileName = Buffer.from(file.originalname, 'latin1').toString('utf8');
     let flag = 0;
@@ -118,14 +123,13 @@ export class StockController {
       if (sheetName === stockSheetName) {
         flag = 1;
         const res = await this.stockService.parseSheet(
+          workbook,
           sheet,
           fileName,
           body,
           currentUser.id,
         );
-        if (res instanceof ErrorConstant) {
-          return res;
-        }
+        return res;
       }
     }
 
@@ -133,6 +137,18 @@ export class StockController {
       throw new CustomResponse('sheet页名称不正确');
     }
     return true;
+  }
+
+  /**
+   * 保存数据
+   */
+  @UseGuards(JwtGuard)
+  @Post('/save')
+  @ApiOkResponse({
+    type: Number,
+  })
+  async save(@Body() body: StockSaveDto) {
+    return this.stockService.save(body);
   }
 
   /**

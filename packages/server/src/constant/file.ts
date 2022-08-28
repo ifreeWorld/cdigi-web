@@ -12,6 +12,7 @@ export const stockHeaderMap = {
   '库存 - 价格': 'price',
   '库存 - 总额': 'total',
   '库存 - 门店': 'storeName',
+  '库存 - 时间': 'date',
 };
 
 // 销售表头
