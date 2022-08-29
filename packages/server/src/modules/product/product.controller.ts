@@ -28,9 +28,13 @@ export class ProductController {
   @ApiOkResponse({
     type: ProductListResult,
   })
-  async find(@Query() query: SearchDto): Promise<Pager<ProductEntity>> {
+  async find(
+    @Query() query: SearchDto,
+    @CurrentUser() currentUser,
+  ): Promise<Pager<ProductEntity>> {
     const { current, pageSize } = query;
     const [list, total] = await this.productService.find(
+      currentUser.id,
       getSkip(current, pageSize),
       pageSize,
       query,
@@ -47,8 +51,11 @@ export class ProductController {
   @ApiOkResponse({
     type: ProductDataResult,
   })
-  async findAll(@Query() query: SearchDto): Promise<ProductEntity[]> {
-    const list = await this.productService.findAll(query);
+  async findAll(
+    @Query() query: SearchDto,
+    @CurrentUser() currentUser,
+  ): Promise<ProductEntity[]> {
+    const list = await this.productService.findAll(currentUser.id, query);
     return list;
   }
 

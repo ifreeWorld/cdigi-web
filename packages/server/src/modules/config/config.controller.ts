@@ -25,6 +25,7 @@ import {
 } from './config.dto';
 import { tmpPath, mimeType } from '../../constant/file';
 import { CustomResponse } from '../../constant/error';
+import { CurrentUser } from 'src/decorators';
 
 @ApiBearerAuth()
 @ApiTags('全局配置')
@@ -33,23 +34,29 @@ export class ConfigController {
   constructor(private configService: ConfigService) {}
 
   @UseGuards(JwtGuard)
-  @Get('/getByKey')
+  @Get('/hget')
   @ApiOkResponse({
     type: ConfigGetByKeyResult,
   })
-  async getByKey(@Query() query: ConfigSearchDto): Promise<string> {
+  async hget(
+    @Query() query: ConfigSearchDto,
+    @CurrentUser() currentUser,
+  ): Promise<string> {
     const { key } = query;
-    const res = await this.configService.get(key);
+    const res = await this.configService.hget(key, currentUser.id);
     return res;
   }
 
   @UseGuards(JwtGuard)
-  @Post('/set')
+  @Post('/hset')
   @ApiOkResponse({
     type: ConfigGetByKeyResult,
   })
-  async set(@Body() body: CreateConfigDto): Promise<string> {
-    const res = await this.configService.set(body);
+  async set(
+    @Body() body: CreateConfigDto,
+    @CurrentUser() currentUser,
+  ): Promise<number> {
+    const res = await this.configService.hset(body, currentUser.id);
     return res;
   }
 

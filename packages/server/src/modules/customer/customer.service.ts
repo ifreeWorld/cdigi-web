@@ -12,7 +12,7 @@ import {
   CustomerRelationEdges,
 } from './customer.dto';
 import { ERROR } from 'src/constant/error';
-import { indexOfLike } from '../../utils';
+import { indexOfLike, setCreatorWhere } from '../../utils';
 
 @Injectable()
 export class CustomerService {
@@ -26,6 +26,7 @@ export class CustomerService {
    * 分页按条件查询
    */
   async find(
+    creatorId: number,
     skip: number,
     take: number,
     query: SearchDto,
@@ -38,6 +39,7 @@ export class CustomerService {
     if (validator.isNotEmpty(customerType)) {
       where.customerType = customerType;
     }
+    setCreatorWhere(where, creatorId);
     return await this.repository.findAndCount({
       where: where,
       take: take,
@@ -54,12 +56,14 @@ export class CustomerService {
    * 全量查询
    */
   async findAll(
+    creatorId: number,
     customerType?: CustomerEntity['customerType'],
   ): Promise<CustomerEntity[]> {
     const where: FindOptionsWhere<CustomerEntity> = {};
     if (validator.isNotEmpty(customerType)) {
       where.customerType = customerType;
     }
+    setCreatorWhere(where, creatorId);
     return await this.repository.find({
       where: where,
       relations: {
@@ -127,8 +131,11 @@ export class CustomerService {
   /**
    * 查询关系图数据
    */
-  async findRelations(): Promise<CustomerRelationResult['data']> {
-    const nodes = await this.findAll();
+  async findRelations(
+    creatorId: number,
+  ): Promise<CustomerRelationResult['data']> {
+    const nodes = await this.findAll(creatorId);
+    // TODO 测试下是否需要在这里做creatorId的过滤
     const edges: CustomerRelationEdges[] = await this.dataSource.manager.query(
       'select ancestor_id as source, descendant_id as target from tbl_customer_closure',
     );

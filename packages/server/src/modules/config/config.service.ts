@@ -15,4 +15,17 @@ export class ConfigService {
   async set({ key, value }: CreateConfigDto) {
     return await this.redis.set(key, value);
   }
+
+  async hget(key: string, creatorId: string) {
+    const res = await this.redis.hget(key, creatorId);
+    return res;
+  }
+
+  async hset({ key, value }: CreateConfigDto, creatorId: string) {
+    const current = await this.redis.hgetall(key);
+    return await this.redis.hset(key, {
+      ...current,
+      [creatorId]: value,
+    });
+  }
 }

@@ -6,7 +6,7 @@ import { plainToInstance } from 'class-transformer';
 import { ProductEntity } from './product.entity';
 import { SearchDto, ProductCreateDto, ProductUpdateDto } from './product.dto';
 import { ERROR } from 'src/constant/error';
-import { indexOfLike } from '../../utils';
+import { indexOfLike, setCreatorWhere } from '../../utils';
 
 @Injectable()
 export class ProductService {
@@ -20,6 +20,7 @@ export class ProductService {
    * 分页按条件查询
    */
   async find(
+    creatorId: number,
     skip: number,
     take: number,
     query: SearchDto,
@@ -47,6 +48,7 @@ export class ProductService {
     if (validator.isNotEmpty(categoryThirdName)) {
       where.categoryThirdName = indexOfLike(categoryThirdName);
     }
+    setCreatorWhere(where, creatorId);
     return await this.repository.findAndCount({
       where: where,
       take: take,
@@ -60,7 +62,7 @@ export class ProductService {
   /**
    * 全量查询
    */
-  async findAll(query: SearchDto): Promise<ProductEntity[]> {
+  async findAll(creatorId: number, query: SearchDto): Promise<ProductEntity[]> {
     const where: FindOptionsWhere<ProductEntity> = {};
     const {
       productName,
@@ -84,6 +86,7 @@ export class ProductService {
     if (validator.isNotEmpty(categoryThirdName)) {
       where.categoryThirdName = categoryThirdName;
     }
+    setCreatorWhere(where, creatorId);
     return await this.repository.find({
       where: where,
       relations: {

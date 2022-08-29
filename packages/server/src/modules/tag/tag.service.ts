@@ -5,7 +5,7 @@ import * as validator from 'class-validator';
 import { TagEntity } from './tag.entity';
 import { SearchDto, TagCreateDto, TagUpdateDto } from './tag.dto';
 import { ERROR } from 'src/constant/error';
-import { indexOfLike } from '../../utils';
+import { indexOfLike, setCreatorWhere } from '../../utils';
 
 @Injectable()
 export class TagService {
@@ -18,6 +18,7 @@ export class TagService {
    * 分页按条件查询
    */
   async find(
+    creatorId: number,
     skip: number,
     take: number,
     query: SearchDto,
@@ -27,6 +28,7 @@ export class TagService {
     if (validator.isNotEmpty(tagName)) {
       where.tagName = indexOfLike(tagName);
     }
+    setCreatorWhere(where, creatorId);
     return await this.repository.findAndCount({
       where: where,
       take: take,
@@ -41,8 +43,11 @@ export class TagService {
   /**
    * 全量查询
    */
-  async findAll(): Promise<TagEntity[]> {
+  async findAll(creatorId: number): Promise<TagEntity[]> {
+    const where: FindOptionsWhere<TagEntity> = {};
+    setCreatorWhere(where, creatorId);
     return await this.repository.find({
+      where: where,
       relations: {
         customers: false,
         products: false,

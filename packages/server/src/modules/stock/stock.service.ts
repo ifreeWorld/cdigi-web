@@ -24,7 +24,7 @@ import { ProductService } from '../product/product.service';
 import { StoreService } from '../store/store.service';
 import { ConfigService } from '../config/config.service';
 import { getTree } from './util';
-import { fixImportedDate } from '../../utils';
+import { fixImportedDate, setCreatorQb, setCreatorWhere } from '../../utils';
 import { appLogger } from 'src/logger';
 
 export class StockService {
@@ -41,6 +41,7 @@ export class StockService {
    * 分页按条件查询
    */
   async find(
+    creatorId: number,
     skip: number,
     take: number,
     query: SearchDto,
@@ -53,8 +54,9 @@ export class StockService {
       .distinct(true)
       .orderBy('week');
 
+    setCreatorQb(weekQb, creatorId, 'stock');
     if (validator.isNotEmpty(week)) {
-      weekQb.where('stock.week = :week', { week });
+      weekQb.andWhere('stock.week = :week', { week });
     }
     if (validator.isNotEmpty(customerId)) {
       weekQb.andWhere('stock.customer_id = :customerId', { customerId });
@@ -66,11 +68,14 @@ export class StockService {
       .select()
       .from('(' + weekQb.take(take).skip(skip).getQuery() + ')', 't');
 
-    const entitys = await this.dataSource
+    const enQb = this.dataSource
       .getRepository(StockEntity)
       .createQueryBuilder('stock')
-      .select()
-      .where('stock.week IN (' + asQb.getQuery() + ')')
+      .select();
+    setCreatorQb(enQb, creatorId, 'stock');
+    const entitys = await enQb
+      .andWhere('stock.week IN (' + asQb.getQuery() + ')')
+      .andWhere('stock.customer_id = :customerId', { customerId })
       .orderBy('week')
       .setParameters(weekQb.getParameters())
       .getMany();
@@ -83,7 +88,7 @@ export class StockService {
   /**
    * 全量查询
    */
-  async findAll(query: SearchDto): Promise<StockEntity[]> {
+  async findAll(creatorId: number, query: SearchDto): Promise<StockEntity[]> {
     const where: FindOptionsWhere<StockEntity> = {};
     const { week, weeks, customerId } = query;
     if (validator.isNotEmpty(week)) {
@@ -97,6 +102,7 @@ export class StockService {
         id: customerId,
       };
     }
+    setCreatorWhere(where, creatorId);
     return await this.repository.find({
       where: where,
     });
@@ -105,7 +111,7 @@ export class StockService {
   /**
    * 全量查询数量
    */
-  async findCount(query: SearchDto): Promise<number> {
+  async findCount(creatorId: number, query: SearchDto): Promise<number> {
     const where: FindOptionsWhere<StockEntity> = {};
     const { week, weeks, customerId } = query;
     if (validator.isNotEmpty(week)) {
@@ -119,6 +125,7 @@ export class StockService {
         id: customerId,
       };
     }
+    setCreatorWhere(where, creatorId);
     return await this.repository.count({
       where: where,
     });
@@ -201,10 +208,11 @@ export class StockService {
       return temp;
     });
     const entities = plainToInstance(StockEntity, result);
-    const allProduct = await this.productService.findAll({});
+    const allProduct = await this.productService.findAll(creatorId, {});
     const allProductNames = allProduct.map((item) => item.productName);
     const allStore = await this.storeService.findAll({
       customerId,
+      creatorId,
     });
     const allStoreNames = allStore.map((item) => item.storeName);
 
@@ -342,7 +350,7 @@ export class StockService {
     }
     let weeks = entities.map((item) => item.week).filter((item) => !!item);
     weeks = [...new Set(weeks)];
-    const repeatData = await this.findAll({
+    const repeatData = await this.findAll(creatorId, {
       customerId,
       weeks,
     });

@@ -25,7 +25,7 @@ import { StoreService } from '../store/store.service';
 import { CustomerService } from '../customer/customer.service';
 import { ConfigService } from '../config/config.service';
 import { getTree } from './util';
-import { fixImportedDate } from '../../utils';
+import { fixImportedDate, setCreatorQb, setCreatorWhere } from '../../utils';
 import { appLogger } from 'src/logger';
 
 export class SaleService {
@@ -43,6 +43,7 @@ export class SaleService {
    * 分页按条件查询
    */
   async find(
+    creatorId: number,
     skip: number,
     take: number,
     query: SearchDto,
@@ -55,8 +56,9 @@ export class SaleService {
       .distinct(true)
       .orderBy('week');
 
+    setCreatorQb(weekQb, creatorId, 'sale');
     if (validator.isNotEmpty(week)) {
-      weekQb.where('sale.week = :week', { week });
+      weekQb.andWhere('sale.week = :week', { week });
     }
     if (validator.isNotEmpty(customerId)) {
       weekQb.andWhere('sale.customer_id = :customerId', { customerId });
@@ -68,11 +70,13 @@ export class SaleService {
       .select()
       .from('(' + weekQb.take(take).skip(skip).getQuery() + ')', 't');
 
-    const entitys = await this.dataSource
+    const enQb = this.dataSource
       .getRepository(SaleEntity)
       .createQueryBuilder('sale')
-      .select()
-      .where('sale.week IN (' + asQb.getQuery() + ')')
+      .select();
+    setCreatorQb(enQb, creatorId, 'sale');
+    const entitys = await enQb
+      .andWhere('sale.week IN (' + asQb.getQuery() + ')')
       .andWhere('sale.customer_id = :customerId', { customerId })
       .orderBy('week')
       .setParameters(weekQb.getParameters())
@@ -86,7 +90,7 @@ export class SaleService {
   /**
    * 全量查询
    */
-  async findAll(query: SearchDto): Promise<SaleEntity[]> {
+  async findAll(creatorId: number, query: SearchDto): Promise<SaleEntity[]> {
     const where: FindOptionsWhere<SaleEntity> = {};
     const { week, weeks, customerId } = query;
     if (validator.isNotEmpty(week)) {
@@ -100,6 +104,7 @@ export class SaleService {
         id: customerId,
       };
     }
+    setCreatorWhere(where, creatorId);
     return await this.repository.find({
       where: where,
     });
@@ -108,7 +113,7 @@ export class SaleService {
   /**
    * 全量查询数量
    */
-  async findCount(query: SearchDto): Promise<number> {
+  async findCount(creatorId: number, query: SearchDto): Promise<number> {
     const where: FindOptionsWhere<SaleEntity> = {};
     const { week, weeks, customerId } = query;
     if (validator.isNotEmpty(week)) {
@@ -122,6 +127,7 @@ export class SaleService {
         id: customerId,
       };
     }
+    setCreatorWhere(where, creatorId);
     return await this.repository.count({
       where: where,
     });
@@ -203,13 +209,14 @@ export class SaleService {
     });
     const entities = plainToInstance(SaleEntity, result);
     // const entities = result;
-    const allProduct = await this.productService.findAll({});
+    const allProduct = await this.productService.findAll(creatorId, {});
     const allProductNames = allProduct.map((item) => item.productName);
     const allStore = await this.storeService.findAll({
       customerId,
+      creatorId,
     });
     const allStoreNames = allStore.map((item) => item.storeName);
-    const allCustomer = await this.customerService.findAll();
+    const allCustomer = await this.customerService.findAll(creatorId);
     const allCustomerNames = allCustomer.map((item) => item.customerName);
 
     // 校验
@@ -361,7 +368,7 @@ export class SaleService {
     }
     let weeks = entities.map((item) => item.week).filter((item) => !!item);
     weeks = [...new Set(weeks)];
-    const repeatData = await this.findAll({
+    const repeatData = await this.findAll(creatorId, {
       customerId,
       weeks,
     });

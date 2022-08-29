@@ -36,9 +36,13 @@ export class StoreController {
   @ApiOkResponse({
     type: StoreListResult,
   })
-  async find(@Query() query: SearchDto): Promise<Pager<StoreEntity>> {
+  async find(
+    @Query() query: SearchDto,
+    @CurrentUser() currentUser,
+  ): Promise<Pager<StoreEntity>> {
     const { current, pageSize } = query;
     const [list, total] = await this.storeService.find(
+      currentUser.id,
       getSkip(current, pageSize),
       pageSize,
       query,
@@ -55,12 +59,18 @@ export class StoreController {
   @ApiOkResponse({
     type: StoreDataResult,
   })
-  async findAll(@Query() query: SearchDto): Promise<StoreEntity[]> {
-    const list = await this.storeService.findAll(query);
+  async findAll(
+    @Query() query: SearchDto,
+    @CurrentUser() currentUser,
+  ): Promise<StoreEntity[]> {
+    const list = await this.storeService.findAll({
+      ...query,
+      creatorId: currentUser.id,
+    });
     return list;
   }
 
-  /** 更新 */
+  /** 创建 */
   @UseGuards(JwtGuard)
   @Post('/add')
   @ApiOkResponse({

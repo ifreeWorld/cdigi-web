@@ -39,9 +39,13 @@ export class CustomerController {
   @ApiOkResponse({
     type: CustomerListResult,
   })
-  async find(@Query() query: SearchDto): Promise<Pager<CustomerEntity>> {
+  async find(
+    @Query() query: SearchDto,
+    @CurrentUser() currentUser,
+  ): Promise<Pager<CustomerEntity>> {
     const { current, pageSize } = query;
     const [list, total] = await this.customerService.find(
+      currentUser.id,
       getSkip(current, pageSize),
       pageSize,
       query,
@@ -60,9 +64,13 @@ export class CustomerController {
   })
   async findAll(
     @Query() query: CustomerAllSearchDto,
+    @CurrentUser() currentUser,
   ): Promise<CustomerEntity[]> {
     const { customerType } = query;
-    const list = await this.customerService.findAll(customerType);
+    const list = await this.customerService.findAll(
+      currentUser.id,
+      customerType,
+    );
     return list;
   }
 
@@ -86,8 +94,10 @@ export class CustomerController {
   @ApiOkResponse({
     type: CustomerRelationResult,
   })
-  async findRelation(): Promise<CustomerRelationResult['data']> {
-    const res = await this.customerService.findRelations();
+  async findRelation(
+    @CurrentUser() currentUser,
+  ): Promise<CustomerRelationResult['data']> {
+    const res = await this.customerService.findRelations(currentUser.id);
     return res;
   }
 

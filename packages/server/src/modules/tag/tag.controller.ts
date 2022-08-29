@@ -28,9 +28,13 @@ export class TagController {
   @ApiOkResponse({
     type: TagListResult,
   })
-  async find(@Query() query: SearchDto): Promise<Pager<TagEntity>> {
+  async find(
+    @Query() query: SearchDto,
+    @CurrentUser() currentUser,
+  ): Promise<Pager<TagEntity>> {
     const { current, pageSize } = query;
     const [list, total] = await this.tagService.find(
+      currentUser.id,
       getSkip(current, pageSize),
       pageSize,
       query,
@@ -47,8 +51,8 @@ export class TagController {
   @ApiOkResponse({
     type: TagDataResult,
   })
-  async findAll(): Promise<TagEntity[]> {
-    const list = await this.tagService.findAll();
+  async findAll(@CurrentUser() currentUser): Promise<TagEntity[]> {
+    const list = await this.tagService.findAll(currentUser.id);
     return list;
   }
 

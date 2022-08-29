@@ -17,7 +17,7 @@ import {
 } from '../../constant/file';
 import { ProductService } from '../product/product.service';
 import { getTree } from './util';
-import { fixImportedDate } from '../../utils';
+import { fixImportedDate, setCreatorQb, setCreatorWhere } from '../../utils';
 import { appLogger } from 'src/logger';
 
 export class TransitService {
@@ -32,6 +32,7 @@ export class TransitService {
    * 分页按条件查询
    */
   async find(
+    creatorId: number,
     skip: number,
     take: number,
     query: SearchDto,
@@ -44,6 +45,7 @@ export class TransitService {
       .distinct(true)
       .orderBy('in_time');
 
+    setCreatorQb(inTimeQb, creatorId, 'transit');
     if (validator.isNotEmpty(inTimeStart) && validator.isNotEmpty(inTimeEnd)) {
       inTimeQb.where('transit.in_time > :inTimeStart', { inTimeStart });
       inTimeQb.andWhere('transit.in_time < :inTimeEnd', { inTimeEnd });
@@ -58,11 +60,14 @@ export class TransitService {
       .select()
       .from('(' + inTimeQb.take(take).skip(skip).getQuery() + ')', 't');
 
-    const entitys = await this.dataSource
+    const enQb = this.dataSource
       .getRepository(TransitEntity)
       .createQueryBuilder('transit')
-      .select()
-      .where('transit.in_time IN (' + asQb.getQuery() + ')')
+      .select();
+    setCreatorQb(enQb, creatorId, 'transit');
+    const entitys = await enQb
+      .andWhere('transit.in_time IN (' + asQb.getQuery() + ')')
+      .andWhere('transit.customer_id = :customerId', { customerId })
       .orderBy('in_time')
       .setParameters(inTimeQb.getParameters())
       .getMany();
@@ -75,7 +80,7 @@ export class TransitService {
   /**
    * 全量查询
    */
-  async findAll(query: SearchDto): Promise<TransitEntity[]> {
+  async findAll(creatorId: number, query: SearchDto): Promise<TransitEntity[]> {
     const where: FindOptionsWhere<TransitEntity> = {};
     const { inTimeStart, inTimeEnd, customerId } = query;
     if (validator.isNotEmpty(inTimeStart) && validator.isNotEmpty(inTimeEnd)) {
@@ -86,6 +91,7 @@ export class TransitService {
         id: customerId,
       };
     }
+    setCreatorWhere(where, creatorId);
     return await this.repository.find({
       where: where,
     });
@@ -94,7 +100,7 @@ export class TransitService {
   /**
    * 全量查询数量
    */
-  async findCount(query: SearchDto): Promise<number> {
+  async findCount(creatorId: number, query: SearchDto): Promise<number> {
     const where: FindOptionsWhere<TransitEntity> = {};
     const { inTimeStart, inTimeEnd, customerId } = query;
     if (validator.isNotEmpty(inTimeStart) && validator.isNotEmpty(inTimeEnd)) {
@@ -105,6 +111,7 @@ export class TransitService {
         id: customerId,
       };
     }
+    setCreatorWhere(where, creatorId);
     return await this.repository.count({
       where: where,
     });
@@ -165,7 +172,7 @@ export class TransitService {
       return temp;
     });
     const entities = plainToInstance(TransitEntity, result);
-    const allProduct = await this.productService.findAll({});
+    const allProduct = await this.productService.findAll(creatorId, {});
     const allProductNames = allProduct.map((item) => item.productName);
 
     // 校验

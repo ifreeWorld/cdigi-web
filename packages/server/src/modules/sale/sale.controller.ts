@@ -51,9 +51,13 @@ export class SaleController {
   @ApiOkResponse({
     type: SaleListResult,
   })
-  async find(@Query() query: SearchDto): Promise<Pager<SaleEntity>> {
+  async find(
+    @Query() query: SearchDto,
+    @CurrentUser() currentUser,
+  ): Promise<Pager<SaleEntity>> {
     const { current, pageSize } = query;
     const [list, total] = await this.saleService.find(
+      currentUser.id,
       getSkip(current, pageSize),
       pageSize,
       query,
@@ -70,8 +74,11 @@ export class SaleController {
   @ApiOkResponse({
     type: SaleDataResult,
   })
-  async findAll(@Query() query: SearchDto): Promise<SaleEntity[]> {
-    const list = await this.saleService.findAll(query);
+  async findAll(
+    @Query() query: SearchDto,
+    @CurrentUser() currentUser,
+  ): Promise<SaleEntity[]> {
+    const list = await this.saleService.findAll(currentUser.id, query);
     return list;
   }
 
@@ -81,8 +88,11 @@ export class SaleController {
   @ApiOkResponse({
     type: SaleBooleanResult,
   })
-  async hasData(@Query() query: SearchDto): Promise<boolean> {
-    const number = await this.saleService.findCount(query);
+  async hasData(
+    @Query() query: SearchDto,
+    @CurrentUser() currentUser,
+  ): Promise<boolean> {
+    const number = await this.saleService.findCount(currentUser.id, query);
     return number > 0;
   }
 

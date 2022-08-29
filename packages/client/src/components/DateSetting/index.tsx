@@ -28,7 +28,7 @@ const DateSetting: React.FC = () => {
         dow: Number(value),
       },
     });
-    await request('/api/config/set', {
+    await request('/api/config/hset', {
       data: {
         key: 'getWeekStartIndex',
         value,
@@ -46,7 +46,7 @@ const DateSetting: React.FC = () => {
   const getData = async () => {
     // const weekStartIndex = localStorage.getItem('weekStartIndex');
     // if (weekStartIndex === null) {
-    const res = await request('/api/config/getByKey', {
+    const res = await request('/api/config/hget', {
       params: {
         key: 'getWeekStartIndex',
       },

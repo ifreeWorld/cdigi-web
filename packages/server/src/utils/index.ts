@@ -4,6 +4,7 @@ import { SSF } from 'xlsx';
 import * as dayjs from 'dayjs';
 
 export * from './sqlUtil';
+export * from './creatorUtil';
 
 export function splice<T>(data: T[], search: PaginationDto): T[] {
   return data.splice((search.current - 1) * search.pageSize, search.pageSize);

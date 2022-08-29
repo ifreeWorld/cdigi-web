@@ -51,9 +51,13 @@ export class StockController {
   @ApiOkResponse({
     type: StockListResult,
   })
-  async find(@Query() query: SearchDto): Promise<Pager<StockEntity>> {
+  async find(
+    @Query() query: SearchDto,
+    @CurrentUser() currentUser,
+  ): Promise<Pager<StockEntity>> {
     const { current, pageSize } = query;
     const [list, total] = await this.stockService.find(
+      currentUser.id,
       getSkip(current, pageSize),
       pageSize,
       query,
@@ -70,8 +74,11 @@ export class StockController {
   @ApiOkResponse({
     type: StockDataResult,
   })
-  async findAll(@Query() query: SearchDto): Promise<StockEntity[]> {
-    const list = await this.stockService.findAll(query);
+  async findAll(
+    @Query() query: SearchDto,
+    @CurrentUser() currentUser,
+  ): Promise<StockEntity[]> {
+    const list = await this.stockService.findAll(currentUser.id, query);
     return list;
   }
 
@@ -81,8 +88,11 @@ export class StockController {
   @ApiOkResponse({
     type: StockBooleanResult,
   })
-  async hasData(@Query() query: SearchDto): Promise<boolean> {
-    const number = await this.stockService.findCount(query);
+  async hasData(
+    @Query() query: SearchDto,
+    @CurrentUser() currentUser,
+  ): Promise<boolean> {
+    const number = await this.stockService.findCount(currentUser.id, query);
     return number > 0;
   }
 

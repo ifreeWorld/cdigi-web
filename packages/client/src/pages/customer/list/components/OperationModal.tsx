@@ -149,7 +149,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           dependencies={['customerType']}
           transform={(values: number[], name) => {
             return {
-              [name]: values.map((id) => ({
+              [name]: values?.map((id) => ({
                 id,
               })),
             };
@@ -177,7 +177,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           placeholder="请先选择用户类型，再选择所属用户"
           transform={(value, name) => {
             return {
-              [name]: value.map((v: number) => ({
+              [name]: value?.map((v: number) => ({
                 id: v,
               })),
             };

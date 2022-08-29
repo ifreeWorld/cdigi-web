@@ -51,9 +51,13 @@ export class TransitController {
   @ApiOkResponse({
     type: TransitListResult,
   })
-  async find(@Query() query: SearchDto): Promise<Pager<TransitEntity>> {
+  async find(
+    @Query() query: SearchDto,
+    @CurrentUser() currentUser,
+  ): Promise<Pager<TransitEntity>> {
     const { current, pageSize } = query;
     const [list, total] = await this.transitService.find(
+      currentUser.id,
       getSkip(current, pageSize),
       pageSize,
       query,
@@ -70,8 +74,11 @@ export class TransitController {
   @ApiOkResponse({
     type: TransitDataResult,
   })
-  async findAll(@Query() query: SearchDto): Promise<TransitEntity[]> {
-    const list = await this.transitService.findAll(query);
+  async findAll(
+    @Query() query: SearchDto,
+    @CurrentUser() currentUser,
+  ): Promise<TransitEntity[]> {
+    const list = await this.transitService.findAll(currentUser.id, query);
     return list;
   }
 
@@ -81,8 +88,11 @@ export class TransitController {
   @ApiOkResponse({
     type: TransitBooleanResult,
   })
-  async hasData(@Query() query: SearchDto): Promise<boolean> {
-    const number = await this.transitService.findCount(query);
+  async hasData(
+    @Query() query: SearchDto,
+    @CurrentUser() currentUser,
+  ): Promise<boolean> {
+    const number = await this.transitService.findCount(currentUser.id, query);
     return number > 0;
   }
 

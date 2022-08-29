@@ -5,7 +5,7 @@ import * as validator from 'class-validator';
 import { StoreEntity } from './store.entity';
 import { SearchDto, StoreCreateDto, StoreUpdateDto } from './store.dto';
 import { ERROR } from 'src/constant/error';
-import { indexOfLike } from '../../utils';
+import { indexOfLike, setCreatorWhere } from '../../utils';
 
 @Injectable()
 export class StoreService {
@@ -18,6 +18,7 @@ export class StoreService {
    * 分页按条件查询
    */
   async find(
+    creatorId: number,
     skip: number,
     take: number,
     query: SearchDto,
@@ -35,6 +36,7 @@ export class StoreService {
         id: customerId,
       };
     }
+    setCreatorWhere(where, creatorId);
     return await this.repository.findAndCount({
       where: where,
       take: take,
@@ -48,9 +50,13 @@ export class StoreService {
   /**
    * 全量查询
    */
-  async findAll(query: SearchDto): Promise<StoreEntity[]> {
+  async findAll(
+    query: SearchDto & {
+      creatorId: number;
+    },
+  ): Promise<StoreEntity[]> {
     const where: FindOptionsWhere<StoreEntity> = {};
-    const { storeName, storeAddress, customerId } = query;
+    const { storeName, storeAddress, customerId, creatorId } = query;
     if (validator.isNotEmpty(storeName)) {
       where.storeName = indexOfLike(storeName);
     }
@@ -62,6 +68,7 @@ export class StoreService {
         id: customerId,
       };
     }
+    setCreatorWhere(where, creatorId);
     return await this.repository.find({
       where: where,
     });

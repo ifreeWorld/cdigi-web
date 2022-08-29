@@ -10,7 +10,7 @@ import locale from 'antd/es/locale/zh_CN';
 import defaultSettings from '../config/defaultSettings';
 import { errorHandler, requestInterceptors, responseInterceptors } from './utils/request';
 import DateSetting from './components/DateSetting';
-// import RightContent from './components/RightContent';
+import RightContent from './components/RightContent';
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
@@ -56,7 +56,7 @@ export async function getInitialState(): Promise<{
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
   return {
-    // rightContentRender: () => <RightContent />,
+    rightContentRender: () => <RightContent />,
     disableContentMargin: false,
     // waterMarkProps: {
     //   content: initialState?.currentUser?.username,

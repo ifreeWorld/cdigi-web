@@ -142,7 +142,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           placeholder="请先选择用户类型，再选择标签"
           transform={(values: number[], name) => {
             return {
-              [name]: values.map((id) => ({
+              [name]: values?.map((id) => ({
                 id,
               })),
             };
