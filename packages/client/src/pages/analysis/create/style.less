@@ -13,6 +13,12 @@
         }
       }
     }
+    .ant-tabs {
+      height: 100%;
+    }
+    .ant-tabs-content {
+      height: 100%;
+    }
   }
 }
 
@@ -22,17 +28,65 @@
 }
 
 .leftTree {
+  width: 364px;
   height: 100%;
-  background-color: #fff;
-  width: 264px;
   padding: 20px;
+  background-color: #fff;
+
+  .drags {
+    padding: 8px;
+    // background: #f2f3f5;
+  }
+
+  .drops {
+    padding: 8px;
+    background: #f2f3f5;
+
+    .item {
+      width: calc(50% - 4px);
+
+      .drop {
+        width: 100%;
+        height: 150px;
+        margin-top: 4px;
+        background: #fff;
+        border: 1px solid #e5e6eb;
+      }
+    }
+  }
+}
+
+.flexColumn {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.flexRow {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+}
+
+.flex {
+  display: flex;
+  align-items: center;
+}
+
+.icon {
+  margin-right: 6px;
+  font-size: 12px;
 }
 
 .right {
-  margin-left: 16px;
-  height: 100%;
-  background-color: #fff;
   width: calc(100% - 16px - 264px);
+  height: 100%;
+  margin-left: 16px;
   padding: 20px;
   padding-top: 0;
+  background-color: #fff;
 }

@@ -130,13 +130,13 @@ export default defineConfig({
       routes: [
         {
           path: '/analysis',
-          redirect: '/analysis/customize',
+          redirect: '/analysis/list',
         },
         // {
-        //   name: 'customize',
+        //   name: 'analysisList',
         //   icon: 'smile',
-        //   path: '/analysis/customize',
-        //   component: './analysis/customize',
+        //   path: '/analysis/list',
+        //   component: './analysis/list',
         // },
         {
           name: 'create',

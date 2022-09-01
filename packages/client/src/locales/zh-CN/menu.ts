@@ -59,4 +59,8 @@ export default {
   'menu.dataimport': '数据输入',
   'menu.dataimport.product': '产品数据输入',
   'menu.dataimport.channel': '渠道数据输入',
+  // 自定义
+  'menu.analysis': '分析',
+  'menu.analysis.list': '分析管理',
+  'menu.analysis.create': '自定义分析',
 };
