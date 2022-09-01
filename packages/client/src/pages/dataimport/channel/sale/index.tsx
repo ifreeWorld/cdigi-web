@@ -17,7 +17,7 @@ import {
 } from './service';
 import OperationModal from './components/OperationModal';
 import { WeekPicker } from '../../../../components/WeekPicker';
-import { dateFormat } from '@/common/index';
+import { dateFormat } from '@/constants/index';
 
 const Sale = ({ customerId }: { customerId: number }) => {
   const [visible, setVisible] = useState<boolean>(false);

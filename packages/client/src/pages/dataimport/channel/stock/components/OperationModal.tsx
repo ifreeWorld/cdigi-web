@@ -5,7 +5,7 @@ import moment from 'moment';
 import { Upload } from 'antd';
 import { ModalForm, ProFormUploadDragger } from '@ant-design/pro-form';
 import { ProFormWeekPicker } from '@/components/WeekPicker';
-import { mimeType, dateFormat } from '@/common/index';
+import { mimeType, dateFormat } from '@/constants/index';
 
 type OperationModalProps = {
   visible: boolean;

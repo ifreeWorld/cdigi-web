@@ -4,7 +4,7 @@ import img from './user.png';
 import G6 from '@antv/g6';
 import styles from './style.less';
 import { getRelations } from './service';
-import { customerTypeMap } from '../../../common';
+import { customerTypeMap } from '../../../constants';
 
 const Relations = () => {
   const ref = useRef<HTMLDivElement>(null);

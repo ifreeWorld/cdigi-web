@@ -6,7 +6,7 @@ import { ModalForm, ProFormSelect, ProFormText } from '@ant-design/pro-form';
 import { isEmpty } from 'lodash';
 import type { CustomerListItem } from '../data.d';
 import type { CustomerTag } from '../../tag/data.d';
-import { customerTypeMap } from '../../../../common';
+import { customerTypeMap } from '../../../../constants';
 
 type OperationModalProps = {
   visible: boolean;

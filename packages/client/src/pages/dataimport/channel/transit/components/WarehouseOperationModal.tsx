@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import { ModalForm, ProFormDatePicker } from '@ant-design/pro-form';
-import { dateFormat } from '@/common/index';
+import { dateFormat } from '@/constants/index';
 
 type OperationModalProps = {
   visible: boolean;

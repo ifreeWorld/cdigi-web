@@ -3,7 +3,7 @@ import { useState } from 'react';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { Upload } from 'antd';
 import { ModalForm, ProFormUploadDragger } from '@ant-design/pro-form';
-import { mimeType } from '@/common/index';
+import { mimeType } from '@/constants/index';
 
 type OperationModalProps = {
   visible: boolean;

@@ -6,7 +6,7 @@ import { PageContainer } from '@ant-design/pro-layout';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import type { CustomerListItem } from './data';
-import { customerTypeMap } from '../../../common';
+import { customerTypeMap } from '../../../constants';
 import type { TablePagination } from '../../../types/common';
 import OperationModal from './components/OperationModal';
 import { getAllTag } from '../tag/service';

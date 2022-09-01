@@ -124,6 +124,29 @@ export default defineConfig({
       ],
     },
     {
+      path: '/analysis',
+      name: 'analysis',
+      icon: 'dashboard',
+      routes: [
+        {
+          path: '/analysis',
+          redirect: '/analysis/customize',
+        },
+        // {
+        //   name: 'customize',
+        //   icon: 'smile',
+        //   path: '/analysis/customize',
+        //   component: './analysis/customize',
+        // },
+        {
+          name: 'create',
+          icon: 'smile',
+          path: '/analysis/create',
+          component: './analysis/create',
+        },
+      ],
+    },
+    {
       path: '/dashboard',
       name: 'dashboard',
       icon: 'dashboard',
