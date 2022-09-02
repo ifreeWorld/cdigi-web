@@ -33,6 +33,8 @@ interface DropConfig {
   config: boolean;
 }
 
+type DropMap = Record<DropKeyEnum, Option[]>;
+
 const { TabPane } = Tabs;
 const TYPE = 'customize';
 
@@ -85,16 +87,19 @@ const dropConfigs: DropConfig[] = [
   },
 ];
 
-const DragBox = ({ option }: { option: Option }) => {
+const DragBox = ({ option, checkList }: { option: Option; checkList: CheckboxValueType[] }) => {
   const [{ opacity }, drag] = useDrag(
     () => ({
       type: TYPE,
       item: option,
+      canDrag: () => {
+        return !checkList.includes(option.value);
+      },
       collect: (monitor) => ({
         opacity: monitor.isDragging() ? 0.4 : 1,
       }),
     }),
-    [option.value],
+    [option, checkList],
   );
 
   return (
@@ -105,18 +110,21 @@ const DragBox = ({ option }: { option: Option }) => {
 };
 
 const DropBox = ({ onDrop, list, config }: { onDrop: any; list: Option[]; config: DropConfig }) => {
-  const [{ isOver, canDrop }, drop] = useDrop({
-    accept: TYPE,
-    drop: onDrop,
-    canDrop: () => {
-      // 每一个只能拖拽一个
-      return list.length === 0;
+  const [{ isOver, canDrop }, drop] = useDrop(
+    {
+      accept: TYPE,
+      drop: onDrop,
+      canDrop: () => {
+        // 每一个只能拖拽一个
+        return list.length === 0;
+      },
+      collect: (monitor) => ({
+        isOver: monitor.isOver(),
+        canDrop: monitor.canDrop(),
+      }),
     },
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-      canDrop: monitor.canDrop(),
-    }),
-  });
+    [list],
+  );
 
   const isActive = isOver && canDrop;
   let backgroundColor = '#fff';
@@ -145,19 +153,22 @@ const DropBox = ({ onDrop, list, config }: { onDrop: any; list: Option[]; config
 const Channel: React.FC = () => {
   const [type, setType] = useState('stock');
   const [checkList, setCheckList] = useState<CheckboxValueType[]>([]);
-  const [dropListMap, setDropListMap] = useState<Record<DropKeyEnum, Option[]>>(
-    {} as Record<DropKeyEnum, Option[]>,
-  );
+  const [dropListMap, setDropListMap] = useState<DropMap>({} as DropMap);
 
   const onChangeTab = (activeKey: string) => {
     setType(activeKey);
     setCheckList([]);
-    setDropListMap({} as Record<DropKeyEnum, Option[]>);
+    setDropListMap({} as DropMap);
   };
 
   const onChangeCheckbox = (list: CheckboxValueType[]) => {
     setCheckList(list);
-    // TODO 修改dropListMap，遍历dropListMap，删除掉不在list里面的数据
+    const newMap = {} as DropMap;
+    Object.keys(dropListMap).forEach((key: DropKeyEnum) => {
+      const options = dropListMap[key];
+      newMap[key] = options.filter((op) => list.includes(op.value)) || [];
+    });
+    setDropListMap(newMap);
   };
 
   const onDrop = (option: Option, key: DropKeyEnum) => {
@@ -192,7 +203,7 @@ const Channel: React.FC = () => {
                           {item.dragItems.map((option) => {
                             return (
                               <Row key={option.value} style={{ marginBottom: '6px' }}>
-                                <DragBox option={option} />
+                                <DragBox option={option} checkList={checkList} />
                               </Row>
                             );
                           })}
