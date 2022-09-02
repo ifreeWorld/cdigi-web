@@ -1,6 +1,12 @@
-import { Tabs, Checkbox, Row, Col } from 'antd';
+import { Tabs, Checkbox, Row } from 'antd';
 import React, { useState } from 'react';
-import { FilterOutlined, MenuOutlined, PauseOutlined, UnderlineOutlined } from '@ant-design/icons';
+import {
+  FilterOutlined,
+  MenuOutlined,
+  PauseOutlined,
+  UnderlineOutlined,
+  SettingOutlined,
+} from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
 import type { CheckboxValueType } from 'antd/es/checkbox/Group';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
@@ -18,6 +24,13 @@ enum DropKeyEnum {
   column = 'column',
   row = 'row',
   value = 'value',
+}
+
+interface DropConfig {
+  key: DropKeyEnum;
+  label: string;
+  icon: JSX.Element;
+  config: boolean;
 }
 
 const { TabPane } = Tabs;
@@ -45,26 +58,30 @@ const data = [
   },
 ];
 
-const dropItems = [
+const dropConfigs: DropConfig[] = [
   {
     key: DropKeyEnum.filter,
     label: '筛选器',
     icon: <FilterOutlined className={styles.icon} />,
+    config: true,
   },
   {
     key: DropKeyEnum.column,
     label: '列',
     icon: <PauseOutlined className={styles.icon} />,
+    config: true,
   },
   {
     key: DropKeyEnum.row,
     label: '行',
     icon: <MenuOutlined className={styles.icon} />,
+    config: true,
   },
   {
     key: DropKeyEnum.value,
     label: '值',
     icon: <UnderlineOutlined className={styles.icon} />,
+    config: false,
   },
 ];
 
@@ -87,7 +104,7 @@ const DragBox = ({ option }: { option: Option }) => {
   );
 };
 
-const DropBox = ({ onDrop, list }: { onDrop: any; list: Option[] }) => {
+const DropBox = ({ onDrop, list, config }: { onDrop: any; list: Option[]; config: DropConfig }) => {
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: TYPE,
     drop: onDrop,
@@ -113,7 +130,12 @@ const DropBox = ({ onDrop, list }: { onDrop: any; list: Option[] }) => {
     <div ref={drop} data-testid="dustbin">
       <div className={styles.drop} style={{ backgroundColor }}>
         {list.map((item: Option) => {
-          return <div>{item.label}</div>;
+          return (
+            <div key={item.value} className={styles.dropItem}>
+              <div className={styles.itemTitle}>{item.label}</div>
+              {config.config && <SettingOutlined className={styles.itemIcon} />}
+            </div>
+          );
         })}
       </div>
     </div>
@@ -130,6 +152,12 @@ const Channel: React.FC = () => {
   const onChangeTab = (activeKey: string) => {
     setType(activeKey);
     setCheckList([]);
+    setDropListMap({} as Record<DropKeyEnum, Option[]>);
+  };
+
+  const onChangeCheckbox = (list: CheckboxValueType[]) => {
+    setCheckList(list);
+    // TODO 修改dropListMap，遍历dropListMap，删除掉不在list里面的数据
   };
 
   const onDrop = (option: Option, key: DropKeyEnum) => {
@@ -160,12 +188,7 @@ const Channel: React.FC = () => {
                   <TabPane tab={item.tabName} key={item.tabValue}>
                     <div className={styles.flexColumn}>
                       <div className={styles.drags}>
-                        <Checkbox.Group
-                          value={checkList}
-                          onChange={(list: CheckboxValueType[]) => {
-                            setCheckList(list);
-                          }}
-                        >
+                        <Checkbox.Group value={checkList} onChange={onChangeCheckbox}>
                           {item.dragItems.map((option) => {
                             return (
                               <Row key={option.value} style={{ marginBottom: '6px' }}>
@@ -177,20 +200,21 @@ const Channel: React.FC = () => {
                       </div>
                       <div className={styles.drops}>
                         <div className={styles.flexRow}>
-                          {dropItems.map((item) => {
-                            const key = item.key;
+                          {dropConfigs.map((config) => {
+                            const key = config.key;
                             const current = dropListMap[key] || [];
                             return (
                               <div key={key} className={styles.item}>
                                 <div className={styles.flex}>
-                                  {item.icon}
-                                  <div className={styles.title}>{item.label}</div>
+                                  {config.icon}
+                                  <div className={styles.title}>{config.label}</div>
                                 </div>
                                 <DropBox
                                   onDrop={(option: Option) => {
                                     onDrop(option, key);
                                   }}
                                   list={current}
+                                  config={config}
                                 />
                               </div>
                             );
