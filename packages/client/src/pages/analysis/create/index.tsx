@@ -1,4 +1,4 @@
-import { Tabs, Checkbox, Row } from 'antd';
+import { Tabs, Checkbox, Row, message } from 'antd';
 import React, { useState } from 'react';
 import {
   FilterOutlined,
@@ -33,7 +33,14 @@ interface DropConfig {
   config: boolean;
 }
 
-type DropMap = Record<DropKeyEnum, Option[]>;
+interface DropMapItem extends Option {
+  /**
+   * 指标的具体配置
+   */
+  detail?: any;
+}
+
+type DropMap = Record<DropKeyEnum, DropMapItem[]>;
 
 const { TabPane } = Tabs;
 const TYPE = 'customize';
@@ -87,24 +94,30 @@ const dropConfigs: DropConfig[] = [
   },
 ];
 
-const DragBox = ({ option, checkList }: { option: Option; checkList: CheckboxValueType[] }) => {
+const DragBox = ({
+  option,
+  canDrag,
+  children,
+}: {
+  option: Option;
+  canDrag: () => boolean;
+  children: JSX.Element;
+}) => {
   const [{ opacity }, drag] = useDrag(
     () => ({
       type: TYPE,
       item: option,
-      canDrag: () => {
-        return !checkList.includes(option.value);
-      },
+      canDrag,
       collect: (monitor) => ({
         opacity: monitor.isDragging() ? 0.4 : 1,
       }),
     }),
-    [option, checkList],
+    [option, canDrag],
   );
 
   return (
     <div ref={drag} style={{ opacity }} data-testid="box">
-      <Checkbox value={option.value}>{option.label}</Checkbox>
+      {children}
     </div>
   );
 };
@@ -123,7 +136,7 @@ const DropBox = ({ onDrop, list, config }: { onDrop: any; list: Option[]; config
         canDrop: monitor.canDrop(),
       }),
     },
-    [list],
+    [list, onDrop],
   );
 
   const isActive = isOver && canDrop;
@@ -137,12 +150,20 @@ const DropBox = ({ onDrop, list, config }: { onDrop: any; list: Option[]; config
   return (
     <div ref={drop} data-testid="dustbin">
       <div className={styles.drop} style={{ backgroundColor }}>
-        {list.map((item: Option) => {
+        {list.map((option: Option) => {
           return (
-            <div key={item.value} className={styles.dropItem}>
-              <div className={styles.itemTitle}>{item.label}</div>
-              {config.config && <SettingOutlined className={styles.itemIcon} />}
-            </div>
+            <DragBox
+              key={option.value}
+              option={option}
+              canDrag={() => {
+                return true;
+              }}
+            >
+              <div className={styles.dropItem}>
+                <div className={styles.itemTitle}>{option.label}</div>
+                {config.config && <SettingOutlined className={styles.itemIcon} />}
+              </div>
+            </DragBox>
           );
         })}
       </div>
@@ -162,6 +183,11 @@ const Channel: React.FC = () => {
   };
 
   const onChangeCheckbox = (list: CheckboxValueType[]) => {
+    // 判断list长度是否大于checkList的长度，就是不允许直接☑
+    if (list.length > checkList.length) {
+      message.warning('请拖拽到下方的区域');
+      return;
+    }
     setCheckList(list);
     const newMap = {} as DropMap;
     Object.keys(dropListMap).forEach((key: DropKeyEnum) => {
@@ -172,16 +198,39 @@ const Channel: React.FC = () => {
   };
 
   const onDrop = (option: Option, key: DropKeyEnum) => {
-    const current = dropListMap[key] || [];
-    current.push(option);
-    setDropListMap({
+    const resultMap = {
       ...dropListMap,
-      ...{
-        [key]: current,
-      },
-    });
-    setCheckList([...checkList, option.value]);
+    };
+    const resultList = [...checkList];
+    // 如果已经有了，就移除掉原来的
+    if (checkList.includes(option.value)) {
+      Object.keys(dropListMap).forEach((dropKey: DropKeyEnum) => {
+        const options = dropListMap[dropKey];
+        const index = options.findIndex((op) => option.value === op.value);
+
+        let temp = option;
+        if (index !== -1) {
+          temp = options.splice(index, 1)[0];
+          resultMap[dropKey] = options;
+          if (!resultMap[key]) {
+            resultMap[key] = [];
+          }
+          resultMap[key].push(temp);
+        }
+      });
+    } else {
+      resultList.push(option.value);
+      if (!resultMap[key]) {
+        resultMap[key] = [];
+      }
+      resultMap[key].push(option);
+    }
+    setDropListMap(resultMap);
+    setCheckList(resultList);
   };
+
+  console.log(checkList);
+  console.log(dropListMap);
 
   return (
     <PageContainer className={styles.pageContainer}>
@@ -203,7 +252,14 @@ const Channel: React.FC = () => {
                           {item.dragItems.map((option) => {
                             return (
                               <Row key={option.value} style={{ marginBottom: '6px' }}>
-                                <DragBox option={option} checkList={checkList} />
+                                <DragBox
+                                  option={option}
+                                  canDrag={() => {
+                                    return !checkList.includes(option.value);
+                                  }}
+                                >
+                                  <Checkbox value={option.value}>{option.label}</Checkbox>
+                                </DragBox>
                               </Row>
                             );
                           })}
@@ -221,11 +277,12 @@ const Channel: React.FC = () => {
                                   <div className={styles.title}>{config.label}</div>
                                 </div>
                                 <DropBox
+                                  list={current}
+                                  config={config}
                                   onDrop={(option: Option) => {
                                     onDrop(option, key);
                                   }}
-                                  list={current}
-                                  config={config}
+                                  onOpenDetail={(option: Option) => {}}
                                 />
                               </div>
                             );

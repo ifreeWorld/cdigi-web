@@ -16,7 +16,7 @@ const WarehouseOperationModal: FC<OperationModalProps> = (props) => {
   return (
     <ModalForm
       visible={visible}
-      title="导入"
+      title="入库"
       width={640}
       onFinish={async (values) => {
         onSubmit({
