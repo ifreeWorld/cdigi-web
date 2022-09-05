@@ -3,20 +3,22 @@ import { ModalForm, ProFormDatePicker } from '@ant-design/pro-form';
 import { dateFormat } from '@/constants/index';
 
 type OperationModalProps = {
+  field: string;
+  title: string;
   visible: boolean;
   onCancel: () => void;
   onSubmit: (values: any) => void;
 };
 
-const WarehouseOperationModal: FC<OperationModalProps> = (props) => {
-  const { visible, onCancel, onSubmit } = props;
+const UpdateOperationModal: FC<OperationModalProps> = (props) => {
+  const { visible, title, field, onCancel, onSubmit } = props;
   if (!visible) {
     return null;
   }
   return (
     <ModalForm
       visible={visible}
-      title="入库"
+      title={title}
       width={640}
       onFinish={async (values) => {
         onSubmit({
@@ -28,9 +30,9 @@ const WarehouseOperationModal: FC<OperationModalProps> = (props) => {
         destroyOnClose: true,
       }}
     >
-      <ProFormDatePicker name="warehousingDate" fieldProps={{ format: dateFormat }} />
+      <ProFormDatePicker name={field} fieldProps={{ format: dateFormat }} />
     </ModalForm>
   );
 };
 
-export default WarehouseOperationModal;
+export default UpdateOperationModal;

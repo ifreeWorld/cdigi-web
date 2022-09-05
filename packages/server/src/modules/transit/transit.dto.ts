@@ -19,6 +19,8 @@ export class TransitParseDto {
 
   @ApiProperty({ type: 'string', format: 'binary' })
   file: any;
+
+  eta?: TransitEntity['eta'];
 }
 export class TransitUpdateDto {
   @IsNotEmpty({

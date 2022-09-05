@@ -2,8 +2,8 @@ import type { FC } from 'react';
 import { useState } from 'react';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { Upload } from 'antd';
-import { ModalForm, ProFormUploadDragger } from '@ant-design/pro-form';
-import { mimeType } from '@/constants/index';
+import { ModalForm, ProFormUploadDragger, ProFormDatePicker } from '@ant-design/pro-form';
+import { mimeType, dateFormat } from '@/constants/index';
 
 type OperationModalProps = {
   visible: boolean;
@@ -34,6 +34,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
         destroyOnClose: true,
       }}
     >
+      <ProFormDatePicker label="预计到达时间" name="eta" fieldProps={{ format: dateFormat }} />
       <ProFormUploadDragger
         fieldProps={{
           beforeUpload: (f) => {

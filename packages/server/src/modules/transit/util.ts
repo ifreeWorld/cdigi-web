@@ -5,7 +5,7 @@ export function getTree(entities: TransitEntity[]) {
   const temp = {};
 
   entities.forEach((entity) => {
-    const { inTime, quantity, total } = entity;
+    const { inTime, quantity, total, eta } = entity;
     let parent = temp[inTime];
     if (!parent) {
       parent = {
@@ -14,7 +14,7 @@ export function getTree(entities: TransitEntity[]) {
         productName: '',
         storeName: '',
         price: null,
-        eta: '',
+        // eta: '',
         shippingDate: '',
         children: [],
       };
@@ -25,6 +25,9 @@ export function getTree(entities: TransitEntity[]) {
       }
       if (total && validator.isNumber(total)) {
         parent.total += total;
+      }
+      if (parent.eta !== eta) {
+        parent.eta = '';
       }
     }
     parent.children.push(entity);

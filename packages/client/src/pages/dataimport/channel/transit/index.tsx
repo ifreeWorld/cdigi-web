@@ -10,16 +10,17 @@ import {
   getTransit,
   parseFile,
   deleteTransit,
-  warehouse,
+  update,
   downloadTemplate,
   downloadErrorExcel,
 } from './service';
 import OperationModal from './components/OperationModal';
-import WarehouseOperationModal from './components/WarehouseOperationModal';
+import UpdateOperationModal from './components/UpdateOperationModal';
 
 const Transit = ({ customerId }: { customerId: number }) => {
   const [visible, setVisible] = useState<boolean>(false);
   const [warehouseVisible, setWarehouseVisible] = useState<boolean>(false);
+  const [etcVisible, setEtcVisible] = useState<boolean>(false);
   const [inTime, setInTime] = useState<string>('');
   const actionRef = useRef<ActionType>();
   const searchRef = useRef();
@@ -34,7 +35,7 @@ const Transit = ({ customerId }: { customerId: number }) => {
   );
 
   const { run: postRun } = useRequest(
-    async (method: 'add' | 'remove' | 'in', params) => {
+    async (method: 'add' | 'remove' | 'in' | 'updateEtc', params) => {
       if (method === 'remove') {
         await deleteTransit(params);
         message.success('删除成功');
@@ -51,8 +52,12 @@ const Transit = ({ customerId }: { customerId: number }) => {
         message.success('添加成功');
       }
       if (method === 'in') {
-        await warehouse(params);
+        await update(params);
         message.success('入库成功');
+      }
+      if (method === 'updateEtc') {
+        await update(params);
+        message.success('更新预计到达时间成功');
       }
     },
     {
@@ -60,6 +65,7 @@ const Transit = ({ customerId }: { customerId: number }) => {
       onSuccess: () => {
         setVisible(false);
         setWarehouseVisible(false);
+        setEtcVisible(false);
         actionRef.current?.reloadAndRest?.();
       },
       onError: (error, [method]) => {
@@ -138,6 +144,15 @@ const Transit = ({ customerId }: { customerId: number }) => {
               入库
             </a>,
             <a
+              key="updateEtc"
+              onClick={() => {
+                setEtcVisible(true);
+                setInTime(record.inTime);
+              }}
+            >
+              更新
+            </a>,
+            <a
               key="delete"
               onClick={() => {
                 Modal.confirm({
@@ -190,6 +205,18 @@ const Transit = ({ customerId }: { customerId: number }) => {
 
   const handleWarehouseSubmit = (values: any) => {
     postRun('in', {
+      inTime,
+      customerId,
+      ...values,
+    });
+  };
+
+  const handleEtcCancel = () => {
+    setEtcVisible(false);
+  };
+
+  const handleEtcSubmit = (values: any) => {
+    postRun('updateEtc', {
       inTime,
       customerId,
       ...values,
@@ -249,10 +276,19 @@ const Transit = ({ customerId }: { customerId: number }) => {
         columns={columns}
       />
       <OperationModal visible={visible} onCancel={handleCancel} onSubmit={handleSubmit} />
-      <WarehouseOperationModal
+      <UpdateOperationModal
+        field="warehousingDate"
+        title="入库"
         visible={warehouseVisible}
         onCancel={handleWarehouseCancel}
         onSubmit={handleWarehouseSubmit}
+      />
+      <UpdateOperationModal
+        field="eta"
+        title="更新预计到达时间"
+        visible={etcVisible}
+        onCancel={handleEtcCancel}
+        onSubmit={handleEtcSubmit}
       />
     </>
   );

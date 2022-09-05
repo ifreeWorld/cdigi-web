@@ -127,7 +127,7 @@ export class TransitService {
     body: TransitParseDto,
     creatorId: number,
   ): Promise<number | ErrorConstant> {
-    const { customerId } = body;
+    const { customerId, eta: defaultEta } = body;
     const arrs = utils.sheet_to_json<any[]>(sheet, {
       header: 1,
       dateNF: dateFormat,
@@ -233,8 +233,11 @@ export class TransitService {
           c: colMap.eta,
           r: rowIndex + 1,
         })}`;
-        const errMsg = `位置: ${position} 时间"${eta}"不是日期类型`;
+        const errMsg = `位置: ${position} 预计到达时间"${eta}"不是日期类型`;
         errorsTemp.push(errMsg);
+      } else if (!eta) {
+        // eta没有填的话就需要设置默认值
+        entity.eta = defaultEta;
       }
 
       // 时间不是日期类型
@@ -244,7 +247,7 @@ export class TransitService {
           c: colMap.shippingDate,
           r: rowIndex + 1,
         })}`;
-        const errMsg = `位置: ${position} 时间"${shippingDate}"不是日期类型`;
+        const errMsg = `位置: ${position} 运输时间"${shippingDate}"不是日期类型`;
         errorsTemp.push(errMsg);
       }
 

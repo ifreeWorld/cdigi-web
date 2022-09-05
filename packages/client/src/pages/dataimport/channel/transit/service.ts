@@ -45,9 +45,9 @@ export async function parseFile(data: any, options?: { [key: string]: any }) {
   });
 }
 
-/** 入库 POST /api/transit/warehouse */
-export async function warehouse(data: any, options?: { [key: string]: any }) {
-  return request('/api/transit/warehouse', {
+/** 入库 POST /api/transit/update */
+export async function update(data: any, options?: { [key: string]: any }) {
+  return request('/api/transit/update', {
     data,
     method: 'POST',
   });
