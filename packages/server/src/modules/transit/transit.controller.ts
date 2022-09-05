@@ -34,7 +34,7 @@ import {
   TransitParseResult,
   TransitDataResult,
   TransitBooleanResult,
-  TransitWarehouseDto,
+  TransitUpdateDto,
 } from './transit.dto';
 import { TransitEntity } from './transit.entity';
 import { mimeType, transitSheetName } from '../../constant/file';
@@ -155,14 +155,12 @@ export class TransitController {
    * 入库
    */
   @UseGuards(JwtGuard)
-  @Post('/warehouse')
+  @Post('/update')
   @ApiOkResponse({
     type: TransitIdResult,
   })
-  async warehouse(
-    @Body() { inTime, customerId, warehousingDate }: TransitWarehouseDto,
-  ) {
-    return this.transitService.warehouse(inTime, customerId, warehousingDate);
+  async update(@Body() body: TransitUpdateDto) {
+    return this.transitService.update(body);
   }
 
   /**

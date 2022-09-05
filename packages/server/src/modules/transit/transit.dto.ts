@@ -20,21 +20,20 @@ export class TransitParseDto {
   @ApiProperty({ type: 'string', format: 'binary' })
   file: any;
 }
-export class TransitWarehouseDto {
+export class TransitUpdateDto {
   @IsNotEmpty({
     message: 'inTime不能为空',
   })
   inTime: TransitEntity['inTime'];
 
   @IsNotEmpty({
-    message: 'warehousingDate不能位空',
-  })
-  warehousingDate: TransitEntity['warehousingDate'];
-
-  @IsNotEmpty({
     message: 'customerId不能为空',
   })
   customerId: CustomerEntity['id'];
+
+  warehousingDate?: TransitEntity['warehousingDate'];
+
+  eta?: TransitEntity['eta'];
 }
 export class TransitDeleteDto {
   @IsNotEmpty({

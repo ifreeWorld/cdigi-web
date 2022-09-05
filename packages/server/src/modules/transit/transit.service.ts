@@ -6,7 +6,7 @@ import { WorkSheet, utils, write, WorkBook } from 'xlsx';
 import * as fs from 'fs';
 import * as moment from 'moment';
 import { TransitEntity } from './transit.entity';
-import { SearchDto, TransitParseDto } from './transit.dto';
+import { SearchDto, TransitParseDto, TransitUpdateDto } from './transit.dto';
 import { ErrorConstant } from 'src/constant/error';
 import {
   transitHeaderMap,
@@ -306,15 +306,19 @@ export class TransitService {
    * 根据 ids 删除
    * @param ids
    */
-  async warehouse(
-    inTime: TransitEntity['inTime'],
-    customerId: number,
-    warehousingDate: TransitEntity['warehousingDate'],
-  ): Promise<boolean> {
+  async update(body: TransitUpdateDto): Promise<boolean> {
+    const { inTime, customerId, warehousingDate, eta } = body;
+    const updater: Partial<TransitEntity> = {};
+    if (!validator.isEmpty(warehousingDate)) {
+      updater.warehousingDate = warehousingDate;
+    }
+    if (!validator.isEmpty(eta)) {
+      updater.eta = eta;
+    }
     await this.dataSource
       .createQueryBuilder()
       .update(TransitEntity)
-      .set({ warehousingDate })
+      .set(updater)
       .where('in_time = :inTime', { inTime })
       .andWhere('customer_id = :customerId', { customerId })
       .execute();
