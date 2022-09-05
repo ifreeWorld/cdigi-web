@@ -6,9 +6,9 @@ import BaseEntity from '../../entity/base.entity';
   name: 'tbl_user',
 })
 export class UserEntity extends BaseEntity {
-  /** 用户名 */
+  /** 客户名 */
   @ApiProperty()
-  @Column({ comment: '用户名', unique: true })
+  @Column({ comment: '客户名', unique: true })
   username: string;
 
   /** 密码 */

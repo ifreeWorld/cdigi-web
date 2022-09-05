@@ -171,7 +171,10 @@ export class StockService {
     // 查询周开始日
     let weekStartIndex = '1';
     if (importType === 2) {
-      weekStartIndex = await this.configService.get('getWeekStartIndex');
+      weekStartIndex = await this.configService.hget(
+        'getWeekStartIndex',
+        String(creatorId),
+      );
       if (!weekStartIndex) {
         weekStartIndex = '1';
       }
@@ -241,7 +244,7 @@ export class StockService {
           c: colMap.storeName,
           r: rowIndex + 1,
         })}`;
-        const errMsg = `位置: ${position} 门店名称"${storeName}"不在系统内或门店不在此用户下`;
+        const errMsg = `位置: ${position} 门店名称"${storeName}"不在系统内或门店不在此客户下`;
         errorsTemp.push(errMsg);
       }
 

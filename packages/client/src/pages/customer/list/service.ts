@@ -28,9 +28,18 @@ export async function getCustomer(
     ...(options || {}),
   });
 }
-/** 获取全部用户 POST /api/customer/all */
+/** 获取全部客户 POST /api/customer/all */
 export async function getAllCustomer(params: { customerType?: CustomerType }) {
   return request<ResultSuccessPromise<CustomerListItem[]>>('/api/customer/all', {
+    params: {
+      ...params,
+    },
+    method: 'GET',
+  });
+}
+/** 获取全部客户 POST /api/customer/allByKey */
+export async function getAllByKey(params: { key: string }) {
+  return request<ResultSuccessPromise<string[]>>('/api/customer/allByKey', {
     params: {
       ...params,
     },

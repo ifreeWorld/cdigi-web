@@ -17,20 +17,26 @@ export class SearchDto extends PaginationDto {
 export class CustomerAllSearchDto {
   customerType?: CustomerEntity['customerType'];
 }
+export class CustomerKeyDataDto {
+  @IsNotEmpty({
+    message: 'key不能为空',
+  })
+  key: string;
+}
 export class CustomerIdDto {
   @IsNotEmpty({
-    message: '用户id不能为空',
+    message: '客户id不能为空',
   })
   id: CustomerEntity['id'];
 }
 export class CustomerCreateDto {
   @IsNotEmpty({
-    message: '用户名称不能为空',
+    message: '客户名称不能为空',
   })
   customerName: CustomerEntity['customerName'];
 
   @IsNotEmpty({
-    message: '用户类型不能为空',
+    message: '客户类型不能为空',
   })
   customerType: CustomerEntity['customerType'];
 
@@ -86,4 +92,8 @@ export class CustomerRelationResult extends BaseResult {
     nodes: CustomerEntity[];
     edges: CustomerRelationEdges[];
   };
+}
+
+export class CustomerKeyDataResult extends BaseResult {
+  data: string[];
 }

@@ -12,7 +12,7 @@ export const mimeType = {
 export const dateFormat = 'YYYY-MM-DD';
 
 export const stockHeaderMap = {
-  用户: 'customerId',
+  客户: 'customerId',
   '库存 - 型号': 'productName',
   '库存 - 数量': 'quantity',
   '库存 - 价格': 'price',
@@ -23,7 +23,7 @@ export const stockHeaderMap = {
 
 // 销售表头
 export const saleHeaderMap = {
-  用户: 'customerId',
+  客户: 'customerId',
   '销售 - 型号': 'productName',
   '销售 - 数量': 'quantity',
   // 客户字段是指的产品卖给了谁，需要和customer表关联

@@ -75,16 +75,16 @@ export default defineConfig({
           redirect: '/customer/list',
         },
         {
-          name: 'relation',
-          icon: 'smile',
-          path: '/customer/relation',
-          component: './customer/relation',
-        },
-        {
           name: 'list',
           icon: 'smile',
           path: '/customer/list',
           component: './customer/list',
+        },
+        {
+          name: 'relation',
+          icon: 'smile',
+          path: '/customer/relation',
+          component: './customer/relation',
         },
         {
           name: 'store',

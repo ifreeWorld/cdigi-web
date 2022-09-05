@@ -55,6 +55,20 @@ export class CustomerService {
   /**
    * 全量查询
    */
+  async allByKey(creatorId: number, key: string): Promise<string[]> {
+    const res = await this.dataSource
+      .getRepository(CustomerEntity)
+      .createQueryBuilder('customer')
+      .select(key)
+      .distinct(true)
+      .getRawMany();
+
+    return res.map((item) => item[key]);
+  }
+
+  /**
+   * 全量查询
+   */
   async findAll(
     creatorId: number,
     customerType?: CustomerEntity['customerType'],

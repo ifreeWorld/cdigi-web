@@ -1,8 +1,8 @@
 import type { FC } from 'react';
 import { useRef } from 'react';
-import { Tag } from 'antd';
+import { Tag, AutoComplete } from 'antd';
 import type { ProFormInstance } from '@ant-design/pro-form';
-import { ModalForm, ProFormSelect, ProFormText } from '@ant-design/pro-form';
+import { ModalForm, ProFormSelect, ProFormText, ProForm } from '@ant-design/pro-form';
 import { isEmpty } from 'lodash';
 import type { CustomerListItem } from '../data.d';
 import type { CustomerTag } from '../../tag/data.d';
@@ -14,6 +14,8 @@ type OperationModalProps = {
   onCancel: () => void;
   onSubmit: (values: CustomerListItem) => void;
   allTagList: CustomerTag[] | undefined;
+  allCountryList: string[] | undefined;
+  allRegionList: string[] | undefined;
   allCustomerList: CustomerListItem[] | undefined;
   allCustomerNames: string[] | undefined;
 };
@@ -24,6 +26,8 @@ const OperationModal: FC<OperationModalProps> = (props) => {
     visible,
     current,
     allTagList = [],
+    allCountryList = [],
+    allRegionList = [],
     allCustomerList = [],
     allCustomerNames = [],
     onCancel,
@@ -95,9 +99,9 @@ const OperationModal: FC<OperationModalProps> = (props) => {
       <>
         <ProFormText
           name="customerName"
-          label="用户名称"
+          label="客户名称"
           rules={[
-            { required: true, message: '请输入用户名称' },
+            { required: true, message: '请输入客户名称' },
             {
               validator: async (rule, value) => {
                 if (opType === 'add' && allCustomerNames.includes(value)) {
@@ -116,24 +120,32 @@ const OperationModal: FC<OperationModalProps> = (props) => {
         />
         <ProFormSelect
           name="customerType"
-          label="用户类型"
-          rules={[{ required: true, message: '请选择用户类型' }]}
+          label="客户类型"
+          rules={[{ required: true, message: '请选择客户类型' }]}
           valueEnum={customerTypeMap}
-          placeholder="请选择用户类型"
+          placeholder="请选择客户类型"
           disabled={opType === 'edit'}
         />
-        <ProFormText
+        <ProForm.Item
           name="country"
           label="国家"
           rules={[{ required: true, message: '请输入国家' }]}
-          placeholder="请输入国家"
-        />
-        <ProFormText
+        >
+          <AutoComplete
+            placeholder="请输入国家"
+            options={allCountryList.map((item) => ({ value: item }))}
+          />
+        </ProForm.Item>
+        <ProForm.Item
           name="region"
           label="区域"
           rules={[{ required: true, message: '请输入区域' }]}
-          placeholder="请输入区域"
-        />
+        >
+          <AutoComplete
+            placeholder="请输入区域"
+            options={allRegionList.map((item) => ({ value: item }))}
+          />
+        </ProForm.Item>
         <ProFormText
           name="email"
           label="邮箱"
@@ -144,8 +156,8 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           name="tags"
           mode="tags"
           label="标签"
-          tooltip="请先选择用户类型，再选择标签"
-          placeholder="请先选择用户类型，再选择标签"
+          tooltip="请先选择客户类型，再选择标签"
+          placeholder="请先选择客户类型，再选择标签"
           dependencies={['customerType']}
           transform={(values: number[], name) => {
             return {
@@ -172,9 +184,9 @@ const OperationModal: FC<OperationModalProps> = (props) => {
         <ProFormSelect
           name="parent"
           mode="tags"
-          label="所属用户"
-          tooltip="请先选择用户类型，再选择所属用户"
-          placeholder="请先选择用户类型，再选择所属用户"
+          label="上级供应商"
+          tooltip="请先选择客户类型，再选择上级供应商"
+          placeholder="请先选择客户类型，再选择上级供应商"
           transform={(value, name) => {
             return {
               [name]: value?.map((v: number) => ({

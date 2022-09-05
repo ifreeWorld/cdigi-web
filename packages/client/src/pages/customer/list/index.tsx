@@ -1,5 +1,5 @@
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, message, Tag, Modal } from 'antd';
+import { Button, message, Tag, Modal, Tooltip } from 'antd';
 import { useRequest } from 'umi';
 import React, { useState, useRef, useMemo } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
@@ -16,6 +16,7 @@ import {
   addCustomer,
   updateCustomer,
   deleteCustomer,
+  getAllByKey,
 } from './service';
 
 const TableList: React.FC = () => {
@@ -27,9 +28,36 @@ const TableList: React.FC = () => {
     return await getAllTag();
   });
 
-  const { run: runAll, data: allCustomerList } = useRequest(async () => {
-    return await getAllCustomer({});
-  });
+  const { run: runCountry, data: allCountryList } = useRequest(
+    async () => {
+      return await getAllByKey({
+        key: 'country',
+      });
+    },
+    {
+      manual: true,
+    },
+  );
+
+  const { run: runRegion, data: allRegionList } = useRequest(
+    async () => {
+      return await getAllByKey({
+        key: 'region',
+      });
+    },
+    {
+      manual: true,
+    },
+  );
+
+  const { run: runAll, data: allCustomerList } = useRequest(
+    async () => {
+      return await getAllCustomer({});
+    },
+    {
+      manual: true,
+    },
+  );
 
   const { run } = useRequest(
     async (params) => {
@@ -69,11 +97,11 @@ const TableList: React.FC = () => {
 
   const columns: ProColumns<CustomerListItem>[] = [
     {
-      title: '用户名称',
+      title: '客户名称',
       dataIndex: 'customerName',
     },
     {
-      title: '用户类型',
+      title: '客户类型',
       dataIndex: 'customerType',
       valueType: 'select',
       valueEnum: customerTypeMap,
@@ -89,9 +117,17 @@ const TableList: React.FC = () => {
       hideInSearch: true,
     },
     {
-      title: '用户邮箱',
+      title: '客户邮箱',
       dataIndex: 'email',
       hideInSearch: true,
+    },
+    {
+      title: '供应商',
+      dataIndex: 'parent',
+      ellipsis: true,
+      render: (text, record: CustomerListItem) => {
+        return record.parent.map((item) => item.customerName)?.join(',') || '';
+      },
     },
     {
       title: '标签',
@@ -199,6 +235,8 @@ const TableList: React.FC = () => {
         ]}
         request={async (params) => {
           runAll();
+          runCountry();
+          runRegion();
           const res = await run({
             ...params,
             parent: true,
@@ -217,6 +255,8 @@ const TableList: React.FC = () => {
         onCancel={handleCancel}
         onSubmit={handleSubmit}
         allTagList={tagRes}
+        allCountryList={allCountryList}
+        allRegionList={allRegionList}
         allCustomerList={allCustomerList}
         allCustomerNames={allCustomerNames}
       />

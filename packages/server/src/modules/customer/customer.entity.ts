@@ -16,16 +16,16 @@ import { CustomerType } from '../tag/customerType.enum';
   name: 'tbl_customer',
 })
 export class CustomerEntity extends BaseEntity {
-  /** 用户名称 */
-  @Column({ name: 'customer_name', comment: '用户名称', unique: true })
+  /** 客户名称 */
+  @Column({ name: 'customer_name', comment: '客户名称', unique: true })
   customerName: string;
 
-  /** 用户类型 */
+  /** 客户类型 */
   @Column({
     name: 'customer_type',
     type: 'enum',
     enum: CustomerType,
-    comment: '用户类型 1|品牌商 2|代理商 3|经销商',
+    comment: '客户类型 1|品牌商 2|代理商 3|经销商',
   })
   customerType: CustomerType;
 
@@ -37,8 +37,8 @@ export class CustomerEntity extends BaseEntity {
   @Column({ name: 'region', comment: '区域' })
   region: string;
 
-  /** 用户邮箱 */
-  @Column({ name: 'email', comment: '用户邮箱' })
+  /** 客户邮箱 */
+  @Column({ name: 'email', comment: '客户邮箱' })
   email: string;
 
   /** 标签关联，多对多 */

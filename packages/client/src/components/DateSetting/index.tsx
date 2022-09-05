@@ -9,10 +9,24 @@ const options: {
   id: number;
 }[] = [];
 
+const map = {
+  0: '周日',
+  1: '周一',
+  2: '周二',
+  3: '周三',
+  4: '周四',
+  5: '周五',
+  6: '周六',
+};
+
+function getLabel(i: number) {
+  return map[i];
+}
+
 for (let i = 0; i < 7; i++) {
   options.push({
     id: i,
-    label: i,
+    label: getLabel(i),
     value: i + '',
   });
 }

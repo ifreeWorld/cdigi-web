@@ -45,7 +45,7 @@ export class TagController {
     };
   }
 
-  /** 全量用户列表 */
+  /** 全量客户列表 */
   @UseGuards(JwtGuard)
   @Get('/all')
   @ApiOkResponse({

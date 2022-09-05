@@ -51,8 +51,8 @@ export default {
   'menu.editor.koni': '拓扑编辑器',
   // 自定义
   'menu.customer': '实体管理',
-  'menu.customer.relation': '用户关系图',
-  'menu.customer.list': '用户列表',
+  'menu.customer.relation': '客户关系图',
+  'menu.customer.list': '客户列表',
   'menu.customer.store': '门店列表',
   'menu.customer.tag': '标签管理',
   // 自定义

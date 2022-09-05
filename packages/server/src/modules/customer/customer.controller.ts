@@ -24,16 +24,18 @@ import {
   CustomerIdResult,
   CustomerDataResult,
   CustomerRelationResult,
+  CustomerKeyDataResult,
+  CustomerKeyDataDto,
 } from './customer.dto';
 import { CustomerEntity } from './customer.entity';
 
 @ApiBearerAuth()
-@ApiTags('用户')
+@ApiTags('客户')
 @Controller('customer')
 export class CustomerController {
   constructor(private customerService: CustomerService) {}
 
-  /** 用户列表 */
+  /** 客户列表 */
   @UseGuards(JwtGuard)
   @Get('/list')
   @ApiOkResponse({
@@ -48,7 +50,10 @@ export class CustomerController {
       currentUser.id,
       getSkip(current, pageSize),
       pageSize,
-      query,
+      {
+        ...query,
+        parent: true,
+      },
     );
     return {
       list: list,
@@ -56,7 +61,7 @@ export class CustomerController {
     };
   }
 
-  /** 全量用户列表 */
+  /** 全量客户列表 */
   @UseGuards(JwtGuard)
   @Get('/all')
   @ApiOkResponse({
@@ -74,7 +79,22 @@ export class CustomerController {
     return list;
   }
 
-  /** 全量用户列表 */
+  /** 获取所有key的数据 */
+  @UseGuards(JwtGuard)
+  @Get('/allByKey')
+  @ApiOkResponse({
+    type: CustomerKeyDataResult,
+  })
+  async allByKey(
+    @Query() query: CustomerKeyDataDto,
+    @CurrentUser() currentUser,
+  ): Promise<string[]> {
+    const { key } = query;
+    const list = await this.customerService.allByKey(currentUser.id, key);
+    return list;
+  }
+
+  /** 全量客户列表 */
   @UseGuards(JwtGuard)
   @Get('/findAllChildrenByNodeId')
   @ApiOkResponse({

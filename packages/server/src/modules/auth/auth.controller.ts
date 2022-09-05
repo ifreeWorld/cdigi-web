@@ -45,7 +45,7 @@ export class AuthController {
     return '退出成功';
   }
 
-  /** 当前登录用户 currentUser: { cname, sname } */
+  /** 当前登录客户 currentUser: { cname, sname } */
   @UseGuards(JwtGuard)
   @Get('/currentUser')
   @ApiOkResponse({

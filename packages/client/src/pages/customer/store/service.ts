@@ -4,7 +4,7 @@ import { request } from 'umi';
 import { StoreListItem } from './data';
 import { ResultSuccessPromise, TableListData } from '../../../types/common';
 
-/** 获取标签 POST /api/store/list */
+/** 获取门店 POST /api/store/list */
 export async function getStore(
   params: {
     // query
@@ -26,7 +26,7 @@ export async function getStore(
   });
 }
 
-/** 添加客户 POST /api/store/add */
+/** 添加门店 POST /api/store/add */
 export async function addStore(data: StoreListItem, options?: { [key: string]: any }) {
   return request('/api/store/add', {
     data,
@@ -35,7 +35,7 @@ export async function addStore(data: StoreListItem, options?: { [key: string]: a
   });
 }
 
-/** 编辑客户 POST /api/store/update */
+/** 编辑门店 POST /api/store/update */
 export async function updateStore(data: StoreListItem, options?: { [key: string]: any }) {
   return request('/api/store/update', {
     data,
@@ -44,7 +44,7 @@ export async function updateStore(data: StoreListItem, options?: { [key: string]
   });
 }
 
-/** 删除客户 POST /api/store/delete */
+/** 删除门店 POST /api/store/delete */
 export async function deleteStore(data: { ids: number[] }, options?: { [key: string]: any }) {
   return request('/api/store/delete', {
     data,

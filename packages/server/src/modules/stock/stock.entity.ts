@@ -31,7 +31,7 @@ export class StockEntity extends ChannelEntity {
     name: 'date',
     type: 'date',
     nullable: true,
-    comment: '日。格式：2022-12-01，用户上传数据中带时间才会有',
+    comment: '日。格式：2022-12-01，客户上传数据中带时间才会有',
   })
   date?: Date;
 }
