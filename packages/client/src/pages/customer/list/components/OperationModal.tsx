@@ -3,12 +3,12 @@ import { useRef } from 'react';
 import { Tag, AutoComplete } from 'antd';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import { ModalForm, ProFormSelect, ProFormText, ProForm } from '@ant-design/pro-form';
-import { isEmpty } from 'lodash';
 import type { CustomerListItem } from '../data.d';
 import type { CustomerTag } from '../../tag/data.d';
 import { customerTypeMap } from '../../../../constants';
 
 type OperationModalProps = {
+  opType: 'add' | 'edit';
   visible: boolean;
   current: Partial<CustomerListItem> | undefined;
   onCancel: () => void;
@@ -23,6 +23,7 @@ type OperationModalProps = {
 const OperationModal: FC<OperationModalProps> = (props) => {
   const formRef = useRef<ProFormInstance>();
   const {
+    opType,
     visible,
     current,
     allTagList = [],
@@ -37,8 +38,6 @@ const OperationModal: FC<OperationModalProps> = (props) => {
   if (!visible) {
     return null;
   }
-  const opType = isEmpty(current) ? 'add' : 'edit';
-
   const tagRender = (tagProps: any) => {
     const { label, value, closable, onClose } = tagProps;
     const cur = allTagList.find((item) => item.id === value * 1);
@@ -79,6 +78,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
       }}
       initialValues={{
         ...current,
+        customerType: current?.customerType ? String(current?.customerType) : undefined,
         tags: current?.tags?.map((item) => item.id),
         parent: current?.parent?.map((item) => item.id),
       }}

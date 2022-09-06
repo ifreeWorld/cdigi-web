@@ -57,16 +57,26 @@ const TableList: React.FC = () => {
       dataIndex: 'storeName',
     },
     {
-      title: '门店地址',
-      dataIndex: 'storeAddress',
+      title: '区域',
+      dataIndex: 'region',
     },
     {
       title: '所属经销商',
       dataIndex: 'customer',
-      hideInSearch: true,
+      // TODO 设置search的render
+      // renderFormItem: (item, { type, fieldProps }) => {
+      //   if (type === 'form') {
+      //     return null;
+      //   }
+      // },
       render: (text, record: StoreListItem) => {
         return record?.customer?.customerName || '';
       },
+    },
+    {
+      title: '门店地址',
+      dataIndex: 'storeAddress',
+      hideInSearch: true,
     },
     {
       title: '操作',

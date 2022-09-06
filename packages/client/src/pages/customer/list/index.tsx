@@ -1,5 +1,5 @@
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, message, Tag, Modal, Tooltip } from 'antd';
+import { Button, message, Tag, Modal } from 'antd';
 import { useRequest } from 'umi';
 import React, { useState, useRef, useMemo } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
@@ -7,7 +7,8 @@ import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import type { CustomerListItem } from './data';
 import { customerTypeMap } from '../../../constants';
-import type { TablePagination } from '../../../types/common';
+import { CustomerType } from '../../../types/common.d';
+import type { TablePagination } from '../../../types/common.d';
 import OperationModal from './components/OperationModal';
 import { getAllTag } from '../tag/service';
 import {
@@ -21,6 +22,7 @@ import {
 
 const TableList: React.FC = () => {
   const [visible, setVisible] = useState<boolean>(false);
+  const [opType, setOpType] = useState<'add' | 'edit'>('add');
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<Partial<CustomerListItem> | undefined>();
 
@@ -86,6 +88,7 @@ const TableList: React.FC = () => {
       manual: true,
       onSuccess: () => {
         setVisible(false);
+        setCurrentRow({});
         actionRef.current?.reloadAndRest?.();
       },
       onError: (error, [method]) => {
@@ -156,6 +159,7 @@ const TableList: React.FC = () => {
           key="edit"
           onClick={() => {
             setVisible(true);
+            setOpType('edit');
             setCurrentRow({
               id: record.id,
               customerName: record.customerName,
@@ -228,6 +232,46 @@ const TableList: React.FC = () => {
             key="primary"
             onClick={() => {
               setVisible(true);
+              setOpType('add');
+              setCurrentRow({
+                customerType: CustomerType.vendor,
+              });
+            }}
+          >
+            <PlusOutlined /> 新建品牌商
+          </Button>,
+          <Button
+            type="primary"
+            key="primary"
+            onClick={() => {
+              setVisible(true);
+              setOpType('add');
+              setCurrentRow({
+                customerType: CustomerType.disty,
+              });
+            }}
+          >
+            <PlusOutlined /> 新建代理商
+          </Button>,
+          <Button
+            type="primary"
+            key="primary"
+            onClick={() => {
+              setVisible(true);
+              setOpType('add');
+              setCurrentRow({
+                customerType: CustomerType.dealer,
+              });
+            }}
+          >
+            <PlusOutlined /> 新建经销商
+          </Button>,
+          <Button
+            type="primary"
+            key="primary"
+            onClick={() => {
+              setVisible(true);
+              setOpType('add');
             }}
           >
             <PlusOutlined /> 新建
@@ -250,6 +294,7 @@ const TableList: React.FC = () => {
         columns={columns}
       />
       <OperationModal
+        opType={opType}
         visible={visible}
         current={currentRow}
         onCancel={handleCancel}

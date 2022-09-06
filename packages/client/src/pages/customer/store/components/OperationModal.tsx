@@ -79,12 +79,6 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           placeholder="请输入"
           disabled={opType === 'edit'}
         />
-        <ProFormText
-          name="storeAddress"
-          label="门店地址"
-          rules={[{ required: true, message: '请输入门店地址' }]}
-          placeholder="请输入"
-        />
         <ProFormSelect
           name="customer"
           label="所属经销商"
@@ -109,6 +103,12 @@ const OperationModal: FC<OperationModalProps> = (props) => {
             });
             return res;
           }}
+        />
+        <ProFormText
+          name="storeAddress"
+          label="门店地址"
+          rules={[{ required: true, message: '请输入门店地址' }]}
+          placeholder="请输入"
         />
       </>
     </ModalForm>
