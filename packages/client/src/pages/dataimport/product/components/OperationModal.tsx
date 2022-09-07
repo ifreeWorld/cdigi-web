@@ -1,8 +1,8 @@
 import type { FC } from 'react';
 import { useRef } from 'react';
-import { Tag } from 'antd';
+import { Tag, AutoComplete } from 'antd';
 import type { ProFormInstance } from '@ant-design/pro-form';
-import { ModalForm, ProFormSelect, ProFormText } from '@ant-design/pro-form';
+import { ModalForm, ProFormSelect, ProForm, ProFormText } from '@ant-design/pro-form';
 import { isEmpty } from 'lodash';
 import type { ProductListItem } from '../data.d';
 import type { CustomerTag } from '../../../customer/tag/data.d';
@@ -14,6 +14,7 @@ type OperationModalProps = {
   onSubmit: (values: ProductListItem) => void;
   allTagList: CustomerTag[] | undefined;
   allProductNames: string[] | undefined;
+  allVendorNames: string[] | undefined;
 };
 
 const OperationModal: FC<OperationModalProps> = (props) => {
@@ -23,6 +24,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
     current,
     allTagList = [],
     allProductNames = [],
+    allVendorNames = [],
     onCancel,
     onSubmit,
     children,
@@ -110,30 +112,19 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           placeholder="请输入"
           disabled={opType === 'edit'}
         />
-        <ProFormText
+        <ProForm.Item
           name="vendorName"
           label="品牌"
           rules={[{ required: true, message: '请输入品牌' }]}
-          placeholder="请输入品牌"
-        />
-        <ProFormText
-          name="categoryFirstName"
-          label="一级分类"
-          rules={[{ required: true, message: '请输入一级分类' }]}
-          placeholder="请输入一级分类"
-        />
-        <ProFormText
-          name="categorySecondName"
-          label="二级分类"
-          rules={[{ required: true, message: '请输入二级分类' }]}
-          placeholder="请输入二级分类"
-        />
-        <ProFormText
-          name="categoryThirdName"
-          label="三级分类"
-          rules={[{ required: true, message: '请输入三级分类' }]}
-          placeholder="请输入三级分类"
-        />
+        >
+          <AutoComplete
+            placeholder="请输入品牌"
+            options={allVendorNames.map((item) => ({ value: item }))}
+          />
+        </ProForm.Item>
+        <ProFormText name="categoryFirstName" label="一级分类" placeholder="请输入一级分类" />
+        <ProFormText name="categorySecondName" label="二级分类" placeholder="请输入二级分类" />
+        <ProFormText name="categoryThirdName" label="三级分类" placeholder="请输入三级分类" />
         <ProFormSelect
           name="tags"
           mode="multiple"

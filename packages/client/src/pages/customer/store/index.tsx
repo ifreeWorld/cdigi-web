@@ -1,4 +1,4 @@
-import { PlusOutlined, DownloadOutlined } from '@ant-design/icons';
+import { PlusOutlined, DownloadOutlined, UploadOutlined } from '@ant-design/icons';
 import { Button, message, Modal } from 'antd';
 import { useRequest } from 'umi';
 import React, { useState, useRef, useMemo } from 'react';
@@ -17,11 +17,15 @@ import {
   updateStore,
   deleteStore,
   downloadTemplate,
+  parseFile,
+  downloadErrorExcel,
 } from './service';
 import { getAllCustomer } from '../list/service';
+import ImportOperationModal from './components/ImportOperationModal';
 
 const TableList: React.FC = () => {
   const [visible, setVisible] = useState<boolean>(false);
+  const [importVisible, setImportVisible] = useState<boolean>(false);
   const [opType, setOpType] = useState<'add' | 'edit'>('add');
   const actionRef = useRef<ActionType>();
   const searchRef = useRef();
@@ -53,7 +57,7 @@ const TableList: React.FC = () => {
     return await getAllStore();
   });
   const { run: postRun } = useRequest(
-    async (method: 'add' | 'update' | 'remove', params) => {
+    async (method: 'add' | 'update' | 'remove' | 'import', params) => {
       if (method === 'remove') {
         await deleteStore(params);
         message.success('删除成功');
@@ -66,11 +70,23 @@ const TableList: React.FC = () => {
         await addStore(params);
         message.success('添加成功');
       }
+      if (method === 'import') {
+        const res = await parseFile(params);
+        if (res.code === 6) {
+          message.error(res.message);
+          downloadErrorExcel({
+            fileName: res.data,
+          });
+          return;
+        }
+        message.success('导入成功');
+      }
     },
     {
       manual: true,
       onSuccess: () => {
         setVisible(false);
+        setImportVisible(false);
         setCurrentRow({});
         actionRef.current?.reloadAndRest?.();
       },
@@ -123,6 +139,7 @@ const TableList: React.FC = () => {
             setVisible(true);
             setCurrentRow({
               id: record.id,
+              region: record.region,
               storeName: record.storeName,
               storeAddress: record.storeAddress,
               customer: record.customer,
@@ -164,6 +181,18 @@ const TableList: React.FC = () => {
     postRun(method, values);
   };
 
+  const handleImportCancel = () => {
+    setImportVisible(false);
+  };
+
+  const handleImportSubmit = (values: any) => {
+    const formData = new FormData();
+    for (const key in values) {
+      formData.append(key, values[key]);
+    }
+    postRun('import', formData);
+  };
+
   const allStoreNames = useMemo(() => {
     if (allStoreList) {
       return allStoreList.map((item) => {
@@ -190,12 +219,22 @@ const TableList: React.FC = () => {
             onClick={() => {
               setVisible(true);
               setOpType('add');
+              const searchCustomerId = searchRef?.current?.getFieldValue?.('customer');
               setCurrentRow({
-                customer: searchRef?.current?.getFieldValue?.('customer') || { id: undefined },
+                customer: { id: searchCustomerId },
               });
             }}
           >
             <PlusOutlined /> 新建
+          </Button>,
+          <Button
+            type="primary"
+            key="primary"
+            onClick={() => {
+              setImportVisible(true);
+            }}
+          >
+            <UploadOutlined /> 导入
           </Button>,
           <Button
             type="primary"
@@ -230,6 +269,11 @@ const TableList: React.FC = () => {
         onSubmit={handleSubmit}
         allStoreNames={allStoreNames}
         allDealers={allDealers}
+      />
+      <ImportOperationModal
+        visible={importVisible}
+        onCancel={handleImportCancel}
+        onSubmit={handleImportSubmit}
       />
     </PageContainer>
   );

@@ -15,16 +15,16 @@ export class ProductEntity extends BaseEntity {
   vendorName: string;
 
   /** 一级分类 */
-  @Column({ name: 'category_first_name', comment: '一级分类' })
-  categoryFirstName: string;
+  @Column({ name: 'category_first_name', comment: '一级分类', nullable: true })
+  categoryFirstName?: string;
 
   /** 二级分类 */
-  @Column({ name: 'category_second_name', comment: '二级分类' })
-  categorySecondName: string;
+  @Column({ name: 'category_second_name', comment: '二级分类', nullable: true })
+  categorySecondName?: string;
 
   /** 三级分类 */
-  @Column({ name: 'category_third_name', comment: '三级分类' })
-  categoryThirdName: string;
+  @Column({ name: 'category_third_name', comment: '三级分类', nullable: true })
+  categoryThirdName?: string;
 
   /** 标签关联，多对多 */
   @ManyToMany(() => TagEntity, (tag) => tag.products, {

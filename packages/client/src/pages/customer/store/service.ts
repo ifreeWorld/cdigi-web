@@ -69,3 +69,21 @@ export async function downloadTemplate(params: { fileName: string }) {
     method: 'GET',
   });
 }
+
+/** 上传excel POST /api/store/parseFile */
+export async function parseFile(data: any, options?: { [key: string]: any }) {
+  return request('/api/store/parseFile', {
+    data,
+    method: 'POST',
+  });
+}
+
+/** 下载文件 GET /api/config/downloadTemplate */
+export async function downloadErrorExcel(params: { fileName: string }) {
+  return request('/api/config/downloadErrorExcel', {
+    params: {
+      ...params,
+    },
+    method: 'GET',
+  });
+}

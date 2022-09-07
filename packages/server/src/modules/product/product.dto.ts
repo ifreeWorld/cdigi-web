@@ -22,10 +22,7 @@ export class ProductCreateDto {
   })
   vendorName: ProductEntity['vendorName'];
 
-  @IsNotEmpty({
-    message: '一级分类不能为空',
-  })
-  categoryFirstName: ProductEntity['categoryFirstName'];
+  categoryFirstName?: ProductEntity['categoryFirstName'];
 
   categorySecondName?: ProductEntity['categorySecondName'];
 

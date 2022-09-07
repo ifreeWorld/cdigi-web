@@ -210,7 +210,7 @@ export class StoreService {
       }
 
       // 区域不是string类型
-      if (region && validator.maxLength(region, 255)) {
+      if (region && String(region).length > 255) {
         // 单元格位置文本，A1 B2
         const position = `${utils.encode_cell({
           c: colMap.region,
@@ -221,7 +221,7 @@ export class StoreService {
       }
 
       // 门店地址不是string类型
-      if (storeAddress && validator.maxLength(storeAddress, 255)) {
+      if (storeAddress && String(storeAddress).length > 255) {
         // 单元格位置文本，A1 B2
         const position = `${utils.encode_cell({
           c: colMap.storeAddress,

@@ -163,6 +163,16 @@ const TableList: React.FC = () => {
     return [];
   }, [allProductList]);
 
+  const allVendorNames = useMemo(() => {
+    if (allProductList) {
+      const array = allProductList.map((item) => {
+        return item.vendorName;
+      });
+      return [...new Set(array)];
+    }
+    return [];
+  }, [allProductList]);
+
   return (
     <PageContainer>
       <ProTable<ProductListItem, TablePagination>
@@ -204,6 +214,7 @@ const TableList: React.FC = () => {
         onSubmit={handleSubmit}
         allTagList={tagRes}
         allProductNames={allProductNames}
+        allVendorNames={allVendorNames}
       />
     </PageContainer>
   );
