@@ -154,7 +154,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
         />
         <ProFormSelect
           name="tags"
-          mode="tags"
+          mode="multiple"
           label="标签"
           tooltip="请先选择客户类型，再选择标签"
           placeholder="请先选择客户类型，再选择标签"
@@ -183,7 +183,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
         />
         <ProFormSelect
           name="parent"
-          mode="tags"
+          mode="multiple"
           label="上级供应商"
           tooltip="请先选择客户类型，再选择上级供应商"
           placeholder="请先选择客户类型，再选择上级供应商"

@@ -26,6 +26,13 @@ export async function getStore(
   });
 }
 
+/** 获取全部门店 POST /api/store/all */
+export async function getAllStore() {
+  return request<ResultSuccessPromise<StoreListItem[]>>('/api/store/all', {
+    method: 'GET',
+  });
+}
+
 /** 添加门店 POST /api/store/add */
 export async function addStore(data: StoreListItem, options?: { [key: string]: any }) {
   return request('/api/store/add', {
@@ -50,5 +57,15 @@ export async function deleteStore(data: { ids: number[] }, options?: { [key: str
     data,
     method: 'POST',
     ...(options || {}),
+  });
+}
+
+/** 下载文件 GET /api/config/downloadTemplate */
+export async function downloadTemplate(params: { fileName: string }) {
+  return request('/api/config/downloadTemplate', {
+    params: {
+      ...params,
+    },
+    method: 'GET',
   });
 }

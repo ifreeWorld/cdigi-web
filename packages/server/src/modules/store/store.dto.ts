@@ -1,12 +1,17 @@
 import { IsNotEmpty } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import { PaginationDto } from '../../dto';
 import { StoreEntity } from './store.entity';
 import { BaseResult } from 'src/interface/base.interface';
 
 export class SearchDto extends PaginationDto {
   storeName?: StoreEntity['storeName'];
-  storeAddress?: StoreEntity['storeAddress'];
+  region?: StoreEntity['region'];
   customerId?: StoreEntity['customer']['id'];
+}
+export class StoreParseDto {
+  @ApiProperty({ type: 'string', format: 'binary' })
+  file: any;
 }
 export class StoreCreateDto {
   @IsNotEmpty({
@@ -14,6 +19,7 @@ export class StoreCreateDto {
   })
   storeName: StoreEntity['storeName'];
 
+  region: StoreEntity['region'];
   storeAddress: StoreEntity['storeAddress'];
 
   @IsNotEmpty({
@@ -48,4 +54,8 @@ export class StoreListResult extends BaseResult {
 }
 export class StoreIdResult extends BaseResult {
   data: number;
+}
+
+export class StoreParseResult extends BaseResult {
+  data: string | boolean;
 }

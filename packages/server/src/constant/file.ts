@@ -38,9 +38,18 @@ export const transitHeaderMap = {
   '在途库存 - 预计到达时间': 'eta',
 };
 
+// 门店表头
+export const storeHeaderMap = {
+  门店名称: 'storeName',
+  所属经销商: 'customer',
+  区域: 'region',
+  门店地址: 'storeAddress',
+};
+
 export const stockSheetName = '库存';
 export const saleSheetName = '销售';
 export const transitSheetName = '在途库存';
+export const storeSheetName = '门店';
 
 export const dateFormat = 'YYYY-MM-DD';
 export const dateTimeFormat = 'YYYY-MM-DD HH:mm:ss';

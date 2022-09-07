@@ -2,26 +2,34 @@ import type { FC } from 'react';
 import { useRef } from 'react';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import { ModalForm, ProFormSelect, ProFormText } from '@ant-design/pro-form';
-import { isEmpty } from 'lodash';
 import type { StoreListItem } from '../data.d';
-import { CustomerType } from '../../../../types/common.d';
-import { getAllCustomer } from '../../list/service';
+import type { Option } from '../../../../types/common.d';
 
 type OperationModalProps = {
+  opType: 'add' | 'edit';
   visible: boolean;
   current: Partial<StoreListItem> | undefined;
   onCancel: () => void;
   onSubmit: (values: StoreListItem) => void;
   allStoreNames: string[] | undefined;
+  allDealers: Option[] | undefined;
 };
 
 const OperationModal: FC<OperationModalProps> = (props) => {
   const formRef = useRef<ProFormInstance>();
-  const { visible, current, allStoreNames = [], onCancel, onSubmit, children } = props;
+  const {
+    opType,
+    visible,
+    current,
+    allStoreNames = [],
+    allDealers = [],
+    onCancel,
+    onSubmit,
+    children,
+  } = props;
   if (!visible) {
     return null;
   }
-  const opType = isEmpty(current) ? 'add' : 'edit';
 
   return (
     <ModalForm<StoreListItem>
@@ -42,7 +50,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
       }}
       initialValues={{
         ...current,
-        customer: current?.customer?.id,
+        customer: current?.customer ? current?.customer?.id : '',
       }}
       trigger={<>{children}</>}
       modalProps={{
@@ -91,25 +99,10 @@ const OperationModal: FC<OperationModalProps> = (props) => {
               },
             };
           }}
-          request={async () => {
-            const { data } = await getAllCustomer({
-              customerType: CustomerType.dealer,
-            });
-            const res = data.map((item) => {
-              return {
-                label: item.customerName,
-                value: item.id,
-              };
-            });
-            return res;
-          }}
+          options={allDealers}
         />
-        <ProFormText
-          name="storeAddress"
-          label="门店地址"
-          rules={[{ required: true, message: '请输入门店地址' }]}
-          placeholder="请输入"
-        />
+        <ProFormText name="region" label="区域" placeholder="请输入" />
+        <ProFormText name="storeAddress" label="门店地址" placeholder="请输入" />
       </>
     </ModalForm>
   );

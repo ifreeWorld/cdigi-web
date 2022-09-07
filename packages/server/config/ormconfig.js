@@ -6,7 +6,8 @@ const orm = {
   password: process.env.orm_password,
   database: process.env.orm_database,
   entities: ['dist/**/**.entity{.ts,.js}'],
-  synchronize: true,
+  synchronize: false,
+  migrations: ['migrations/**/**{.ts,.js}'],
   supportBigNumbers: true,
   bigNumberStrings: false,
 };

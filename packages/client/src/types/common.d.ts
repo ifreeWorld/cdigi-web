@@ -11,6 +11,11 @@ export enum CustomerType {
   dealer = 3,
 }
 
+export interface Option {
+  label: string;
+  value: string | number;
+}
+
 /** 表格请求 query 类型 */
 export type TableRequestParameters = Parameters<
   Required<React.ComponentProps<typeof ProTable>>['request']

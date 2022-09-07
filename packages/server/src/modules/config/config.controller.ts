@@ -72,11 +72,10 @@ export class ConfigController {
     @Query('fileName') fileName: string,
   ): Promise<StreamableFile> {
     const urlPath = `${tmpPath}/${fileName}`;
-    let file;
     if (!existsSync(urlPath)) {
       throw new CustomResponse('没有这个路径');
     }
-    file = createReadStream(urlPath);
+    const file = createReadStream(urlPath);
     res.set({
       'Content-Type': mimeType.xlsx,
       'Content-Disposition': `attachment; filename="error.xlsx"`,
@@ -96,14 +95,13 @@ export class ConfigController {
     @Query('fileName') fileName: string,
   ): Promise<StreamableFile> {
     const urlPath = join(__dirname, `../../../template/${fileName}`);
-    let file;
     if (!existsSync(urlPath)) {
       throw new CustomResponse('没有这个路径');
     }
-    file = createReadStream(urlPath);
+    const file = createReadStream(urlPath);
     res.set({
       'Content-Type': mimeType.xlsx,
-      'Content-Disposition': `attachment; filename=stock_template.xlsx`,
+      'Content-Disposition': `attachment; filename=${fileName}`,
     });
     return new StreamableFile(file);
   }

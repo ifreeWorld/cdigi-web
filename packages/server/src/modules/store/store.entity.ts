@@ -10,8 +10,12 @@ export class StoreEntity extends BaseEntity {
   @Column({ name: 'store_name', comment: '门店名称', unique: true })
   storeName: string;
 
+  /** 门店区域 */
+  @Column({ name: 'region', comment: '门店区域', nullable: true })
+  region: string;
+
   /** 门店地址 */
-  @Column({ name: 'store_address', comment: '门店地址' })
+  @Column({ name: 'store_address', comment: '门店地址', nullable: true })
   storeAddress: string;
 
   /** 所属经销商，多对一 */

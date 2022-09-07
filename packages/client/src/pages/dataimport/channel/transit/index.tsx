@@ -252,7 +252,7 @@ const Transit = ({ customerId }: { customerId: number }) => {
               });
             }}
           >
-            <DownloadOutlined /> 导出
+            <DownloadOutlined /> 下载模板
           </Button>,
         ]}
         request={async (params) => {

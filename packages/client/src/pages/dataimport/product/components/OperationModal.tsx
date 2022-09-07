@@ -136,7 +136,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
         />
         <ProFormSelect
           name="tags"
-          mode="tags"
+          mode="multiple"
           label="标签"
           tooltip="请先选择用户类型，再选择标签"
           placeholder="请先选择用户类型，再选择标签"
