@@ -6,7 +6,7 @@ import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import moment from 'moment';
 import type { SaleItem } from './data';
-import type { TablePagination } from '../../../../types/common';
+import { CustomerType, TablePagination } from '../../../../types/common';
 import {
   getSale,
   parseFile,
@@ -19,7 +19,7 @@ import OperationModal from './components/OperationModal';
 import { WeekPicker } from '../../../../components/WeekPicker';
 import { dateFormat } from '@/constants/index';
 
-const Sale = ({ customerId }: { customerId: number }) => {
+const Sale = ({ customerId, customerType }: { customerId: number; customerType: CustomerType }) => {
   const [visible, setVisible] = useState<boolean>(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [cacheData, setCacheData] = useState([]);
@@ -118,7 +118,7 @@ const Sale = ({ customerId }: { customerId: number }) => {
     },
   );
 
-  const columns: ProColumns<SaleItem>[] = [
+  let columns: ProColumns<SaleItem>[] = [
     {
       dataIndex: 'id',
       hideInTable: true,
@@ -153,8 +153,11 @@ const Sale = ({ customerId }: { customerId: number }) => {
     },
     {
       title: '客户',
-      dataIndex: 'buyerName',
+      dataIndex: 'buyer',
       hideInSearch: true,
+      render: (text, record) => {
+        return record?.buyer?.customerName || '-';
+      },
     },
     {
       title: '门店',
@@ -213,6 +216,10 @@ const Sale = ({ customerId }: { customerId: number }) => {
       },
     },
   ];
+
+  if (customerType === CustomerType.vendor || customerType === CustomerType.disty) {
+    columns = columns.filter((item) => item.dataIndex !== 'storeName');
+  }
 
   useEffect(() => {
     actionRef.current?.reset?.();
@@ -283,7 +290,7 @@ const Sale = ({ customerId }: { customerId: number }) => {
               });
             }}
           >
-            <DownloadOutlined /> 下载模板
+            <DownloadOutlined /> 下载销售模板
           </Button>,
         ]}
         dateFormatter={dataFormat}

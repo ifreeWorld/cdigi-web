@@ -20,7 +20,7 @@ export const saleHeaderMap = {
   '销售 - 型号': 'productName',
   '销售 - 数量': 'quantity',
   // 客户字段是指的产品卖给了谁，需要和customer表关联
-  '销售 - 客户': 'buyerName',
+  '销售 - 客户': 'buyer',
   '销售 - 价格': 'price',
   '销售 - 总额': 'total',
   '销售 - 时间': 'date',

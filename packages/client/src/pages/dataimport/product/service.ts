@@ -63,3 +63,38 @@ export async function deleteProduct(data: { ids: number[] }, options?: { [key: s
     ...(options || {}),
   });
 }
+
+/** 上传excel POST /api/product/parseFile */
+export async function parseFile(data: any, options?: { [key: string]: any }) {
+  return request('/api/product/parseFile', {
+    data,
+    method: 'POST',
+  });
+}
+
+/** 上传excel POST /api/product/save */
+export async function save(data: any, options?: { [key: string]: any }) {
+  return request('/api/product/save', {
+    data,
+    method: 'POST',
+  });
+}
+
+/** 下载文件 GET /api/config/downloadTemplate */
+export async function downloadErrorExcel(params: { fileName: string }) {
+  return request('/api/config/downloadErrorExcel', {
+    params: {
+      ...params,
+    },
+    method: 'GET',
+  });
+}
+/** 下载文件 GET /api/config/downloadTemplate */
+export async function downloadTemplate(params: { fileName: string }) {
+  return request('/api/config/downloadTemplate', {
+    params: {
+      ...params,
+    },
+    method: 'GET',
+  });
+}

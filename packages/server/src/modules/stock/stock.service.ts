@@ -160,11 +160,16 @@ export class StockService {
         colMap[key] = index;
       }
     });
+    const data = utils.sheet_to_json(sheet, {
+      dateNF: dateFormat,
+    });
+
+    const hasDate = data.some((item) => !!item['销售 - 时间']);
 
     // 类型1为基于周进行导入，类型2为基于excel中的日期进行导入，类型2需要根据“日期”字段计算出周
     let importType = 1;
     // week为空，说明为类型2
-    if (!week || colMap.hasOwnProperty('date')) {
+    if (!week || hasDate) {
       importType = 2;
     }
 
@@ -185,9 +190,6 @@ export class StockService {
       });
     }
 
-    const data = utils.sheet_to_json(sheet, {
-      dateNF: dateFormat,
-    });
     const is_date1904 = workbook.Workbook.WBProps.date1904;
     const result = data.map((item) => {
       const temp: Partial<StockEntity> = {
@@ -299,7 +301,7 @@ export class StockService {
           c: colMap.date,
           r: rowIndex + 1,
         })}`;
-        const errMsg = `位置: ${position} 有"库存 - 时间"列的时候"库存 - 时间"必填`;
+        const errMsg = `位置: ${position} 有"库存 - 时间"必须全空或者全部填写，在界面上没选周的情况下"库存 - 时间"是必填的`;
         errorsTemp.push(errMsg);
       }
 

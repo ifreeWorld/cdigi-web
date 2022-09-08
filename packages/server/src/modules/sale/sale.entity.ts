@@ -1,5 +1,6 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, ManyToOne, JoinColumn } from 'typeorm';
 import ChannelEntity from '../../entity/channel.entity';
+import { CustomerEntity } from '../customer/customer.entity';
 
 @Entity({
   name: 'tbl_sale',
@@ -34,6 +35,11 @@ export class SaleEntity extends ChannelEntity {
   })
   date?: Date;
 
-  /** 客户，产品卖给了谁 */
-  buyerName?: string;
+  /** 客户，产品卖给了谁，卖给了下一级的客户，此字段代表下一级的客户名称 */
+  /** 客户名称 */
+  @ManyToOne(() => CustomerEntity)
+  @JoinColumn({
+    name: 'buyer_id',
+  })
+  buyer?: CustomerEntity;
 }

@@ -27,7 +27,7 @@ export default class ChannelEntity extends BaseEntity {
   })
   week: string;
 
-  /** 上级供应商，多对一 */
+  /** 哪个客户渠道数据，多对一 */
   @ManyToOne(() => CustomerEntity)
   @JoinColumn({
     name: 'customer_id',

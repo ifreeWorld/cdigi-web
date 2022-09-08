@@ -8,11 +8,13 @@ import Stock from './stock';
 import Sale from './sale';
 import Transit from './transit';
 import styles from './style.less';
+import { CustomerType } from '@/types/common';
 
 const { TabPane } = Tabs;
 
 const Channel: React.FC = () => {
   const [customerId, setCustomerId] = useState<number>(0);
+  const [customerType, setCustomerType] = useState<CustomerType>(CustomerType.vendor);
   const { data: allCustomerList } = useRequest(async () => {
     const res = await getAllCustomer({});
     if (res.data[0] && res.data[0].id) {
@@ -48,6 +50,7 @@ const Channel: React.FC = () => {
           const child = {
             title: customer.customerName,
             key: customer.id,
+            customerType: customer.customerType,
             selectable: true,
           };
           // @ts-ignore
@@ -60,6 +63,7 @@ const Channel: React.FC = () => {
 
   const onSelect: TreeProps['onSelect'] = (selectedKeys, info) => {
     setCustomerId(info.node.key as number);
+    setCustomerType(info.node.customerType as CustomerType);
   };
 
   return (
@@ -77,10 +81,10 @@ const Channel: React.FC = () => {
         <div className={styles.right}>
           <Tabs defaultActiveKey="stock" destroyInactiveTabPane>
             <TabPane tab="库存" key="stock">
-              <Stock customerId={customerId}></Stock>
+              <Stock customerId={customerId} customerType={customerType}></Stock>
             </TabPane>
             <TabPane tab="销售" key="sale">
-              <Sale customerId={customerId}></Sale>
+              <Sale customerId={customerId} customerType={customerType}></Sale>
             </TabPane>
             <TabPane tab="在途库存" key="transit">
               <Transit customerId={customerId}></Transit>

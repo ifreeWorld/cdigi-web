@@ -6,7 +6,7 @@ import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import moment from 'moment';
 import type { StockItem } from './data';
-import type { TablePagination } from '../../../../types/common';
+import { TablePagination, CustomerType } from '../../../../types/common';
 import {
   getStock,
   parseFile,
@@ -19,7 +19,13 @@ import OperationModal from './components/OperationModal';
 import { WeekPicker } from '../../../../components/WeekPicker';
 import { dateFormat } from '@/constants/index';
 
-const Stock = ({ customerId }: { customerId: number }) => {
+const Stock = ({
+  customerId,
+  customerType,
+}: {
+  customerId: number;
+  customerType: CustomerType;
+}) => {
   const [visible, setVisible] = useState<boolean>(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [cacheData, setCacheData] = useState([]);
@@ -115,7 +121,7 @@ const Stock = ({ customerId }: { customerId: number }) => {
     },
   );
 
-  const columns: ProColumns<StockItem>[] = [
+  let columns: ProColumns<StockItem>[] = [
     {
       dataIndex: 'id',
       hideInTable: true,
@@ -206,6 +212,10 @@ const Stock = ({ customerId }: { customerId: number }) => {
     },
   ];
 
+  if (customerType === CustomerType.vendor || customerType === CustomerType.disty) {
+    columns = columns.filter((item) => item.dataIndex !== 'storeName');
+  }
+
   useEffect(() => {
     actionRef.current?.reset?.();
     // 默认切换时进入本周，注释掉就是默认切换时不选周
@@ -275,7 +285,7 @@ const Stock = ({ customerId }: { customerId: number }) => {
               });
             }}
           >
-            <DownloadOutlined /> 下载模板
+            <DownloadOutlined /> 下载库存模板
           </Button>,
         ]}
         dateFormatter={dataFormat}

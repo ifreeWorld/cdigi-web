@@ -1,4 +1,4 @@
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, UploadOutlined, DownloadOutlined } from '@ant-design/icons';
 import { Button, message, Tag, Modal } from 'antd';
 import { useRequest } from 'umi';
 import React, { useState, useRef, useMemo } from 'react';
@@ -9,10 +9,25 @@ import type { ProductListItem } from './data';
 import type { TablePagination } from '../../../types/common';
 import OperationModal from './components/OperationModal';
 import { getAllTag } from '../../customer/tag/service';
-import { getProduct, getAllProduct, addProduct, updateProduct, deleteProduct } from './service';
+import {
+  getProduct,
+  getAllProduct,
+  addProduct,
+  updateProduct,
+  deleteProduct,
+  parseFile,
+  downloadErrorExcel,
+  save,
+  downloadTemplate,
+} from './service';
+import ImportOperationModal from './components/ImportOperationModal';
 
 const TableList: React.FC = () => {
+  const [importVisible, setImportVisible] = useState<boolean>(false);
   const [visible, setVisible] = useState<boolean>(false);
+  const [cacheData, setCacheData] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [modalRepeats, setModalRepeats] = useState([]);
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<Partial<ProductListItem> | undefined>();
 
@@ -33,7 +48,7 @@ const TableList: React.FC = () => {
     },
   );
   const { run: postRun } = useRequest(
-    async (method: 'add' | 'update' | 'remove', params) => {
+    async (method: 'add' | 'update' | 'remove' | 'import', params) => {
       if (method === 'remove') {
         await deleteProduct(params);
         message.success('删除成功');
@@ -45,6 +60,27 @@ const TableList: React.FC = () => {
       if (method === 'add') {
         await addProduct(params);
         message.success('添加成功');
+      }
+      if (method === 'import') {
+        const res = await parseFile(params);
+        // 校验失败
+        if (res.code === 6) {
+          message.error(res.message);
+          await downloadErrorExcel({
+            fileName: res.data,
+          });
+        } else if (res.code === 0) {
+          const { repeatCount, repeat, data } = res.data;
+          // 存在重复，就提示
+          if (repeatCount && repeatCount !== 0) {
+            setIsModalVisible(true);
+            setCacheData(data);
+            setModalRepeats(repeat);
+          } else {
+            // 无重复，直接调用接口
+            handleAdd(data);
+          }
+        }
       }
     },
     {
@@ -144,6 +180,41 @@ const TableList: React.FC = () => {
     },
   ];
 
+  const handleModalCancel = () => {
+    setIsModalVisible(false);
+    setCacheData([]);
+    setModalRepeats([]);
+  };
+
+  const handleCover = async () => {
+    const res = await save({
+      data: cacheData,
+      type: 'cover',
+    });
+    handleModalCancel();
+    if (res.code === 0) {
+      setImportVisible(false);
+      actionRef.current?.reloadAndRest?.();
+      message.success('覆盖数据成功');
+    } else {
+      message.error(res.msg);
+    }
+  };
+  const handleAdd = async (data?: any) => {
+    const res = await save({
+      data: data || cacheData,
+      type: 'add',
+    });
+    handleModalCancel();
+    if (res.code === 0) {
+      setImportVisible(false);
+      actionRef.current?.reloadAndRest?.();
+      message.success('添加数据成功');
+    } else {
+      message.error(res.msg);
+    }
+  };
+
   const handleCancel = () => {
     setVisible(false);
     setCurrentRow({});
@@ -152,6 +223,18 @@ const TableList: React.FC = () => {
   const handleSubmit = (values: Partial<ProductListItem>) => {
     const method = values?.id ? 'update' : 'add';
     postRun(method, values);
+  };
+
+  const handleImportCancel = () => {
+    setImportVisible(false);
+  };
+
+  const handleImportSubmit = (values: any) => {
+    const formData = new FormData();
+    for (const key in values) {
+      formData.append(key, values[key]);
+    }
+    postRun('import', formData);
   };
 
   const allProductNames = useMemo(() => {
@@ -187,6 +270,27 @@ const TableList: React.FC = () => {
             type="primary"
             key="primary"
             onClick={() => {
+              setImportVisible(true);
+            }}
+          >
+            <UploadOutlined /> 导入
+          </Button>,
+          <Button
+            type="primary"
+            key="primary"
+            onClick={() => {
+              // 下载
+              downloadTemplate({
+                fileName: 'product_template.xlsx',
+              });
+            }}
+          >
+            <DownloadOutlined /> 下载模板
+          </Button>,
+          <Button
+            type="primary"
+            key="primary"
+            onClick={() => {
               setVisible(true);
             }}
           >
@@ -207,6 +311,21 @@ const TableList: React.FC = () => {
         }}
         columns={columns}
       />
+      <Modal
+        visible={isModalVisible}
+        title="周数据存在重复"
+        destroyOnClose
+        footer={[
+          <Button key="back" onClick={handleModalCancel}>
+            取消
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleCover}>
+            覆盖
+          </Button>,
+        ]}
+      >
+        <p>{modalRepeats.join('、')}数据存在重复</p>
+      </Modal>
       <OperationModal
         visible={visible}
         current={currentRow}
@@ -215,6 +334,11 @@ const TableList: React.FC = () => {
         allTagList={tagRes}
         allProductNames={allProductNames}
         allVendorNames={allVendorNames}
+      />
+      <ImportOperationModal
+        visible={importVisible}
+        onCancel={handleImportCancel}
+        onSubmit={handleImportSubmit}
       />
     </PageContainer>
   );

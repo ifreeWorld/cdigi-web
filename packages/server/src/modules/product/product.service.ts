@@ -265,7 +265,7 @@ export class ProductService {
             c: colMap.tags,
             r: rowIndex + 1,
           })}`;
-          const errMsg = `位置: ${position} 标签"${categorySecondName}"不在系统中`;
+          const errMsg = `位置: ${position} 标签"${tags}"不在系统中`;
           errorsTemp.push(errMsg);
         } else {
           // 标签在系统中，就给tags赋值

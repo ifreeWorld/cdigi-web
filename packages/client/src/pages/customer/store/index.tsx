@@ -8,7 +8,7 @@ import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import type { StoreListItem } from './data';
 import type { TablePagination, Option } from '../../../types/common';
-import { CustomerType } from '../../../types/common.d';
+import { CustomerType } from '../../../types/common';
 import OperationModal from './components/OperationModal';
 import {
   getStore,

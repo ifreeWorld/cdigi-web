@@ -1,3 +1,5 @@
+import { CustomerListItem } from '@/pages/customer/list/data';
+
 export interface SaleItem {
   id: number;
   productName: string;
@@ -6,7 +8,7 @@ export interface SaleItem {
   total: number;
   storeName: string;
   date: string;
-  buyerName: string;
+  buyer: CustomerListItem;
   weekStartDate: string;
   weekEndDate: string;
   week: string;

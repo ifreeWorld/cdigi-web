@@ -27,6 +27,7 @@ import { ConfigService } from '../config/config.service';
 import { getTree } from './util';
 import { fixImportedDate, setCreatorQb, setCreatorWhere } from '../../utils';
 import { appLogger } from 'src/logger';
+import { CustomerEntity } from '../customer/customer.entity';
 
 export class SaleService {
   constructor(
@@ -73,7 +74,8 @@ export class SaleService {
     const enQb = this.dataSource
       .getRepository(SaleEntity)
       .createQueryBuilder('sale')
-      .select();
+      .select()
+      .leftJoinAndSelect('sale.buyer', 'buyer');
     setCreatorQb(enQb, creatorId, 'sale');
     const entitys = await enQb
       .andWhere('sale.week IN (' + asQb.getQuery() + ')')
@@ -162,11 +164,16 @@ export class SaleService {
         colMap[key] = index;
       }
     });
+    const data = utils.sheet_to_json(sheet, {
+      dateNF: dateFormat,
+    });
+
+    const hasDate = data.some((item) => !!item['销售 - 时间']);
 
     // 类型1为基于周进行导入，类型2为基于excel中的日期进行导入，类型2需要根据“日期”字段计算出周
     let importType = 1;
     // week为空，说明为类型2
-    if (!week || colMap.hasOwnProperty('date')) {
+    if (!week || hasDate) {
       importType = 2;
     }
 
@@ -186,9 +193,6 @@ export class SaleService {
         },
       });
     }
-    const data = utils.sheet_to_json(sheet, {
-      dateNF: dateFormat,
-    });
     const is_date1904 = workbook.Workbook.WBProps.date1904;
     const result = data.map((item) => {
       const temp: any = {
@@ -210,8 +214,8 @@ export class SaleService {
       }
       return temp;
     });
-    const entities = plainToInstance(SaleEntity, result);
-    // const entities = result;
+    // const entities = plainToInstance(SaleEntity, result);
+    const entities = result;
     const allProduct = await this.productService.findAll(creatorId, {});
     const allProductNames = allProduct.map((item) => item.productName);
     const allStore = await this.storeService.findAll({
@@ -219,23 +223,21 @@ export class SaleService {
       creatorId,
     });
     const allStoreNames = allStore.map((item) => item.storeName);
+    // {customerName:customerId}的map
+    const allCustomerMap = {};
     const allCustomer = await this.customerService.findAll(creatorId);
-    const allCustomerNames = allCustomer.map((item) => item.customerName);
+    const allCustomerNames = allCustomer.map((item) => {
+      allCustomerMap[item.customerName] = item.id;
+      return item.customerName;
+    });
 
     // 校验
     const errors = [];
     for (let rowIndex = 0; rowIndex < entities.length; rowIndex++) {
       const errorsTemp = [];
       const entity = entities[rowIndex];
-      const {
-        productName,
-        storeName,
-        quantity,
-        price,
-        total,
-        buyerName,
-        date,
-      } = entity;
+      const { productName, storeName, quantity, price, total, buyer, date } =
+        entity;
 
       // 产品名称不在系统内，或者没填写，必填字段
       if (!productName || !allProductNames.includes(productName)) {
@@ -292,15 +294,22 @@ export class SaleService {
         errorsTemp.push(errMsg);
       }
 
-      // buyerName
-      if (buyerName && !allCustomerNames.includes(buyerName)) {
-        // 单元格位置文本，A1 B2
-        const position = `${utils.encode_cell({
-          c: colMap.buyerName,
-          r: rowIndex + 1,
-        })}`;
-        const errMsg = `位置: ${position} 客户"${buyerName}"不在系统内`;
-        errorsTemp.push(errMsg);
+      // buyer
+      if (buyer) {
+        if (!allCustomerNames.includes(buyer)) {
+          // 单元格位置文本，A1 B2
+          const position = `${utils.encode_cell({
+            c: colMap.buyer,
+            r: rowIndex + 1,
+          })}`;
+          const errMsg = `位置: ${position} 客户"${buyer}"不在系统内`;
+          errorsTemp.push(errMsg);
+        } else {
+          // 写了而且在系统内
+          entity.buyer = {
+            id: allCustomerMap[buyer],
+          };
+        }
       }
 
       // 时间不是日期类型
@@ -321,7 +330,7 @@ export class SaleService {
           c: colMap.date,
           r: rowIndex + 1,
         })}`;
-        const errMsg = `位置: ${position} 有"销售 - 时间"列的时候"销售 - 时间"必填`;
+        const errMsg = `位置: ${position} "销售 - 时间"必须全空或者全部填写，在界面上没选周的情况下"销售 - 时间"是必填的`;
         errorsTemp.push(errMsg);
       }
 
@@ -381,8 +390,9 @@ export class SaleService {
     repeatWeeks = [...new Set(repeatWeeks)];
     const repeatWeekCount = repeatWeeks.length;
 
+    const resultEntities = plainToInstance(SaleEntity, entities);
     return {
-      data: entities,
+      data: resultEntities,
       repeatWeekCount,
       repeatWeeks,
     };

@@ -3,7 +3,7 @@ import { useRef } from 'react';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import { ModalForm, ProFormSelect, ProFormText } from '@ant-design/pro-form';
 import type { StoreListItem } from '../data.d';
-import type { Option } from '../../../../types/common.d';
+import type { Option } from '../../../../types/common';
 
 type OperationModalProps = {
   opType: 'add' | 'edit';
