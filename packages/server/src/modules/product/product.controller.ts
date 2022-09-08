@@ -1,5 +1,24 @@
-import { Controller, Post, Get, Body, Query, UseGuards } from '@nestjs/common';
-import { ApiOkResponse, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Query,
+  UseGuards,
+  UploadedFile,
+  UseInterceptors,
+  ParseFilePipe,
+  FileTypeValidator,
+} from '@nestjs/common';
+import {
+  ApiOkResponse,
+  ApiBearerAuth,
+  ApiTags,
+  ApiConsumes,
+} from '@nestjs/swagger';
+import { read } from 'xlsx';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CustomResponse, ErrorConstant } from 'src/constant/error';
 import { CurrentUser } from '../../decorators';
 import { ProductService } from './product.service';
 import { Pager } from '../../interface';
@@ -13,8 +32,12 @@ import {
   ProductDeleteDto,
   ProductIdResult,
   ProductDataResult,
+  ProductSaveDto,
+  ProductParseDto,
+  ProductParseResult,
 } from './product.dto';
 import { ProductEntity } from './product.entity';
+import { mimeType, productSheetName } from '../../constant/file';
 
 @ApiBearerAuth()
 @ApiTags('产品')
@@ -83,6 +106,70 @@ export class ProductController {
   })
   async update(@Body() body: ProductUpdateDto): Promise<number> {
     return this.productService.update(body.id, body);
+  }
+
+  /** 解析文件 */
+  @UseGuards(JwtGuard)
+  @Post('/parseFile')
+  @ApiConsumes('multipart/form-data')
+  @ApiOkResponse({
+    type: ProductParseResult,
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async parseFile(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({
+            fileType: mimeType.xlsx,
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+    @Body() body: ProductParseDto,
+    @CurrentUser() currentUser,
+  ) {
+    const workbook = read(file.buffer, {
+      type: 'buffer',
+      cellDates: true,
+      cellText: false,
+    });
+    const { SheetNames: sheetNames, Sheets: sheets } = workbook;
+    const fileName = Buffer.from(file.originalname, 'latin1').toString('utf8');
+    let flag = 0;
+
+    for (let i = 0; i < sheetNames.length; i++) {
+      const sheetName = sheetNames[i];
+      const sheet = sheets[sheetName];
+      if (sheetName === productSheetName) {
+        flag = 1;
+        const res = await this.productService.parseSheet(
+          workbook,
+          sheet,
+          fileName,
+          currentUser.id,
+        );
+        return res;
+      }
+    }
+
+    if (!flag) {
+      throw new CustomResponse('sheet页名称不正确');
+    }
+    return true;
+  }
+
+  /**
+   * 保存数据
+   */
+  @UseGuards(JwtGuard)
+  @Post('/save')
+  @ApiOkResponse({
+    type: Number,
+  })
+  async save(@Body() body: ProductSaveDto) {
+    return this.productService.save(body);
   }
 
   /**

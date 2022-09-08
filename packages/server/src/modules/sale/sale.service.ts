@@ -354,7 +354,7 @@ export class SaleService {
       });
       const workbook = utils.book_new();
       appLogger.error(errors.join('\n'));
-      utils.book_append_sheet(workbook, errorSheet, `${saleSheetName}错误原因`);
+      utils.book_append_sheet(workbook, errorSheet, saleSheetName);
 
       const buf = write(workbook, { type: 'buffer', bookType: 'xlsx' });
       const errorFileName = `${

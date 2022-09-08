@@ -46,10 +46,21 @@ export const storeHeaderMap = {
   门店地址: 'storeAddress',
 };
 
+// 产品表头
+export const productHeaderMap = {
+  产品型号: 'productName',
+  品牌: 'vendorName',
+  一级分类: 'categoryFirstName',
+  二级分类: 'categorySecondName',
+  三级分类: 'categoryThirdName',
+  标签: 'tags',
+};
+
 export const stockSheetName = '库存';
 export const saleSheetName = '销售';
 export const transitSheetName = '在途库存';
 export const storeSheetName = '门店';
+export const productSheetName = '产品';
 
 export const dateFormat = 'YYYY-MM-DD';
 export const dateTimeFormat = 'YYYY-MM-DD HH:mm:ss';

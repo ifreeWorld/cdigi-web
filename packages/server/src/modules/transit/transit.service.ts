@@ -264,11 +264,7 @@ export class TransitService {
       });
       const workbook = utils.book_new();
       appLogger.error(errors.join('\n'));
-      utils.book_append_sheet(
-        workbook,
-        errorSheet,
-        `${transitSheetName}错误原因`,
-      );
+      utils.book_append_sheet(workbook, errorSheet, transitSheetName);
 
       const buf = write(workbook, { type: 'buffer', bookType: 'xlsx' });
       const errorFileName = `${

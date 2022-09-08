@@ -1,8 +1,13 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import { PaginationDto } from '../../dto';
 import { ProductEntity } from './product.entity';
 import { BaseResult } from 'src/interface/base.interface';
 
+export enum Type {
+  cover = 'cover',
+  add = 'add',
+}
 export class SearchDto extends PaginationDto {
   productName?: ProductEntity['productName'];
   vendorName?: ProductEntity['vendorName'];
@@ -11,6 +16,10 @@ export class SearchDto extends PaginationDto {
   categoryThirdName?: ProductEntity['categoryThirdName'];
 }
 
+export class ProductParseDto {
+  @ApiProperty({ type: 'string', format: 'binary' })
+  file: any;
+}
 export class ProductCreateDto {
   @IsNotEmpty({
     message: '产品型号不能为空',
@@ -55,4 +64,22 @@ export class ProductDataResult extends BaseResult {
 }
 export class ProductIdResult extends BaseResult {
   data: number;
+}
+export class ProductInnerParseResult {
+  data: ProductEntity[];
+  repeatCount: number;
+  repeat: string[];
+}
+export class ProductParseResult extends BaseResult {
+  data: string | ProductInnerParseResult;
+}
+
+export class ProductSaveDto {
+  data: ProductEntity[];
+
+  @IsNotEmpty({
+    message: 'type能为空',
+  })
+  @IsEnum(Type)
+  type: Type;
 }

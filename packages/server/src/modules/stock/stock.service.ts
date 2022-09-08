@@ -332,11 +332,7 @@ export class StockService {
       });
       const workbook = utils.book_new();
       appLogger.error(errors.join('\n'));
-      utils.book_append_sheet(
-        workbook,
-        errorSheet,
-        `${stockSheetName}错误原因`,
-      );
+      utils.book_append_sheet(workbook, errorSheet, stockSheetName);
 
       const buf = write(workbook, { type: 'buffer', bookType: 'xlsx' });
       const errorFileName = `${
