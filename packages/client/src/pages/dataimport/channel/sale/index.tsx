@@ -153,11 +153,8 @@ const Sale = ({ customerId, customerType }: { customerId: number; customerType: 
     },
     {
       title: '客户',
-      dataIndex: 'buyer',
+      dataIndex: 'buyerName',
       hideInSearch: true,
-      render: (text, record) => {
-        return record?.buyer?.customerName || '-';
-      },
     },
     {
       title: '门店',
@@ -325,15 +322,15 @@ const Sale = ({ customerId, customerType }: { customerId: number; customerType: 
           <Button key="submit" type="primary" onClick={handleCover}>
             覆盖
           </Button>,
-          <Button
-            key="link"
-            type="primary"
-            onClick={() => {
-              handleAdd();
-            }}
-          >
-            添加
-          </Button>,
+          // <Button
+          //   key="link"
+          //   type="primary"
+          //   onClick={() => {
+          //     handleAdd();
+          //   }}
+          // >
+          //   添加
+          // </Button>,
         ]}
       >
         <p>{modalWeeks.join('、')}数据存在重复</p>

@@ -19,10 +19,20 @@
 // 		s.quantity,
 // 		c.customer_name,
 // 		c.country,
-// 		c.region 
+// 		c.region
 // 	FROM
 // 		tbl_sale s
-// 		LEFT JOIN tbl_customer c ON s.customer_id = c.id 
-// 	) AS tmp 
+// 		LEFT JOIN tbl_customer c ON s.customer_id = c.id
+// 	) AS tmp
 // GROUP BY
 // 	tmp.WEEK;
+// SELECT
+// 	s.*,
+// 	c.customer_name,
+// 	c.email,
+// 	c.country,
+// 	c.region,
+// 	c.customer_type
+// FROM
+// 	( SELECT sale.*, buy.customer_name AS buyer_name, buy.customer_type AS buyer_customer_type FROM tbl_sale sale LEFT JOIN tbl_customer buy ON sale.customer_id = buy.id ) s
+// 	LEFT JOIN tbl_customer c ON s.customer_id = c.id;

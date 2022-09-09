@@ -164,7 +164,7 @@ export class StockService {
       dateNF: dateFormat,
     });
 
-    const hasDate = data.some((item) => !!item['销售 - 时间']);
+    const hasDate = data.some((item) => !!item['库存 - 时间']);
 
     // 类型1为基于周进行导入，类型2为基于excel中的日期进行导入，类型2需要根据“日期”字段计算出周
     let importType = 1;
@@ -213,13 +213,23 @@ export class StockService {
       return temp;
     });
     const entities = plainToInstance(StockEntity, result);
+    // {productName:productId}的map
+    const allProductMap = {};
     const allProduct = await this.productService.findAll(creatorId, {});
-    const allProductNames = allProduct.map((item) => item.productName);
+    const allProductNames = allProduct.map((item) => {
+      allProductMap[item.productName] = item.id;
+      return item.productName;
+    });
+    // {storeName:storeId}的map
+    const allStoreMap = {};
     const allStore = await this.storeService.findAll({
       customerId,
       creatorId,
     });
-    const allStoreNames = allStore.map((item) => item.storeName);
+    const allStoreNames = allStore.map((item) => {
+      allStoreMap[item.storeName] = item.id;
+      return item.storeName;
+    });
 
     // 校验
     const errors = [];
@@ -237,6 +247,12 @@ export class StockService {
         })}`;
         const errMsg = `位置: ${position} 产品名称"${productName}"不在系统内或没填写`;
         errorsTemp.push(errMsg);
+      } else {
+        // 产品名称校验通过就设置product字段
+        // @ts-ignore
+        entity.product = {
+          id: allProductMap[productName],
+        };
       }
 
       // 门店名称不在系统内，allStoreNames是关联的经销商的门店
@@ -248,6 +264,12 @@ export class StockService {
         })}`;
         const errMsg = `位置: ${position} 门店名称"${storeName}"不在系统内或门店不在此客户下`;
         errorsTemp.push(errMsg);
+      } else {
+        // 门店名称校验通过就设置store字段
+        // @ts-ignore
+        entity.store = {
+          id: allStoreMap[storeName],
+        };
       }
 
       // 数量不是number类型，或者没填写，必填字段

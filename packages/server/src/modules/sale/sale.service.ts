@@ -74,8 +74,8 @@ export class SaleService {
     const enQb = this.dataSource
       .getRepository(SaleEntity)
       .createQueryBuilder('sale')
-      .select()
-      .leftJoinAndSelect('sale.buyer', 'buyer');
+      .select();
+    // .leftJoinAndSelect('sale.buyer', 'buyer');
     setCreatorQb(enQb, creatorId, 'sale');
     const entitys = await enQb
       .andWhere('sale.week IN (' + asQb.getQuery() + ')')
@@ -216,16 +216,28 @@ export class SaleService {
     });
     // const entities = plainToInstance(SaleEntity, result);
     const entities = result;
+    // {productName:productId}的map
+    const allProductMap = {};
     const allProduct = await this.productService.findAll(creatorId, {});
-    const allProductNames = allProduct.map((item) => item.productName);
+    const allProductNames = allProduct.map((item) => {
+      allProductMap[item.productName] = item.id;
+      return item.productName;
+    });
+    // {storeName:storeId}的map
+    const allStoreMap = {};
     const allStore = await this.storeService.findAll({
       customerId,
       creatorId,
     });
-    const allStoreNames = allStore.map((item) => item.storeName);
+    const allStoreNames = allStore.map((item) => {
+      allStoreMap[item.storeName] = item.id;
+      return item.storeName;
+    });
     // {customerName:customerId}的map
     const allCustomerMap = {};
-    const allCustomer = await this.customerService.findAll(creatorId);
+    const allCustomer = await this.customerService.findAllChildrenByNodeId(
+      customerId,
+    );
     const allCustomerNames = allCustomer.map((item) => {
       allCustomerMap[item.customerName] = item.id;
       return item.customerName;
@@ -236,8 +248,15 @@ export class SaleService {
     for (let rowIndex = 0; rowIndex < entities.length; rowIndex++) {
       const errorsTemp = [];
       const entity = entities[rowIndex];
-      const { productName, storeName, quantity, price, total, buyer, date } =
-        entity;
+      const {
+        productName,
+        storeName,
+        quantity,
+        price,
+        total,
+        buyerName,
+        date,
+      } = entity;
 
       // 产品名称不在系统内，或者没填写，必填字段
       if (!productName || !allProductNames.includes(productName)) {
@@ -248,6 +267,11 @@ export class SaleService {
         })}`;
         const errMsg = `位置: ${position} 产品名称"${productName}"不在系统内或没填写`;
         errorsTemp.push(errMsg);
+      } else {
+        // 产品名称校验通过就设置product字段
+        entity.product = {
+          id: allProductMap[productName],
+        };
       }
 
       // 门店名称不在系统内，allStoreNames是关联的经销商的门店
@@ -259,6 +283,11 @@ export class SaleService {
         })}`;
         const errMsg = `位置: ${position} 门店名称"${storeName}"不在系统内或门店不在此客户下`;
         errorsTemp.push(errMsg);
+      } else {
+        // 门店名称校验通过就设置store字段
+        entity.store = {
+          id: allStoreMap[storeName],
+        };
       }
 
       // 数量不是number类型，或者没填写，必填字段
@@ -294,20 +323,20 @@ export class SaleService {
         errorsTemp.push(errMsg);
       }
 
-      // buyer
-      if (buyer) {
-        if (!allCustomerNames.includes(buyer)) {
+      // 客户名称
+      if (buyerName) {
+        if (!allCustomerNames.includes(buyerName)) {
           // 单元格位置文本，A1 B2
           const position = `${utils.encode_cell({
-            c: colMap.buyer,
+            c: colMap.buyerName,
             r: rowIndex + 1,
           })}`;
-          const errMsg = `位置: ${position} 客户"${buyer}"不在系统内`;
+          const errMsg = `位置: ${position} 客户"${buyerName}"不在系统内或客户"${buyerName}"的上级供应商不是当前所选客户`;
           errorsTemp.push(errMsg);
         } else {
           // 写了而且在系统内
           entity.buyer = {
-            id: allCustomerMap[buyer],
+            id: allCustomerMap[buyerName],
           };
         }
       }

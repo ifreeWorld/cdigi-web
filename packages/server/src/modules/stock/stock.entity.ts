@@ -1,11 +1,19 @@
 import { Column, Entity, ManyToOne, JoinColumn } from 'typeorm';
 import ChannelEntity from '../../entity/channel.entity';
-import { CustomerEntity } from '../customer/customer.entity';
+import { ProductEntity } from '../product/product.entity';
+import { StoreEntity } from '../store/store.entity';
 
 @Entity({
   name: 'tbl_stock',
 })
 export class StockEntity extends ChannelEntity {
+  /** 产品 */
+  @ManyToOne(() => ProductEntity)
+  @JoinColumn({
+    name: 'product_id',
+  })
+  product: ProductEntity;
+
   /** 产品型号 */
   @Column({ name: 'product_name', comment: '产品型号' })
   productName: string;
@@ -21,6 +29,13 @@ export class StockEntity extends ChannelEntity {
   /** 总额 */
   @Column({ name: 'total', comment: '总价', nullable: true })
   total?: number;
+
+  /** 门店 */
+  @ManyToOne(() => StoreEntity)
+  @JoinColumn({
+    name: 'store_id',
+  })
+  store?: StoreEntity;
 
   /** 门店名称 */
   @Column({ name: 'store_name', comment: '门店名称', nullable: true })

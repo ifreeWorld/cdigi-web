@@ -8,7 +8,7 @@ export interface SaleItem {
   total: number;
   storeName: string;
   date: string;
-  buyer: CustomerListItem;
+  buyerName: CustomerListItem;
   weekStartDate: string;
   weekEndDate: string;
   week: string;

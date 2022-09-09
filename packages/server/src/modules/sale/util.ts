@@ -14,7 +14,7 @@ export function getTree(entities: SaleEntity[]) {
         productName: '',
         storeName: '',
         date: '',
-        buyer: '',
+        buyerName: '',
         price: null,
         children: [],
       };
