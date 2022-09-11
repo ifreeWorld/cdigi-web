@@ -426,6 +426,37 @@ export class StockService {
     return res.length;
   }
 
+  async export(customerId: number, creatorId: number) {
+    const where: FindOptionsWhere<StockEntity> = {};
+    setCreatorWhere(where, creatorId);
+    if (!validator.isEmpty(customerId)) {
+      where.customer = {
+        id: customerId,
+      };
+    }
+    const res = await this.repository.find({
+      where,
+    });
+    const key2Header: any = {};
+    Object.keys(stockHeaderMap).forEach((key) => {
+      key2Header[stockHeaderMap[key]] = key;
+    });
+    const data = res.map((item) => {
+      return {
+        [key2Header.productName]: item.productName,
+        [key2Header.quantity]: item.quantity,
+        [key2Header.price]: item.price,
+        [key2Header.total]: item.total,
+        [key2Header.storeName]: item.storeName,
+        [key2Header.date]: item.date,
+      };
+    });
+    const wb = utils.book_new();
+    utils.book_append_sheet(wb, utils.json_to_sheet(data), stockSheetName);
+    const buf = write(wb, { type: 'buffer', bookType: 'xlsx' });
+    return buf;
+  }
+
   /**
    * 根据 ids 删除
    * @param ids

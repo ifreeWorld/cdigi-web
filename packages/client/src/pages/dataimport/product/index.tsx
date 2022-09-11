@@ -19,6 +19,7 @@ import {
   downloadErrorExcel,
   save,
   downloadTemplate,
+  exportData,
 } from './service';
 import ImportOperationModal from './components/ImportOperationModal';
 
@@ -274,6 +275,15 @@ const TableList: React.FC = () => {
             }}
           >
             <UploadOutlined /> 导入
+          </Button>,
+          <Button
+            type="primary"
+            key="primary"
+            onClick={() => {
+              exportData();
+            }}
+          >
+            <UploadOutlined /> 导出
           </Button>,
           <Button
             type="primary"

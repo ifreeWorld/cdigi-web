@@ -9,6 +9,8 @@ import {
   UseInterceptors,
   ParseFilePipe,
   FileTypeValidator,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
 import {
   ApiOkResponse,
@@ -159,6 +161,23 @@ export class StockController {
   })
   async save(@Body() body: StockSaveDto) {
     return this.stockService.save(body);
+  }
+
+  /** 导出数据 */
+  @UseGuards(JwtGuard)
+  @Get('/export')
+  async export(
+    @Res({ passthrough: true }) res,
+    @CurrentUser() currentUser,
+    @Query('customerId') customerId: number,
+  ): Promise<StreamableFile> {
+    const buf = await this.stockService.export(customerId, currentUser.id);
+    const fileName = 'download_stock';
+    res.set({
+      'Content-Type': mimeType.xlsx,
+      'Content-Disposition': `attachment; filename=${fileName}`,
+    });
+    return new StreamableFile(buf);
   }
 
   /**

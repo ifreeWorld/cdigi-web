@@ -53,6 +53,16 @@ export async function save(data: any, options?: { [key: string]: any }) {
   });
 }
 
+/** 导出数据 GET /api/stock/export */
+export async function exportData(customerId: number) {
+  return request('/api/stock/export', {
+    params: {
+      customerId,
+    },
+    method: 'GET',
+  });
+}
+
 /** 下载文件 GET /api/config/downloadTemplate */
 export async function downloadErrorExcel(params: { fileName: string }) {
   return request('/api/config/downloadErrorExcel', {

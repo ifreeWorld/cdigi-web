@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Res,
   Body,
   Query,
   UseGuards,
@@ -9,6 +10,7 @@ import {
   UseInterceptors,
   ParseFilePipe,
   FileTypeValidator,
+  StreamableFile,
 } from '@nestjs/common';
 import {
   ApiOkResponse,
@@ -170,6 +172,22 @@ export class ProductController {
   })
   async save(@Body() body: ProductSaveDto) {
     return this.productService.save(body);
+  }
+
+  /** 导出数据 */
+  @UseGuards(JwtGuard)
+  @Get('/export')
+  async export(
+    @Res({ passthrough: true }) res,
+    @CurrentUser() currentUser,
+  ): Promise<StreamableFile> {
+    const buf = await this.productService.export(currentUser.id);
+    const fileName = 'download_product';
+    res.set({
+      'Content-Type': mimeType.xlsx,
+      'Content-Disposition': `attachment; filename=${fileName}`,
+    });
+    return new StreamableFile(buf);
   }
 
   /**

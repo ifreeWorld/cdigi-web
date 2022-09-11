@@ -258,19 +258,45 @@ export class ProductService {
 
       // 有填写标签的情况下
       if (tags) {
-        // 标签不在系统中
-        if (!allTagNames.includes(tags)) {
-          // 单元格位置文本，A1 B2
-          const position = `${utils.encode_cell({
-            c: colMap.tags,
-            r: rowIndex + 1,
-          })}`;
-          const errMsg = `位置: ${position} 标签"${tags}"不在系统中`;
-          errorsTemp.push(errMsg);
+        // 存在;的时候，是多个标签
+        if (tags.indexOf(';') !== -1) {
+          const allTags = tags.split(';');
+          let errorFlag = false;
+          allTags.forEach((tagItem) => {
+            if (!allTagNames.includes(tagItem)) {
+              // 单元格位置文本，A1 B2
+              const position = `${utils.encode_cell({
+                c: colMap.tags,
+                r: rowIndex + 1,
+              })}`;
+              const errMsg = `位置: ${position} 标签"${tagItem}"不在系统中`;
+              errorsTemp.push(errMsg);
+              errorFlag = true;
+            }
+          });
+          // 没错误
+          if (!errorFlag) {
+            // @ts-ignore
+            entity.tags = allTags.map((tagItem) => {
+              return { id: allTagMap[tagItem] };
+            });
+          }
         } else {
-          // 标签在系统中，就给tags赋值
-          // @ts-ignore
-          entity.tags = [{ id: allTagMap[tags] }];
+          // 不存在;的时候，是单个标签
+          // 先判断标签不在系统中
+          if (!allTagNames.includes(tags)) {
+            // 单元格位置文本，A1 B2
+            const position = `${utils.encode_cell({
+              c: colMap.tags,
+              r: rowIndex + 1,
+            })}`;
+            const errMsg = `位置: ${position} 标签"${tags}"不在系统中`;
+            errorsTemp.push(errMsg);
+          } else {
+            // 标签在系统中，就给tags赋值
+            // @ts-ignore
+            entity.tags = [{ id: allTagMap[tags] }];
+          }
         }
       }
 
@@ -353,6 +379,35 @@ export class ProductService {
     }
 
     return res.length;
+  }
+
+  async export(creatorId: number) {
+    const where: FindOptionsWhere<ProductEntity> = {};
+    setCreatorWhere(where, creatorId);
+    const res = await this.repository.find({
+      where,
+      relations: {
+        tags: true,
+      },
+    });
+    const key2Header: any = {};
+    Object.keys(productHeaderMap).forEach((key) => {
+      key2Header[productHeaderMap[key]] = key;
+    });
+    const data = res.map((item) => {
+      return {
+        [key2Header.productName]: item.productName,
+        [key2Header.vendorName]: item.vendorName,
+        [key2Header.categoryFirstName]: item.categoryFirstName,
+        [key2Header.categorySecondName]: item.categorySecondName,
+        [key2Header.categoryThirdName]: item.categoryThirdName,
+        [key2Header.tags]: item.tags?.map((tag) => tag.tagName).join(';'),
+      };
+    });
+    const wb = utils.book_new();
+    utils.book_append_sheet(wb, utils.json_to_sheet(data), productSheetName);
+    const buf = write(wb, { type: 'buffer', bookType: 'xlsx' });
+    return buf;
   }
 
   /** 修改 */

@@ -14,6 +14,7 @@ import {
   deleteSale,
   downloadTemplate,
   downloadErrorExcel,
+  exportData,
 } from './service';
 import OperationModal from './components/OperationModal';
 import { WeekPicker } from '../../../../components/WeekPicker';
@@ -276,6 +277,15 @@ const Sale = ({ customerId, customerType }: { customerId: number; customerType: 
             }}
           >
             <UploadOutlined /> 导入
+          </Button>,
+          <Button
+            type="primary"
+            key="primary"
+            onClick={() => {
+              exportData(customerId);
+            }}
+          >
+            <UploadOutlined /> 导出
           </Button>,
           <Button
             type="primary"

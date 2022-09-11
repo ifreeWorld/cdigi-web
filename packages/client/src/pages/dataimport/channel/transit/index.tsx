@@ -13,6 +13,7 @@ import {
   update,
   downloadTemplate,
   downloadErrorExcel,
+  exportData,
 } from './service';
 import OperationModal from './components/OperationModal';
 import UpdateOperationModal from './components/UpdateOperationModal';
@@ -241,6 +242,15 @@ const Transit = ({ customerId }: { customerId: number }) => {
             }}
           >
             <UploadOutlined /> 导入
+          </Button>,
+          <Button
+            type="primary"
+            key="primary"
+            onClick={() => {
+              exportData(customerId);
+            }}
+          >
+            <UploadOutlined /> 导出
           </Button>,
           <Button
             type="primary"

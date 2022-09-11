@@ -80,6 +80,13 @@ export async function save(data: any, options?: { [key: string]: any }) {
   });
 }
 
+/** 导出数据 GET /api/config/export */
+export async function exportData() {
+  return request('/api/product/export', {
+    method: 'GET',
+  });
+}
+
 /** 下载文件 GET /api/config/downloadTemplate */
 export async function downloadErrorExcel(params: { fileName: string }) {
   return request('/api/config/downloadErrorExcel', {
