@@ -109,7 +109,7 @@ const TableList: React.FC = () => {
     {
       title: '所属经销商',
       dataIndex: 'customer',
-      // TODO 设置search的render
+      colSize: 2,
       renderFormItem: (item, { type, fieldProps }: any) => {
         if (type === 'form') {
           return null;

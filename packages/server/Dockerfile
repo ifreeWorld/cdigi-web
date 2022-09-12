@@ -12,5 +12,4 @@ COPY . /code
 
 RUN yarn install --production --frozen-lockfile --registry=https://registry.npmmirror.com/
 RUN yarn build
-
-CMD node dist/main.js
+CMD yarn runsql && node dist/main.js

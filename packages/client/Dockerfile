@@ -3,6 +3,10 @@ FROM node:14-alpine AS builder
 
 ENV PORT=80
 
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM"
+
 WORKDIR /code
 COPY package.json /code/package.json
 COPY yarn.lock /code/yarn.lock

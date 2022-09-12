@@ -41,9 +41,12 @@ const OperationModal: FC<OperationModalProps> = (props) => {
             const isXlsx = f.type === mimeType.xlsx;
             if (isXlsx) {
               setFile(f);
+            } else {
+              return Upload.LIST_IGNORE;
             }
-            return isXlsx || Upload.LIST_IGNORE;
+            return false;
           },
+          maxCount: 1,
         }}
         rules={[{ required: true, message: '请上传' }]}
         description={'仅支持上传单个.xlsx文件'}

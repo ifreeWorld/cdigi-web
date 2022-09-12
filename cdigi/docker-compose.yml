@@ -1,6 +1,7 @@
 services:
   server:
     image: wangzilong8/cdigi-web_server
+    platform: linux/amd64
     # deploy:
     #   resources:
     #     limits:
@@ -15,10 +16,9 @@ services:
       - redis_host=redis
       - redis_port=6379
       - TZ=Asia/Shanghai
-    command: >
-      sh -c "ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && 
-      echo $TZ > /etc/timezone &&
-      exec my-main-application"
+    # command: >
+    #   sh -c "ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && 
+    #   echo $TZ > /etc/timezone"
     restart: always
     ports:
       - 8002:30000
@@ -26,7 +26,7 @@ services:
       - db-password
     volumes:
       # - ./server:/code
-      - server-data:/code
+      - server-data:/code/logs
     # volumes:
     #   - ./server/src:/code/src:ro
     #   - ./server/package.json:/code/package.json
@@ -68,8 +68,7 @@ services:
   client:
     image: wangzilong8/cdigi-web_client
     # https://stackoverflow.com/questions/61017559/building-two-differently-tagged-docker-images-with-docker-compose
-    # platform: 
-    #   -linux/amd64
+    platform: linux/amd64
       # target: development
     ports:
       - 8001:80

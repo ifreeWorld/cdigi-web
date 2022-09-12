@@ -1,11 +1,11 @@
 {
   "type": "mysql",
-  "host": "129.226.182.137",
+  "host": "localhost",
   "port": 3306,
   "username": "root",
   "password": "mnbvch",
   "database": "cdigi_database",
-  "migrations": ["migrations/db/**/**{.ts,.js}"],
+  "migrations": ["migrations/**/**{.ts,.js}"],
   "entities": ["dist/**/*.entity{.ts,.js}"],
   "synchronize": false,
   "supportBigNumbers": true,
