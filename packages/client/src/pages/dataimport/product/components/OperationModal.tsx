@@ -59,7 +59,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
     <ModalForm<ProductListItem>
       formRef={formRef}
       visible={visible}
-      title={`${opType === 'add' ? '添加' : '编辑'}门店`}
+      title={`${opType === 'add' ? '添加' : '编辑'}产品`}
       width={640}
       onFinish={async (values) => {
         if (opType === 'add') {

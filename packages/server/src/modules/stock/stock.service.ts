@@ -24,7 +24,13 @@ import { ProductService } from '../product/product.service';
 import { StoreService } from '../store/store.service';
 import { ConfigService } from '../config/config.service';
 import { getTree } from './util';
-import { fixImportedDate, setCreatorQb, setCreatorWhere } from '../../utils';
+import {
+  fixImportedDate,
+  lowerCase,
+  setCreatorQb,
+  setCreatorWhere,
+  trim,
+} from '../../utils';
 import { appLogger } from 'src/logger';
 
 export class StockService {
@@ -203,7 +209,7 @@ export class StockService {
       for (const oldKey in stockHeaderMap) {
         if (item.hasOwnProperty(oldKey)) {
           const newKey = stockHeaderMap[oldKey];
-          temp[newKey] = item[oldKey];
+          temp[newKey] = trim(item[oldKey]);
           // 设置sheetjs date格式的时差，https://github.com/SheetJS/sheetjs/issues/1565
           if (temp[newKey] instanceof Date) {
             temp[newKey] = fixImportedDate(temp[newKey], is_date1904);
@@ -217,8 +223,8 @@ export class StockService {
     const allProductMap = {};
     const allProduct = await this.productService.findAll(creatorId, {});
     const allProductNames = allProduct.map((item) => {
-      allProductMap[item.productName] = item.id;
-      return item.productName;
+      allProductMap[lowerCase(item.productName)] = item.id;
+      return lowerCase(item.productName);
     });
     // {storeName:storeId}的map
     const allStoreMap = {};
@@ -227,8 +233,8 @@ export class StockService {
       creatorId,
     });
     const allStoreNames = allStore.map((item) => {
-      allStoreMap[item.storeName] = item.id;
-      return item.storeName;
+      allStoreMap[lowerCase(item.storeName)] = item.id;
+      return lowerCase(item.storeName);
     });
 
     // 校验
@@ -239,36 +245,36 @@ export class StockService {
       const { productName, storeName, quantity, price, total, date } = entity;
 
       // 产品名称不在系统内，或者没填写，必填字段
-      if (!productName || !allProductNames.includes(productName)) {
+      if (!productName || !allProductNames.includes(lowerCase(productName))) {
         // 单元格位置文本，A1 B2
         const position = `${utils.encode_cell({
           c: colMap.productName,
           r: rowIndex + 1,
         })}`;
-        const errMsg = `位置: ${position} 产品名称"${productName}"不在系统内或没填写`;
+        const errMsg = `位置: ${position} 产品名称"${productName}"不在系统内或没填写，请注意检查半角、全角问题`;
         errorsTemp.push(errMsg);
       } else {
         // 产品名称校验通过就设置product字段
         // @ts-ignore
         entity.product = {
-          id: allProductMap[productName],
+          id: allProductMap[lowerCase(productName)],
         };
       }
 
       // 门店名称不在系统内，allStoreNames是关联的经销商的门店
-      if (storeName && !allStoreNames.includes(storeName)) {
+      if (storeName && !allStoreNames.includes(lowerCase(storeName))) {
         // 单元格位置文本，A1 B2
         const position = `${utils.encode_cell({
           c: colMap.storeName,
           r: rowIndex + 1,
         })}`;
-        const errMsg = `位置: ${position} 门店名称"${storeName}"不在系统内或门店不在此客户下`;
+        const errMsg = `位置: ${position} 门店名称"${storeName}"不在系统内或门店不在此客户下，请注意检查半角、全角问题`;
         errorsTemp.push(errMsg);
       } else {
         // 门店名称校验通过就设置store字段
         // @ts-ignore
         entity.store = {
-          id: allStoreMap[storeName],
+          id: allStoreMap[lowerCase(storeName)],
         };
       }
 

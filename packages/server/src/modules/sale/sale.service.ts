@@ -25,7 +25,13 @@ import { StoreService } from '../store/store.service';
 import { CustomerService } from '../customer/customer.service';
 import { ConfigService } from '../config/config.service';
 import { getTree } from './util';
-import { fixImportedDate, setCreatorQb, setCreatorWhere } from '../../utils';
+import {
+  fixImportedDate,
+  lowerCase,
+  setCreatorQb,
+  setCreatorWhere,
+  trim,
+} from '../../utils';
 import { appLogger } from 'src/logger';
 import { CustomerEntity } from '../customer/customer.entity';
 
@@ -205,7 +211,7 @@ export class SaleService {
       for (const oldKey in saleHeaderMap) {
         if (item.hasOwnProperty(oldKey)) {
           const newKey = saleHeaderMap[oldKey];
-          temp[newKey] = item[oldKey];
+          temp[newKey] = trim(item[oldKey]);
           // 设置sheetjs date格式的时差，https://github.com/SheetJS/sheetjs/issues/1565
           if (temp[newKey] instanceof Date) {
             temp[newKey] = fixImportedDate(temp[newKey], is_date1904);
@@ -216,12 +222,12 @@ export class SaleService {
     });
     // const entities = plainToInstance(SaleEntity, result);
     const entities = result;
-    // {productName:productId}的map
+    // {productName:productId}的map lowerCase(
     const allProductMap = {};
     const allProduct = await this.productService.findAll(creatorId, {});
     const allProductNames = allProduct.map((item) => {
-      allProductMap[item.productName] = item.id;
-      return item.productName;
+      allProductMap[lowerCase(item.productName)] = item.id;
+      return lowerCase(item.productName);
     });
     // {storeName:storeId}的map
     const allStoreMap = {};
@@ -230,8 +236,8 @@ export class SaleService {
       creatorId,
     });
     const allStoreNames = allStore.map((item) => {
-      allStoreMap[item.storeName] = item.id;
-      return item.storeName;
+      allStoreMap[lowerCase(item.storeName)] = item.id;
+      return lowerCase(item.storeName);
     });
     // {customerName:customerId}的map
     const allCustomerMap = {};
@@ -239,8 +245,8 @@ export class SaleService {
       customerId,
     );
     const allCustomerNames = allCustomer.map((item) => {
-      allCustomerMap[item.customerName] = item.id;
-      return item.customerName;
+      allCustomerMap[lowerCase(item.customerName)] = item.id;
+      return lowerCase(item.customerName);
     });
 
     // 校验
@@ -259,34 +265,34 @@ export class SaleService {
       } = entity;
 
       // 产品名称不在系统内，或者没填写，必填字段
-      if (!productName || !allProductNames.includes(productName)) {
+      if (!productName || !allProductNames.includes(lowerCase(productName))) {
         // 单元格位置文本，A1 B2
         const position = `${utils.encode_cell({
           c: colMap.productName,
           r: rowIndex + 1,
         })}`;
-        const errMsg = `位置: ${position} 产品名称"${productName}"不在系统内或没填写`;
+        const errMsg = `位置: ${position} 产品名称"${productName}"不在系统内或没填写，请注意检查半角、全角问题`;
         errorsTemp.push(errMsg);
       } else {
         // 产品名称校验通过就设置product字段
         entity.product = {
-          id: allProductMap[productName],
+          id: allProductMap[lowerCase(productName)],
         };
       }
 
       // 门店名称不在系统内，allStoreNames是关联的经销商的门店
-      if (storeName && !allStoreNames.includes(storeName)) {
+      if (storeName && !allStoreNames.includes(lowerCase(storeName))) {
         // 单元格位置文本，A1 B2
         const position = `${utils.encode_cell({
           c: colMap.storeName,
           r: rowIndex + 1,
         })}`;
-        const errMsg = `位置: ${position} 门店名称"${storeName}"不在系统内或门店不在此客户下`;
+        const errMsg = `位置: ${position} 门店名称"${storeName}"不在系统内或门店不在此客户下，请注意检查半角、全角问题`;
         errorsTemp.push(errMsg);
       } else {
         // 门店名称校验通过就设置store字段
         entity.store = {
-          id: allStoreMap[storeName],
+          id: allStoreMap[lowerCase(storeName)],
         };
       }
 
@@ -325,18 +331,18 @@ export class SaleService {
 
       // 客户名称
       if (buyerName) {
-        if (!allCustomerNames.includes(buyerName)) {
+        if (!allCustomerNames.includes(lowerCase(buyerName))) {
           // 单元格位置文本，A1 B2
           const position = `${utils.encode_cell({
             c: colMap.buyerName,
             r: rowIndex + 1,
           })}`;
-          const errMsg = `位置: ${position} 客户"${buyerName}"不在系统内或客户"${buyerName}"的上级供应商不是当前所选客户`;
+          const errMsg = `位置: ${position} 客户"${buyerName}"不在系统内或客户"${buyerName}"的上级供应商不是当前所选客户，请注意检查半角、全角问题`;
           errorsTemp.push(errMsg);
         } else {
           // 写了而且在系统内
           entity.buyer = {
-            id: allCustomerMap[buyerName],
+            id: allCustomerMap[lowerCase(buyerName)],
           };
         }
       }

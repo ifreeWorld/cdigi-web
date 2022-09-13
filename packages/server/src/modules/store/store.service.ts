@@ -10,7 +10,7 @@ import { ErrorConstant } from 'src/constant/error';
 import { SearchDto, StoreCreateDto, StoreUpdateDto } from './store.dto';
 import { storeHeaderMap, storeSheetName, tmpPath } from '../../constant/file';
 import { ERROR } from 'src/constant/error';
-import { indexOfLike, setCreatorWhere } from '../../utils';
+import { indexOfLike, lowerCase, setCreatorWhere, trim } from '../../utils';
 import { CustomerService } from '../customer/customer.service';
 import { appLogger } from 'src/logger';
 import { plainToInstance } from 'class-transformer';
@@ -139,15 +139,15 @@ export class StoreService {
       }
     });
 
-    // {customerName:customerId}的map
+    // {customerName:customerId}的map toLocaleLowerCase
     const allCustomerMap = {};
     const allCustomer = await this.customerService.findAll(creatorId);
     const allCustomerNames = allCustomer.map((item) => {
-      allCustomerMap[item.customerName] = item.id;
-      return item.customerName;
+      allCustomerMap[lowerCase(item.customerName)] = item.id;
+      return lowerCase(item.customerName);
     });
     const allStore = await this.findAll({ creatorId });
-    const allStoreNames = allStore.map((item) => item.storeName);
+    const allStoreNames = allStore.map((item) => lowerCase(item.storeName));
 
     const data = utils.sheet_to_json(sheet);
     const result = data.map((item) => {
@@ -157,7 +157,7 @@ export class StoreService {
       for (const oldKey in storeHeaderMap) {
         if (item.hasOwnProperty(oldKey)) {
           const newKey = storeHeaderMap[oldKey];
-          temp[newKey] = item[oldKey];
+          temp[newKey] = trim(item[oldKey]);
         }
       }
       return temp;
@@ -182,7 +182,7 @@ export class StoreService {
         errorsTemp.push(errMsg);
       }
       // 门店名称重复，系统中已存在
-      if (allStoreNames.includes(storeName)) {
+      if (allStoreNames.includes(lowerCase(storeName))) {
         // 单元格位置文本，A1 B2
         const position = `${utils.encode_cell({
           c: colMap.storeName,
@@ -193,7 +193,7 @@ export class StoreService {
       }
 
       // 所属经销商不是string类型
-      if (!customer || !allCustomerNames.includes(customer)) {
+      if (!customer || !allCustomerNames.includes(lowerCase(customer))) {
         // 单元格位置文本，A1 B2
         const position = `${utils.encode_cell({
           c: colMap.customer,
@@ -205,7 +205,7 @@ export class StoreService {
         // 所属经销商字段校验通过的话，就给customer赋值
         // @ts-ignore
         entity.customer = {
-          id: allCustomerMap[customer],
+          id: allCustomerMap[lowerCase(customer)],
         };
       }
 

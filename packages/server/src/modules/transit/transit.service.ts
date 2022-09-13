@@ -17,7 +17,13 @@ import {
 } from '../../constant/file';
 import { ProductService } from '../product/product.service';
 import { getTree } from './util';
-import { fixImportedDate, setCreatorQb, setCreatorWhere } from '../../utils';
+import {
+  fixImportedDate,
+  lowerCase,
+  setCreatorQb,
+  setCreatorWhere,
+  trim,
+} from '../../utils';
 import { appLogger } from 'src/logger';
 
 export class TransitService {
@@ -162,7 +168,7 @@ export class TransitService {
       for (const oldKey in transitHeaderMap) {
         if (item.hasOwnProperty(oldKey)) {
           const newKey = transitHeaderMap[oldKey];
-          temp[newKey] = item[oldKey];
+          temp[newKey] = trim(item[oldKey]);
           // 设置sheetjs date格式的时差，https://github.com/SheetJS/sheetjs/issues/1565
           if (temp[newKey] instanceof Date) {
             temp[newKey] = fixImportedDate(temp[newKey], is_date1904);
@@ -173,7 +179,9 @@ export class TransitService {
     });
     const entities = plainToInstance(TransitEntity, result);
     const allProduct = await this.productService.findAll(creatorId, {});
-    const allProductNames = allProduct.map((item) => item.productName);
+    const allProductNames = allProduct.map((item) =>
+      lowerCase(item.productName),
+    );
 
     // 校验
     const errors = [];
@@ -183,13 +191,13 @@ export class TransitService {
       const { productName, quantity, price, total, eta, shippingDate } = entity;
 
       // 产品名称不在系统内，或者没填写，必填字段
-      if (!productName || !allProductNames.includes(productName)) {
+      if (!productName || !allProductNames.includes(lowerCase(productName))) {
         // 单元格位置文本，A1 B2
         const position = `${utils.encode_cell({
           c: colMap.productName,
           r: rowIndex + 1,
         })}`;
-        const errMsg = `位置: ${position} 产品名称"${productName}"不在系统内或没填写`;
+        const errMsg = `位置: ${position} 产品名称"${productName}"不在系统内或没填写，请注意检查半角、全角问题`;
         errorsTemp.push(errMsg);
       }
 
@@ -200,7 +208,7 @@ export class TransitService {
           c: colMap.quantity,
           r: rowIndex + 1,
         })}`;
-        const errMsg = `位置: ${position} 数量"${quantity}"不是数字类型或没填写`;
+        const errMsg = `位置: ${position} 数量"${quantity}"不是数字类型或没填写，请注意检查半角、全角问题`;
         errorsTemp.push(errMsg);
       }
 

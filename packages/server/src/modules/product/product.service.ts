@@ -15,7 +15,7 @@ import {
   ProductSaveDto,
 } from './product.dto';
 import { ERROR, ErrorConstant } from 'src/constant/error';
-import { indexOfLike, setCreatorWhere } from '../../utils';
+import { indexOfLike, lowerCase, setCreatorWhere, trim } from '../../utils';
 import {
   productHeaderMap,
   productSheetName,
@@ -154,19 +154,19 @@ export class ProductService {
       }
     });
 
-    // {tagName:tagId}的map
+    // {tagName:tagId}的map .toLocaleLowerCase()
     const allTagMap = {};
     const allTag = await this.tagService.findAll(creatorId);
     const allTagNames = allTag.map((item) => {
-      allTagMap[item.tagName] = item.id;
-      return item.tagName;
+      allTagMap[lowerCase(item.tagName)] = item.id;
+      return lowerCase(item.tagName);
     });
     // {productName:productId}的map
     const allProductMap = {};
     const allProduct = await this.findAll(creatorId, {});
     const allProductNames = allProduct.map((item) => {
-      allProductMap[item.productName] = item.id;
-      return item.productName;
+      allProductMap[lowerCase(item.productName)] = item.id;
+      return lowerCase(item.productName);
     });
 
     const data = utils.sheet_to_json(sheet);
@@ -177,7 +177,7 @@ export class ProductService {
       for (const oldKey in productHeaderMap) {
         if (item.hasOwnProperty(oldKey)) {
           const newKey = productHeaderMap[oldKey];
-          temp[newKey] = item[oldKey];
+          temp[newKey] = trim(item[oldKey]);
         }
       }
       return temp;
@@ -187,6 +187,8 @@ export class ProductService {
     // 校验
     const errors = [];
     const repeat = [];
+    // 当前文件中产品型号不能有2个同名的
+    const currentRepeat = [];
     for (let rowIndex = 0; rowIndex < entities.length; rowIndex++) {
       const errorsTemp = [];
       const entity = entities[rowIndex];
@@ -210,10 +212,21 @@ export class ProductService {
         errorsTemp.push(errMsg);
       }
       // 产品型号重复，系统中已存在，就直接给赋值一下id
-      if (allProductNames.includes(productName)) {
-        entity.id = allProductMap[productName];
+      if (allProductNames.includes(lowerCase(productName))) {
+        entity.id = allProductMap[lowerCase(productName)];
         repeat.push(productName);
       }
+      // 当前文件中产品型号不能有2个同名的，如果有，就记录错误
+      if (currentRepeat.includes(lowerCase(productName))) {
+        // 单元格位置文本，A1 B2
+        const position = `${utils.encode_cell({
+          c: colMap.productName,
+          r: rowIndex + 1,
+        })}`;
+        const errMsg = `位置: ${position} 产品型号"${productName}"在该文件中出现多次，请排查后去掉其中一个`;
+        errorsTemp.push(errMsg);
+      }
+      currentRepeat.push(lowerCase(productName));
 
       // 品牌没填写，必填字段
       if (!vendorName) {
@@ -263,7 +276,7 @@ export class ProductService {
           const allTags = tags.split(';');
           let errorFlag = false;
           allTags.forEach((tagItem) => {
-            if (!allTagNames.includes(tagItem)) {
+            if (!allTagNames.includes(lowerCase(tagItem))) {
               // 单元格位置文本，A1 B2
               const position = `${utils.encode_cell({
                 c: colMap.tags,
@@ -278,13 +291,13 @@ export class ProductService {
           if (!errorFlag) {
             // @ts-ignore
             entity.tags = allTags.map((tagItem) => {
-              return { id: allTagMap[tagItem] };
+              return { id: allTagMap[lowerCase(tagItem)] };
             });
           }
         } else {
           // 不存在;的时候，是单个标签
           // 先判断标签不在系统中
-          if (!allTagNames.includes(tags)) {
+          if (!allTagNames.includes(lowerCase(tags))) {
             // 单元格位置文本，A1 B2
             const position = `${utils.encode_cell({
               c: colMap.tags,
@@ -295,7 +308,7 @@ export class ProductService {
           } else {
             // 标签在系统中，就给tags赋值
             // @ts-ignore
-            entity.tags = [{ id: allTagMap[tags] }];
+            entity.tags = [{ id: allTagMap[lowerCase(tags)] }];
           }
         }
       }

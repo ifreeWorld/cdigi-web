@@ -74,3 +74,17 @@ export function fixImportedDate(date, is_date1904) {
   // or if you want to stick to JS Date,
   // return new Date(parsed.y, parsed.m, parsed.d, parsed.H, parsed.M, parsed.S);
 }
+
+export function trim(n: string | number | undefined | null) {
+  if (typeof n === 'string') {
+    return n.trim();
+  }
+  return n;
+}
+
+export function lowerCase(n: string | undefined | null) {
+  if (typeof n === 'string') {
+    return n.toLocaleLowerCase();
+  }
+  return n;
+}

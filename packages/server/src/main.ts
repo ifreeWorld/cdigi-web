@@ -7,6 +7,7 @@ import { appLogger } from './logger';
 import { AppExceptionFilter } from './filter/exception.filter';
 import { ErrorsInterceptor, TransformInterceptor } from './interceptors';
 import { tmpPath } from './constant/file';
+import { TrimPipe } from './pipe/trim.pipe';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -14,6 +15,7 @@ async function bootstrap() {
   });
 
   app.useGlobalPipes(
+    new TrimPipe(),
     new ValidationPipe({
       transform: true,
       dismissDefaultMessages: true,
