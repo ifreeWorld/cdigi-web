@@ -74,11 +74,16 @@ docker exec -it eefdb7ea6a4d //bin//sh
 docker run -it --privileged --pid=host debian nsenter -t 1 -m -u -n -i sh
 ```
 
-### push 镜像
+### 首次 push 前需要 tag
 
 ```
 docker tag 923d76f1eba0 wangzilong8/cdigi-web_client
 docker tag de177052e2ab wangzilong8/cdigi-web_server
+```
+
+### push 镜像
+
+```
 docker compose push
 ```
 
@@ -87,3 +92,13 @@ docker compose push
 参考 [wslconf](https://docs.microsoft.com/zh-cn/windows/wsl/wsl-config#wslconf)
 
 docs/windows 中如何限制 docker 占用的最大内存.doc
+
+### 脚本
+
+```
+ssh -p 9999 webdev@129.226.182.137
+AeTuspV33sdf49dDSDI
+
+scp -P 9999 -r cdigi webdev@129.226.182.137:/home/webdev
+AeTuspV33sdf49dDSDI
+```

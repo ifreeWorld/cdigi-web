@@ -19,6 +19,7 @@ services:
       - orm_database=cdigi_database
       - redis_host=redis
       - redis_port=6379
+      - redis_password=mnbvch
       - TZ=Asia/Shanghai
     # command: >
     #   sh -c "ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && 
@@ -65,8 +66,10 @@ services:
     restart: always
     networks:
       - private
+    command: redis-server /usr/local/etc/redis/redis.conf
     volumes:
       - redis-data:/data
+      - ./scripts/redis.conf:/usr/local/etc/redis/redis.conf
     ports:
       - 6379:6379
   client:
