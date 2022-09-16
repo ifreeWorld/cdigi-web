@@ -16,7 +16,7 @@ export class CustomizeEntity extends BaseEntity {
     comment: '自定义分析描述说明',
     nullable: true,
   })
-  desc: string;
+  desc?: string;
 
   /** 数据透视表配置 */
   @Column({

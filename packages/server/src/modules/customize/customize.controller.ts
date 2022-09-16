@@ -17,7 +17,7 @@ import {
 import { CustomizeEntity } from './customize.entity';
 
 @ApiBearerAuth()
-@ApiTags('门店')
+@ApiTags('自定义分析')
 @Controller('customize')
 export class CustomizeController {
   constructor(private customizeService: CustomizeService) {}

@@ -65,3 +65,11 @@ export interface PivotValue {
    */
   aggregator: 'sum' | 'avg' | 'max' | 'min';
 }
+
+export const testData: PivotData = {
+  filter: [
+    {
+      field: 'customerId',
+    },
+  ],
+};

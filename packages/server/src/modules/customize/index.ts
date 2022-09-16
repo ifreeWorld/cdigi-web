@@ -26,6 +26,7 @@
 // 	) AS tmp
 // GROUP BY
 // 	tmp.WEEK;
+
 // SELECT
 // 	s.*,
 // 	c.customer_name,
@@ -34,5 +35,5 @@
 // 	c.region,
 // 	c.customer_type
 // FROM
-// 	( SELECT sale.*, buy.customer_name AS buyer_name, buy.customer_type AS buyer_customer_type FROM tbl_sale sale LEFT JOIN tbl_customer buy ON sale.customer_id = buy.id ) s
+// 	( SELECT sale.*, buy.customer_type AS buyer_customer_type FROM tbl_sale sale LEFT JOIN tbl_customer buy ON sale.customer_id = buy.id ) s
 // 	LEFT JOIN tbl_customer c ON s.customer_id = c.id;

@@ -11,6 +11,13 @@ export class CustomizeCreateDto {
     message: '自定义名称不能为空',
   })
   customizeName: CustomizeEntity['customizeName'];
+
+  @IsNotEmpty({
+    message: '数据透视配置不能为空',
+  })
+  pivot: CustomizeEntity['pivot'];
+
+  desc?: CustomizeEntity['desc'];
 }
 export class CustomizeUpdateDto extends CustomizeCreateDto {
   @IsNotEmpty({

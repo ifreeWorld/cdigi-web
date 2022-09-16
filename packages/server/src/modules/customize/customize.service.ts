@@ -72,20 +72,6 @@ export class CustomizeService {
       creatorId: number;
     },
   ): Promise<number> {
-    // const res = await this.repository
-    //   .createQueryBuilder('tbl_customize')
-    //   .insert()
-    //   .into(CustomizeEntity)
-    //   .values({
-    //     ...info,
-    //     createTime: time,
-    //     updateTime: time,
-    //     customer: {
-    //       id: info.customerId,
-    //     },
-    //   })
-    //   .execute();
-
     const res = await this.repository.insert({
       ...info,
     });
