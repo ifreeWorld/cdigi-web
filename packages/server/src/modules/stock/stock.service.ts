@@ -239,6 +239,8 @@ export class StockService {
 
     // 校验
     const errors = [];
+    // 当前文件中产品型号不能有2个同名的
+    const currentRepeat = [];
     for (let rowIndex = 0; rowIndex < entities.length; rowIndex++) {
       const errorsTemp = [];
       const entity = entities[rowIndex];
@@ -253,6 +255,19 @@ export class StockService {
         })}`;
         const errMsg = `位置: ${position} 产品名称"${productName}"不在系统内或没填写，请注意检查半角、全角问题`;
         errorsTemp.push(errMsg);
+      } else if (
+        currentRepeat.some(
+          (item) =>
+            item.productName === productName && item.storeName === storeName,
+        )
+      ) {
+        // 单元格位置文本，A1 B2
+        const position = `${utils.encode_cell({
+          c: colMap.productName,
+          r: rowIndex + 1,
+        })}`;
+        const errMsg = `位置: ${position} 产品型号"${productName}"在该文件中出现多次，请排查后去掉其中一个`;
+        errorsTemp.push(errMsg);
       } else {
         // 产品名称校验通过就设置product字段
         // @ts-ignore
@@ -260,6 +275,10 @@ export class StockService {
           id: allProductMap[lowerCase(productName)],
         };
       }
+      currentRepeat.push({
+        storeName,
+        productName,
+      });
 
       // 门店名称不在系统内，allStoreNames是关联的经销商的门店
       if (storeName && !allStoreNames.includes(lowerCase(storeName))) {
@@ -312,7 +331,7 @@ export class StockService {
       }
 
       // 时间不是日期类型
-      if (date && !validator.isDate(date)) {
+      if (date && !validator.isDate(date) && !validator.isDateString(date)) {
         // 单元格位置文本，A1 B2
         const position = `${utils.encode_cell({
           c: colMap.date,
@@ -449,6 +468,8 @@ export class StockService {
     });
     const data = res.map((item) => {
       return {
+        开始时间: item.weekStartDate,
+        结束时间: item.weekEndDate,
         [key2Header.productName]: item.productName,
         [key2Header.quantity]: item.quantity,
         [key2Header.price]: item.price,

@@ -235,7 +235,7 @@ export class TransitService {
       }
 
       // 时间不是日期类型
-      if (eta && !validator.isDate(eta)) {
+      if (eta && !validator.isDate(eta) && !validator.isDateString(eta)) {
         // 单元格位置文本，A1 B2
         const position = `${utils.encode_cell({
           c: colMap.eta,
@@ -249,7 +249,11 @@ export class TransitService {
       }
 
       // 时间不是日期类型
-      if (shippingDate && !validator.isDate(shippingDate)) {
+      if (
+        shippingDate &&
+        !validator.isDate(shippingDate) &&
+        !validator.isDateString(shippingDate)
+      ) {
         // 单元格位置文本，A1 B2
         const position = `${utils.encode_cell({
           c: colMap.shippingDate,
@@ -345,13 +349,16 @@ export class TransitService {
    * @param ids
    */
   async update(body: TransitUpdateDto): Promise<boolean> {
-    const { inTime, customerId, warehousingDate, eta } = body;
+    const { inTime, customerId, warehousingDate, eta, shippingDate } = body;
     const updater: Partial<TransitEntity> = {};
     if (!validator.isEmpty(warehousingDate)) {
       updater.warehousingDate = warehousingDate;
     }
     if (!validator.isEmpty(eta)) {
       updater.eta = eta;
+    }
+    if (!validator.isEmpty(shippingDate)) {
+      updater.shippingDate = shippingDate;
     }
     await this.dataSource
       .createQueryBuilder()

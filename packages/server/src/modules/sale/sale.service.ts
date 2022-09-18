@@ -348,7 +348,7 @@ export class SaleService {
       }
 
       // 时间不是日期类型
-      if (date && !validator.isDate(date)) {
+      if (date && !validator.isDate(date) && !validator.isDateString(date)) {
         // 单元格位置文本，A1 B2
         const position = `${utils.encode_cell({
           c: colMap.date,
@@ -487,6 +487,8 @@ export class SaleService {
     });
     const data = res.map((item) => {
       return {
+        开始时间: item.weekStartDate,
+        结束时间: item.weekEndDate,
         [key2Header.productName]: item.productName,
         [key2Header.quantity]: item.quantity,
         [key2Header.buyerName]: item.buyerName,

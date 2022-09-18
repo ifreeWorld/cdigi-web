@@ -100,6 +100,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
             };
           }}
           options={allDealers}
+          disabled={opType === 'edit'}
         />
         <ProFormText name="region" label="区域" placeholder="请输入" />
         <ProFormText name="storeAddress" label="门店地址" placeholder="请输入" />

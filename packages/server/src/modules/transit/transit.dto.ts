@@ -34,8 +34,9 @@ export class TransitUpdateDto {
   customerId: CustomerEntity['id'];
 
   warehousingDate?: TransitEntity['warehousingDate'];
-
   eta?: TransitEntity['eta'];
+
+  shippingDate?: TransitEntity['shippingDate'];
 }
 export class TransitDeleteDto {
   @IsNotEmpty({

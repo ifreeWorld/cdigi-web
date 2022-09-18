@@ -2,6 +2,7 @@ import { ValidationPipe, INestApplication } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NestFactory } from '@nestjs/core';
 import * as fs from 'fs';
+import 'moment/locale/zh-cn';
 import { AppModule } from './app.module';
 import { appLogger } from './logger';
 import { AppExceptionFilter } from './filter/exception.filter';

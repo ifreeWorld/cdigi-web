@@ -252,7 +252,37 @@ const TableList: React.FC = () => {
       const array = allProductList.map((item) => {
         return item.vendorName;
       });
-      return [...new Set(array)];
+      return [...new Set(array)].filter((item) => item);
+    }
+    return [];
+  }, [allProductList]);
+
+  const allFirstNames = useMemo(() => {
+    if (allProductList) {
+      const array = allProductList.map((item) => {
+        return item.categoryFirstName;
+      });
+      return [...new Set(array)].filter((item) => item);
+    }
+    return [];
+  }, [allProductList]);
+
+  const allSecondNames = useMemo(() => {
+    if (allProductList) {
+      const array = allProductList.map((item) => {
+        return item.categorySecondName;
+      });
+      return [...new Set(array)].filter((item) => item);
+    }
+    return [];
+  }, [allProductList]);
+
+  const allThirdNames = useMemo(() => {
+    if (allProductList) {
+      const array = allProductList.map((item) => {
+        return item.categoryThirdName;
+      });
+      return [...new Set(array)].filter((item) => item);
     }
     return [];
   }, [allProductList]);
@@ -344,6 +374,9 @@ const TableList: React.FC = () => {
         allTagList={tagRes}
         allProductNames={allProductNames}
         allVendorNames={allVendorNames}
+        allFirstNames={allFirstNames}
+        allSecondNames={allSecondNames}
+        allThirdNames={allThirdNames}
       />
       <ImportOperationModal
         visible={importVisible}

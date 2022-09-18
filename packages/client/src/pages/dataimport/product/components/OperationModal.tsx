@@ -15,6 +15,9 @@ type OperationModalProps = {
   allTagList: CustomerTag[] | undefined;
   allProductNames: string[] | undefined;
   allVendorNames: string[] | undefined;
+  allFirstNames: string[] | undefined;
+  allSecondNames: string[] | undefined;
+  allThirdNames: string[] | undefined;
 };
 
 const OperationModal: FC<OperationModalProps> = (props) => {
@@ -25,6 +28,9 @@ const OperationModal: FC<OperationModalProps> = (props) => {
     allTagList = [],
     allProductNames = [],
     allVendorNames = [],
+    allFirstNames = [],
+    allSecondNames = [],
+    allThirdNames = [],
     onCancel,
     onSubmit,
     children,
@@ -122,9 +128,27 @@ const OperationModal: FC<OperationModalProps> = (props) => {
             options={allVendorNames.map((item) => ({ value: item }))}
           />
         </ProForm.Item>
-        <ProFormText name="categoryFirstName" label="一级分类" placeholder="请输入一级分类" />
+        <ProForm.Item name="categoryFirstName" label="一级分类">
+          <AutoComplete
+            placeholder="请输入一级分类"
+            options={allFirstNames.map((item) => ({ value: item }))}
+          />
+        </ProForm.Item>
+        <ProForm.Item name="categorySecondName" label="二级分类">
+          <AutoComplete
+            placeholder="请输入二级分类"
+            options={allSecondNames.map((item) => ({ value: item }))}
+          />
+        </ProForm.Item>
+        <ProForm.Item name="categoryThirdName" label="三级分类">
+          <AutoComplete
+            placeholder="请输入三级分类"
+            options={allThirdNames.map((item) => ({ value: item }))}
+          />
+        </ProForm.Item>
+        {/* <ProFormText name="categoryFirstName" label="一级分类" placeholder="请输入一级分类" />
         <ProFormText name="categorySecondName" label="二级分类" placeholder="请输入二级分类" />
-        <ProFormText name="categoryThirdName" label="三级分类" placeholder="请输入三级分类" />
+        <ProFormText name="categoryThirdName" label="三级分类" placeholder="请输入三级分类" /> */}
         <ProFormSelect
           name="tags"
           mode="multiple"

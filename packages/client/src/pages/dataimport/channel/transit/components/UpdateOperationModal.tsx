@@ -3,7 +3,7 @@ import { ModalForm, ProFormDatePicker } from '@ant-design/pro-form';
 import { dateFormat } from '@/constants/index';
 
 type OperationModalProps = {
-  field: string;
+  field: { field: string; label?: string | JSX.Element }[];
   title: string;
   visible: boolean;
   onCancel: () => void;
@@ -30,7 +30,16 @@ const UpdateOperationModal: FC<OperationModalProps> = (props) => {
         destroyOnClose: true,
       }}
     >
-      <ProFormDatePicker name={field} fieldProps={{ format: dateFormat }} />
+      {field.map((item) => {
+        return (
+          <ProFormDatePicker
+            key={item.field}
+            name={item.field}
+            label={item.label}
+            fieldProps={{ format: dateFormat }}
+          />
+        );
+      })}
     </ModalForm>
   );
 };

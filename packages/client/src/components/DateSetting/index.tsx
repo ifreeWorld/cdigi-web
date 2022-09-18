@@ -2,6 +2,7 @@ import { Modal, Select, message } from 'antd';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { request } from 'umi';
+import 'moment/locale/zh-cn';
 
 const options: {
   label: number;

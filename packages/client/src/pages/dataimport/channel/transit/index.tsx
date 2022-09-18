@@ -17,6 +17,8 @@ import {
 } from './service';
 import OperationModal from './components/OperationModal';
 import UpdateOperationModal from './components/UpdateOperationModal';
+import moment from 'moment';
+import { dateFormat } from '@/constants';
 
 const Transit = ({ customerId }: { customerId: number }) => {
   const [visible, setVisible] = useState<boolean>(false);
@@ -81,6 +83,9 @@ const Transit = ({ customerId }: { customerId: number }) => {
       title: '录入系统时间',
       dataIndex: 'inTime',
       hideInSearch: true,
+      render: (text) => {
+        return moment(text as string).format(dateFormat);
+      },
     },
     {
       title: '产品型号',
@@ -103,12 +108,22 @@ const Transit = ({ customerId }: { customerId: number }) => {
       hideInSearch: true,
     },
     {
-      title: '预计到达时间',
+      title: (
+        <div style={{ textAlign: 'center' }}>
+          <div>预计到达时间</div>
+          <div>ETA</div>
+        </div>
+      ),
       dataIndex: 'eta',
       hideInSearch: true,
     },
     {
-      title: '运输时间',
+      title: (
+        <div style={{ textAlign: 'center' }}>
+          <div>运输时间</div>
+          <div>ETD</div>
+        </div>
+      ),
       dataIndex: 'shippingDate',
       hideInSearch: true,
     },
@@ -287,15 +302,28 @@ const Transit = ({ customerId }: { customerId: number }) => {
       />
       <OperationModal visible={visible} onCancel={handleCancel} onSubmit={handleSubmit} />
       <UpdateOperationModal
-        field="warehousingDate"
+        field={[
+          {
+            field: 'warehousingDate',
+          },
+        ]}
         title="入库"
         visible={warehouseVisible}
         onCancel={handleWarehouseCancel}
         onSubmit={handleWarehouseSubmit}
       />
       <UpdateOperationModal
-        field="eta"
-        title="更新预计到达时间"
+        field={[
+          {
+            field: 'eta',
+            label: '预计到达时间（ETA）',
+          },
+          {
+            field: 'shippingDate',
+            label: '运输时间（ETD）',
+          },
+        ]}
+        title="更新"
         visible={etcVisible}
         onCancel={handleEtcCancel}
         onSubmit={handleEtcSubmit}

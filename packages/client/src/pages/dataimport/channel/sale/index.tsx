@@ -246,6 +246,26 @@ const Sale = ({ customerId, customerType }: { customerId: number; customerType: 
     return weekStr;
   };
 
+  // const dataFormat = (date: moment.Moment, dateString: string) => {
+  //   window.moment = moment;
+  //   const year = Number(date.weekYear());
+  //   const week = Number(date.week());
+  //   const weekStr = `${year}-${week}`;
+  //   const startDate = date.startOf('week').format(dateFormat);
+  //   const endDate = date.endOf('week').format(dateFormat);
+  //   console.log(date, dateString);
+  //   console.log('date', date.format(dateFormat));
+  //   console.log('year', year);
+  //   console.log('week', week);
+  //   console.log('weekStr', weekStr);
+  //   console.log('startDate', startDate);
+  //   console.log('endDate', endDate);
+
+  //   console.log(moment().year(year).week(week).startOf('week').format('YYYY-MM-DD'));
+  //   console.log(moment().year(year).week(week).endOf('week').format('YYYY-MM-DD'));
+  //   return weekStr;
+  // };
+
   const handleCancel = () => {
     setVisible(false);
   };
