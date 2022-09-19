@@ -28,12 +28,24 @@
 // 	tmp.WEEK;
 
 // SELECT
-// 	s.*,
-// 	c.customer_name,
-// 	c.email,
-// 	c.country,
-// 	c.region,
-// 	c.customer_type
+// 	a.*,
+// 	SUBSTRING_INDEX(a.week,'-', 1) as year,
+// 	SUBSTRING_INDEX(a.week,'-', -1) as weekstr,
+// 	b.vendor_name,
+// 	b.category_first_name,
+// 	b.category_second_name,
+// 	b.category_third_name
 // FROM
-// 	( SELECT sale.*, buy.customer_type AS buyer_customer_type FROM tbl_sale sale LEFT JOIN tbl_customer buy ON sale.customer_id = buy.id ) s
-// 	LEFT JOIN tbl_customer c ON s.customer_id = c.id;
+// 	(
+// 	SELECT
+// 		s.*,
+// 		c.customer_name,
+// 		c.email,
+// 		c.country,
+// 		c.region,
+// 		c.customer_type
+// 	FROM
+// 		( SELECT sale.*, buy.customer_type AS buyer_customer_type FROM tbl_sale sale LEFT JOIN tbl_customer buy ON sale.customer_id = buy.id ) s
+// 		LEFT JOIN tbl_customer c ON s.customer_id = c.id
+// 	) a
+// 	LEFT JOIN tbl_product b ON a.product_id = b.id

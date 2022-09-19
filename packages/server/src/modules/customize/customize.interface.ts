@@ -4,7 +4,7 @@
 export interface PivotData {
   filter: PivotFilter[];
   row: PivotRow;
-  line: PivotLine;
+  column: PivotLine;
   value: PivotValue;
 }
 
@@ -13,22 +13,11 @@ export type PivotFilterValue = string | number | boolean;
 /**
  * 筛选
  */
-export type PivotFilter =
-  | {
-      field: string;
-      op: '=';
-      value: PivotFilterValue;
-    }
-  | {
-      field: string;
-      op: 'in';
-      value: PivotFilterValue[];
-    }
-  | {
-      field: string;
-      op: 'between';
-      value: [PivotFilterValue, PivotFilterValue];
-    };
+export type PivotFilter = {
+  field: string;
+  op: 'in';
+  value: PivotFilterValue[];
+};
 
 /**
  * 行
@@ -63,13 +52,35 @@ export interface PivotValue {
   /**
    * 聚合类型
    */
-  aggregator: 'sum' | 'avg' | 'max' | 'min';
+  aggregator: 'sum' | 'count' | 'avg' | 'max' | 'min';
 }
 
-// export const testData: PivotData = {
-//   filter: [
-//     {
-//       field: 'customerId',
-//     },
-//   ],
-// };
+export const testData: PivotData = {
+  filter: [
+    {
+      field: 'customerId',
+      op: 'in',
+      value: [5, 6],
+    },
+  ],
+  row: {
+    field: 'year',
+    filter: {
+      field: 'year',
+      op: 'in',
+      value: [2021, 2022],
+    },
+  },
+  column: {
+    field: 'productName',
+    filter: {
+      field: 'productName',
+      op: 'in',
+      value: ['TL-WA850RE', 'TL-WN725N'],
+    },
+  },
+  value: {
+    field: 'quantity',
+    aggregator: 'sum',
+  },
+};

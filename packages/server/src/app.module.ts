@@ -37,7 +37,7 @@ import { REDIS_CONFIG } from './constant/app.config';
     StockModule,
     SaleModule,
     TransitModule,
-    // CustomizeModule,
+    CustomizeModule,
     RedisModule.forRoot({
       config: {
         port: REDIS_CONFIG.port,
