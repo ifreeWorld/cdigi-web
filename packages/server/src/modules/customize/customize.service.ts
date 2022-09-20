@@ -7,6 +7,8 @@ import {
   SearchDto,
   CustomizeCreateDto,
   CustomizeUpdateDto,
+  SaleWideTable,
+  StockWideTable,
 } from './customize.dto';
 import { ERROR } from 'src/constant/error';
 import { indexOfLike, lowerCase, setCreatorWhere, trim } from '../../utils';
@@ -62,6 +64,136 @@ export class CustomizeService {
     return await this.repository.find({
       where: where,
     });
+  }
+
+  async getPivotData(pivot: CustomizeEntity['pivot'], creatorId: number) {
+    appLogger.log(
+      `getPivotData input; creatorId: ${creatorId}; pivot: ${JSON.stringify(
+        pivot,
+      )}`,
+    );
+    const { type, filter, row, column, value } = pivot;
+    const wideSql = await this.getWideSql(type, creatorId);
+    const qb = this.dataSource
+      .createQueryBuilder()
+      .select()
+      .from('(' + wideSql + ')', 't');
+
+    // 筛选
+    filter.forEach((item) => {
+      const { field, op, value } = item;
+      // 当前只支持in
+      if (op === 'in') {
+        qb.where(`${field} IN (:...value)`, { value });
+      }
+    });
+    appLogger.log(
+      `getPivotData generate sql; creatorId: ${creatorId}; sql: ${qb.getSql()}`,
+    );
+    const data = await qb.getRawMany();
+    return data;
+  }
+
+  /**
+   * 拼接大宽表
+   */
+  async getWideSql(type: 'sale' | 'stock', creatorId: number): Promise<string> {
+    if (type === 'sale') {
+      return `
+        SELECT
+          a.*,
+          SUBSTRING_INDEX( a.WEEK, '-', 1 ) AS year,
+          SUBSTRING_INDEX( a.WEEK, '-', - 1 ) AS weekstr,
+          b.vendor_name AS vendorName,
+          b.category_first_name AS categoryFirstName,
+          b.category_second_name AS categorySecondName,
+          b.category_third_name AS categoryThirdName 
+        FROM
+          (
+          SELECT
+            s.*,
+            c.customer_name AS customerName,
+            c.email,
+            c.country,
+            c.region,
+            c.customer_type AS customerType 
+          FROM
+            (
+            SELECT
+              sale.id,
+              sale.creator_id AS creatorId,
+              sale.create_time AS createTime,
+              sale.update_time AS updateTime,
+              sale.week_start_date AS weekStartDate,
+              sale.week_end_date AS weekEndDate,
+              sale.week,
+              sale.customer_id as customerId,
+              sale.product_id as productId,
+              sale.product_name as productName,
+              sale.quantity,
+              sale.price,
+              sale.total,
+              sale.store_id as storeId,
+              sale.store_name as storeName,
+              sale.date,
+              sale.buyer_id AS buyerId,
+              sale.buyer_name AS buyerName,
+              buy.customer_type AS buyerCustomerType
+            FROM
+              tbl_sale sale
+              LEFT JOIN tbl_customer buy ON sale.buyer_id = buy.id where sale.creator_id = ${creatorId}
+            ) s
+            LEFT JOIN tbl_customer c ON s.customerId = c.id
+          ) a
+          LEFT JOIN tbl_product b ON a.productId = b.id
+        `;
+    } else if (type === 'stock') {
+      return `
+        SELECT
+          a.*,
+          SUBSTRING_INDEX( a.WEEK, '-', 1 ) AS year,
+          SUBSTRING_INDEX( a.WEEK, '-', - 1 ) AS weekstr,
+          b.vendor_name AS vendorName,
+          b.category_first_name AS categoryFirstName,
+          b.category_second_name AS categorySecondName,
+          b.category_third_name AS categoryThirdName 
+        FROM
+          (
+          SELECT
+            s.*,
+            c.customer_name AS customerName,
+            c.email,
+            c.country,
+            c.region,
+            c.customer_type AS customerType 
+          FROM
+            (
+            SELECT
+              stock.id,
+              stock.creator_id AS creatorId,
+              stock.create_time AS createTime,
+              stock.update_time AS updateTime,
+              stock.week_start_date AS weekStartDate,
+              stock.week_end_date AS weekEndDate,
+              stock.week,
+              stock.customer_id as customerId,
+              stock.product_id as productId,
+              stock.product_name as productName,
+              stock.quantity,
+              stock.price,
+              stock.total,
+              stock.store_id as storeId,
+              stock.store_name as storeName,
+              stock.date
+            FROM
+              tbl_stock stock where stock.creator_id = ${creatorId}
+            ) s
+            LEFT JOIN tbl_customer c ON s.customerId = c.id
+          ) a
+          LEFT JOIN tbl_product b ON a.productId = b.id
+      `;
+    }
+    return '';
   }
 
   /**

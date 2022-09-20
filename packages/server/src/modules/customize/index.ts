@@ -6,6 +6,8 @@
 
 // (select s.week, s.customer_id, c.customer_name, s.quantity, c.country, c.region from tbl_sale s LEFT JOIN tbl_customer c on s.customer_id = c.id) ;
 
+// 销售
+
 // SELECT
 // 	tmp.WEEK,
 // 	IFNULL(SUM( CASE WHEN tmp.country = "china" THEN tmp.quantity END ),0) AS china,
@@ -29,23 +31,93 @@
 
 // SELECT
 // 	a.*,
-// 	SUBSTRING_INDEX(a.week,'-', 1) as year,
-// 	SUBSTRING_INDEX(a.week,'-', -1) as weekstr,
-// 	b.vendor_name,
-// 	b.category_first_name,
-// 	b.category_second_name,
-// 	b.category_third_name
+// 	SUBSTRING_INDEX( a.WEEK, '-', 1 ) AS year,
+// 	SUBSTRING_INDEX( a.WEEK, '-', - 1 ) AS weekstr,
+// 	b.vendor_name AS vendorName,
+// 	b.category_first_name AS categoryFirstName,
+// 	b.category_second_name AS categorySecondName,
+// 	b.category_third_name AS categoryThirdName
 // FROM
 // 	(
 // 	SELECT
 // 		s.*,
-// 		c.customer_name,
+// 		c.customer_name AS customerName,
 // 		c.email,
 // 		c.country,
 // 		c.region,
-// 		c.customer_type
+// 		c.customer_type AS customerType
 // 	FROM
-// 		( SELECT sale.*, buy.customer_type AS buyer_customer_type FROM tbl_sale sale LEFT JOIN tbl_customer buy ON sale.customer_id = buy.id ) s
-// 		LEFT JOIN tbl_customer c ON s.customer_id = c.id
+// 		(
+// 		SELECT
+// -- 			sale.*,
+// 			sale.id,
+// 			sale.creator_id AS creatorId,
+// 			sale.create_time AS createTime,
+// 			sale.update_time AS updateTime,
+// 			sale.week_start_date AS weekStartDate,
+// 			sale.week_end_date AS weekEndDate,
+// 			sale.week,
+// 			sale.customer_id as customerId,
+// 			sale.product_id as productId,
+// 			sale.product_name as productName,
+// 			sale.quantity,
+// 			sale.price,
+// 			sale.total,
+// 			sale.store_id as storeId,
+// 			sale.store_name as storeName,
+// 			sale.date,
+// 			sale.buyer_id AS buyerId,
+// 			sale.buyer_name AS buyerName,
+// 			buy.customer_type AS buyerCustomerType
+// 		FROM
+// 			tbl_sale sale
+// 			LEFT JOIN tbl_customer buy ON sale.customer_id = buy.id
+// 		) s
+// 		LEFT JOIN tbl_customer c ON s.customerId = c.id
 // 	) a
-// 	LEFT JOIN tbl_product b ON a.product_id = b.id
+// 	LEFT JOIN tbl_product b ON a.productId = b.id
+
+// 库存
+
+// SELECT
+// 	a.*,
+// 	SUBSTRING_INDEX( a.WEEK, '-', 1 ) AS year,
+// 	SUBSTRING_INDEX( a.WEEK, '-', - 1 ) AS weekstr,
+// 	b.vendor_name AS vendorName,
+// 	b.category_first_name AS categoryFirstName,
+// 	b.category_second_name AS categorySecondName,
+// 	b.category_third_name AS categoryThirdName
+// FROM
+// 	(
+// 	SELECT
+// 		s.*,
+// 		c.customer_name AS customerName,
+// 		c.email,
+// 		c.country,
+// 		c.region,
+// 		c.customer_type AS customerType
+// 	FROM
+// 		(
+// 		SELECT
+// 			stock.id,
+// 			stock.creator_id AS creatorId,
+// 			stock.create_time AS createTime,
+// 			stock.update_time AS updateTime,
+// 			stock.week_start_date AS weekStartDate,
+// 			stock.week_end_date AS weekEndDate,
+// 			stock.week,
+// 			stock.customer_id as customerId,
+// 			stock.product_id as productId,
+// 			stock.product_name as productName,
+// 			stock.quantity,
+// 			stock.price,
+// 			stock.total,
+// 			stock.store_id as storeId,
+// 			stock.store_name as storeName,
+// 			stock.date
+// 		FROM
+// 			tbl_stock stock
+// 		) s
+// 		LEFT JOIN tbl_customer c ON s.customerId = c.id
+// 	) a
+// 	LEFT JOIN tbl_product b ON a.productId = b.id;

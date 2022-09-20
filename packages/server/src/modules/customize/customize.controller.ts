@@ -13,6 +13,8 @@ import {
   CustomizeUpdateDto,
   CustomizeDeleteDto,
   CustomizeIdResult,
+  CustomizePivotDto,
+  CustomizePivotResult,
 } from './customize.dto';
 import { CustomizeEntity } from './customize.entity';
 
@@ -59,6 +61,20 @@ export class CustomizeController {
       ...query,
       creatorId: currentUser.id,
     });
+    return list;
+  }
+
+  /** 获取数据透视表结果 */
+  @UseGuards(JwtGuard)
+  @Post('/pivot')
+  @ApiOkResponse({
+    type: CustomizePivotResult,
+  })
+  async pivot(@Body() body: CustomizePivotDto, @CurrentUser() currentUser) {
+    const list = await this.customizeService.getPivotData(
+      body.pivot,
+      currentUser.id,
+    );
     return list;
   }
 

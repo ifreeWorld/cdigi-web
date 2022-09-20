@@ -2,6 +2,7 @@
  * 数据透视的数据结构
  */
 export interface PivotData {
+  type: 'sale' | 'stock';
   filter: PivotFilter[];
   row: PivotRow;
   column: PivotLine;
@@ -56,6 +57,7 @@ export interface PivotValue {
 }
 
 export const testData: PivotData = {
+  type: 'sale',
   filter: [
     {
       field: 'customerId',
