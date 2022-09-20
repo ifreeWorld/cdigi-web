@@ -10,11 +10,12 @@ import {
   SaleWideTable,
   StockWideTable,
 } from './customize.dto';
-import { ERROR } from 'src/constant/error';
+import { ERROR, ErrorConstant } from 'src/constant/error';
 import { indexOfLike, lowerCase, setCreatorWhere, trim } from '../../utils';
 import { CustomerService } from '../customer/customer.service';
 import { appLogger } from 'src/logger';
 import { plainToInstance } from 'class-transformer';
+import { setColumnQb, setFilterQb } from './util';
 
 @Injectable()
 export class CustomizeService {
@@ -72,24 +73,32 @@ export class CustomizeService {
         pivot,
       )}`,
     );
-    const { type, filter, row, column, value } = pivot;
-    const wideSql = await this.getWideSql(type, creatorId);
-    const qb = this.dataSource
-      .createQueryBuilder()
-      .select()
-      .from('(' + wideSql + ')', 't');
 
-    // 筛选
-    filter.forEach((item) => {
-      const { field, op, value } = item;
-      // 当前只支持in
-      if (op === 'in') {
-        qb.where(`${field} IN (:...value)`, { value });
-      }
-    });
+    const { type, filter, row, column, value } = pivot;
+    if (
+      validator.isEmpty(row) ||
+      validator.isEmpty(column) ||
+      validator.isEmpty(value)
+    ) {
+      return;
+    }
+
+    const wideSql = await this.getWideSql(type, creatorId);
+    const qb = this.dataSource.createQueryBuilder().select(`t.${row.field}`);
+    // TODO this.findAll修改，增加一个查询getAllValues
+    await setColumnQb(qb, column, value, this.findAll);
+    qb.from('(' + wideSql + ')', 't');
+    // filter中的筛选
+    setFilterQb(qb, filter);
+    // 行中的筛选
+    setFilterQb(qb, row.filter);
+    // 行中的筛选
+    setFilterQb(qb, column.filter);
+
     appLogger.log(
       `getPivotData generate sql; creatorId: ${creatorId}; sql: ${qb.getSql()}`,
     );
+
     const data = await qb.getRawMany();
     return data;
   }

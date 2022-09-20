@@ -5,7 +5,7 @@ export interface PivotData {
   type: 'sale' | 'stock';
   filter: PivotFilter[];
   row: PivotRow;
-  column: PivotLine;
+  column: PivotColumn;
   value: PivotValue;
 }
 
@@ -35,7 +35,7 @@ export interface PivotRow {
 /**
  * 列
  */
-export interface PivotLine {
+export interface PivotColumn {
   field: string;
 
   /**
