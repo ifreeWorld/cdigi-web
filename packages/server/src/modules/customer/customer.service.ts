@@ -61,6 +61,7 @@ export class CustomerService {
       .createQueryBuilder('customer')
       .select(key)
       .distinct(true)
+      .where('customer.creator_id = :creatorId', { creatorId })
       .getRawMany();
 
     return res.map((item) => item[key]);

@@ -88,3 +88,7 @@ export function lowerCase(n: string | undefined | null) {
   }
   return n;
 }
+
+export function random() {
+  return Math.random().toString(16).substring(2);
+}

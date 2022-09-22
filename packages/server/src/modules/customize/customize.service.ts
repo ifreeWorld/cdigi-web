@@ -10,12 +10,14 @@ import {
   SaleWideTable,
   StockWideTable,
 } from './customize.dto';
-import { ERROR, ErrorConstant } from 'src/constant/error';
-import { indexOfLike, lowerCase, setCreatorWhere, trim } from '../../utils';
+import { ERROR } from 'src/constant/error';
+import { indexOfLike, setCreatorWhere } from '../../utils';
 import { CustomerService } from '../customer/customer.service';
 import { appLogger } from 'src/logger';
-import { plainToInstance } from 'class-transformer';
 import { setColumnQb, setFilterQb } from './util';
+import { ProductEntity } from '../product/product.entity';
+import { CustomerType } from '../tag/customerType.enum';
+import { StoreService } from '../store/store.service';
 
 @Injectable()
 export class CustomizeService {
@@ -23,6 +25,7 @@ export class CustomizeService {
     @InjectRepository(CustomizeEntity)
     private repository: Repository<CustomizeEntity>,
     private customerService: CustomerService,
+    private storeService: StoreService,
     private dataSource: DataSource,
   ) {}
 
@@ -85,16 +88,43 @@ export class CustomizeService {
 
     const wideSql = await this.getWideSql(type, creatorId);
     const qb = this.dataSource.createQueryBuilder().select(`t.${row.field}`);
-    // TODO this.findAll修改，增加一个查询getAllValues
-    await setColumnQb(qb, column, value, this.findAll);
+
+    if (!validator.isEmpty(column) && !validator.isEmpty(value)) {
+      const { filter: columnFilter = { value: [] }, field: columnField } =
+        column;
+      const { value: filterValue } = columnFilter;
+      const { field: valueField, aggregator } = value;
+      // 用户选择了列的filter，就拼接CASE WHEN
+      if (filterValue && filterValue.length > 0) {
+        filterValue.forEach((v) => {
+          qb.addSelect(
+            `IFNULL(${aggregator}( CASE WHEN t.${columnField} = '${v}' THEN t.${valueField} END ),0)`,
+            `${v}`,
+          );
+        });
+      } else {
+        // 用户没选择，就先查询数据库中column field的所有的选项
+        const data = await this.getAllValues(columnField, creatorId);
+        data.forEach((item) => {
+          qb.addSelect(
+            `IFNULL(${aggregator}( CASE WHEN t.${columnField} = '${item.value}' THEN t.${valueField} END ),0)`,
+            `${item.value}`,
+          );
+        });
+      }
+      qb.addSelect(`${aggregator}( t.${valueField} )`, 'all');
+    }
+
     qb.from('(' + wideSql + ')', 't');
+    // group by
+    qb.groupBy(`t.${row.field}`);
+    qb.where('1=1');
     // filter中的筛选
     setFilterQb(qb, filter);
     // 行中的筛选
     setFilterQb(qb, row.filter);
-    // 行中的筛选
+    // 列的筛选
     setFilterQb(qb, column.filter);
-
     appLogger.log(
       `getPivotData generate sql; creatorId: ${creatorId}; sql: ${qb.getSql()}`,
     );
@@ -203,6 +233,92 @@ export class CustomizeService {
       `;
     }
     return '';
+  }
+
+  /**
+   * 获取所有值
+   * @param field 字段
+   */
+  async getAllValues(field: string, creatorId: number) {
+    // 规范的字段map
+    const field2DataMap = {
+      productName: {
+        field: 'product_name',
+        entity: ProductEntity,
+      },
+      categoryFirstName: {
+        field: 'category_first_name',
+        entity: ProductEntity,
+      },
+      categorySecondName: {
+        field: 'category_second_name',
+        entity: ProductEntity,
+      },
+      categoryThirdName: {
+        field: 'category_third_name',
+        entity: ProductEntity,
+      },
+      vendorName: {
+        field: 'vendor_name',
+        entity: ProductEntity,
+      },
+    };
+    const data = field2DataMap[field];
+    // 规范的直接distinct查询出列表进行展示即可
+    if (data) {
+      const res = await this.dataSource
+        .getRepository(data.entity)
+        .createQueryBuilder()
+        .select(data.field, 'value')
+        .distinct(true)
+        .where('creator_id = :creatorId', { creatorId })
+        .getRawMany();
+      return res.map((item) => ({
+        value: item.value,
+        label: item.value,
+      }));
+    } else {
+      // 定制化字段
+      // 1.客户，需要带上客户类型
+      if (field === 'customerId') {
+        const res = await this.customerService.findAll(creatorId);
+        return res.map((item) => ({
+          value: item.id,
+          label: item.customerName,
+          customerType: item.customerType,
+        }));
+      }
+      // 2.采购客户，需要带上客户类型
+      if (field === 'buyerId') {
+        const disty = await this.customerService.findAll(
+          creatorId,
+          CustomerType.disty,
+        );
+        const dealer = await this.customerService.findAll(
+          creatorId,
+          CustomerType.dealer,
+        );
+        return [...disty, ...dealer].map((item) => ({
+          value: item.id,
+          label: item.customerName,
+          customerType: item.customerType,
+        }));
+      }
+      // 3.门店，需要带上所属经销商字段
+      if (field === 'storeId') {
+        const res = await this.storeService.findAll({
+          creatorId,
+        });
+        return res.map((item) => ({
+          value: item.id,
+          label: item.storeName,
+          customerId: item.customer?.id || -1,
+          customerName: item.customer?.customerName || '',
+        }));
+      }
+      // TODO 4.国家&区域
+    }
+    return [];
   }
 
   /**
