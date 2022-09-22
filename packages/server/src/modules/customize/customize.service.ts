@@ -7,14 +7,12 @@ import {
   SearchDto,
   CustomizeCreateDto,
   CustomizeUpdateDto,
-  SaleWideTable,
-  StockWideTable,
 } from './customize.dto';
 import { ERROR } from 'src/constant/error';
 import { indexOfLike, setCreatorWhere } from '../../utils';
 import { CustomerService } from '../customer/customer.service';
 import { appLogger } from 'src/logger';
-import { setColumnQb, setFilterQb } from './util';
+import { setFilterQb } from './util';
 import { ProductEntity } from '../product/product.entity';
 import { CustomerType } from '../tag/customerType.enum';
 import { StoreService } from '../store/store.service';

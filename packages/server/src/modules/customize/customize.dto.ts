@@ -13,6 +13,12 @@ export class CustomizePivotDto {
   })
   pivot: CustomizeEntity['pivot'];
 }
+export class CustomizeValuesDto {
+  @IsNotEmpty({
+    message: '字段不能为空',
+  })
+  field: string;
+}
 export class CustomizeCreateDto {
   @IsNotEmpty({
     message: '自定义名称不能为空',

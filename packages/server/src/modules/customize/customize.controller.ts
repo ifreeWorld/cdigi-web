@@ -1,4 +1,12 @@
-import { Controller, Post, Get, Body, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Query,
+  UseGuards,
+  Param,
+} from '@nestjs/common';
 import { ApiOkResponse, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../decorators';
 import { CustomizeService } from './customize.service';
@@ -15,6 +23,7 @@ import {
   CustomizeIdResult,
   CustomizePivotDto,
   CustomizePivotResult,
+  CustomizeValuesDto,
 } from './customize.dto';
 import { CustomizeEntity } from './customize.entity';
 
@@ -73,6 +82,23 @@ export class CustomizeController {
   async pivot(@Body() body: CustomizePivotDto, @CurrentUser() currentUser) {
     const list = await this.customizeService.getPivotData(
       body.pivot,
+      currentUser.id,
+    );
+    return list;
+  }
+
+  /** 获取字段的全量数据 */
+  @UseGuards(JwtGuard)
+  @Post('/value/:field')
+  @ApiOkResponse({
+    type: CustomizePivotResult,
+  })
+  async getAllValues(
+    @Param() { field }: CustomizeValuesDto,
+    @CurrentUser() currentUser,
+  ) {
+    const list = await this.customizeService.getAllValues(
+      field,
       currentUser.id,
     );
     return list;

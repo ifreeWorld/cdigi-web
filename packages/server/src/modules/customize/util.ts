@@ -27,36 +27,3 @@ export const setFilterQb = (
     }
   }
 };
-
-export const setColumnQb = async (
-  qb: SelectQueryBuilder<any>,
-  column: PivotColumn,
-  value: PivotValue,
-  creatorId: number,
-  getAllValues: (field: string, creatorId: number) => any,
-) => {
-  if (!validator.isEmpty(column) && !validator.isEmpty(value)) {
-    const { filter: columnFilter = { value: [] }, field: columnField } = column;
-    const { value: filterValue } = columnFilter;
-    const { field: valueField, aggregator } = value;
-    // 用户选择了列的filter，就拼接CASE WHEN
-    if (filterValue && filterValue.length > 0) {
-      filterValue.forEach((v) => {
-        qb.addSelect(
-          `IFNULL(${aggregator}( CASE WHEN t.${columnField} = '${v}' THEN t.${valueField} END ),0)`,
-          `${v}`,
-        );
-      });
-    } else {
-      // 用户没选择，就先查询数据库中column field的所有的选项
-      const data = await getAllValues(columnField, creatorId);
-      data.forEach((v) => {
-        qb.addSelect(
-          `IFNULL(${aggregator}( CASE WHEN t.${columnField} = '${v}' THEN t.${valueField} END ),0)`,
-          `${v}`,
-        );
-      });
-    }
-    qb.addSelect(`${aggregator}( t.${valueField} )`, 'all');
-  }
-};
