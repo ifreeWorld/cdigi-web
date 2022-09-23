@@ -1,5 +1,5 @@
-import { Tabs, Checkbox, Row, message } from 'antd';
-import React, { useState } from 'react';
+import { Tabs, message, Tree } from 'antd';
+import React, { useMemo, useState } from 'react';
 import {
   FilterOutlined,
   MenuOutlined,
@@ -8,15 +8,17 @@ import {
   SettingOutlined,
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-layout';
-import type { CheckboxValueType } from 'antd/es/checkbox/Group';
+import type { Key } from 'rc-tree/lib/interface';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { stockHeaderMap, saleHeaderMap } from '../../../constants';
 import styles from './style.less';
+import { ModalForm, ProFormText } from '@ant-design/pro-form';
 
 interface Option {
   value: string;
   label: string;
+  supportType?: DropKeyEnum[];
 }
 
 enum DropKeyEnum {
@@ -31,6 +33,7 @@ interface DropConfig {
   label: string;
   icon: JSX.Element;
   config: boolean;
+  max: number;
 }
 
 interface DropMapItem extends Option {
@@ -41,6 +44,14 @@ interface DropMapItem extends Option {
 }
 
 type DropMap = Record<DropKeyEnum, DropMapItem[]>;
+
+interface TreeData {
+  title: string;
+  key: string;
+  supportType?: DropKeyEnum[];
+  checkable?: boolean;
+  children?: TreeData[];
+}
 
 const { TabPane } = Tabs;
 const TYPE = 'customize';
@@ -73,24 +84,28 @@ const dropConfigs: DropConfig[] = [
     label: '筛选器',
     icon: <FilterOutlined className={styles.icon} />,
     config: true,
+    max: 5,
   },
   {
     key: DropKeyEnum.column,
     label: '列',
     icon: <PauseOutlined className={styles.icon} />,
     config: true,
+    max: 1,
   },
   {
     key: DropKeyEnum.row,
     label: '行',
     icon: <MenuOutlined className={styles.icon} />,
     config: true,
+    max: 1,
   },
   {
     key: DropKeyEnum.value,
     label: '值',
     icon: <UnderlineOutlined className={styles.icon} />,
     config: false,
+    max: 1,
   },
 ];
 
@@ -101,7 +116,7 @@ const DragBox = ({
 }: {
   option: Option;
   canDrag: () => boolean;
-  children: JSX.Element;
+  children: JSX.Element | string;
 }) => {
   const [{ opacity }, drag] = useDrag(
     () => ({
@@ -127,9 +142,9 @@ const DropBox = ({ onDrop, list, config }: { onDrop: any; list: Option[]; config
     {
       accept: TYPE,
       drop: onDrop,
-      canDrop: () => {
+      canDrop: (item) => {
         // 每一个只能拖拽一个
-        return list.length === 0;
+        return list.length < config.max && item?.supportType?.includes(config.key);
       },
       collect: (monitor) => ({
         isOver: monitor.isOver(),
@@ -173,8 +188,156 @@ const DropBox = ({ onDrop, list, config }: { onDrop: any; list: Option[]; config
 
 const Channel: React.FC = () => {
   const [type, setType] = useState('stock');
-  const [checkList, setCheckList] = useState<CheckboxValueType[]>([]);
+  const [checkList, setCheckList] = useState<Key[]>([]);
   const [dropListMap, setDropListMap] = useState<DropMap>({} as DropMap);
+  const [visible, setVisible] = useState<boolean>(false);
+
+  const treeData: TreeData[] = useMemo(() => {
+    const prefix = type === 'stock' ? '库存' : '销售';
+    const result = [
+      {
+        title: '产品',
+        key: 'product',
+        checkable: false,
+        children: [
+          {
+            title: '产品型号',
+            key: 'productName',
+            checkable: true,
+            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+          },
+          {
+            title: '一级分类',
+            key: 'categoryFirstName',
+            checkable: true,
+            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+          },
+          {
+            title: '二级分类',
+            key: 'categorySecondName',
+            checkable: true,
+            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+          },
+          {
+            title: '三级分类',
+            key: 'categoryThirdName',
+            checkable: true,
+            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+          },
+        ],
+      },
+      {
+        title: '时间',
+        key: 'time',
+        checkable: false,
+        children: [
+          {
+            title: '年',
+            key: 'year',
+            checkable: true,
+            supportType: [DropKeyEnum.row],
+          },
+          {
+            title: '季度',
+            key: 'quarter',
+            checkable: true,
+            supportType: [DropKeyEnum.row],
+          },
+          {
+            title: '月-周',
+            key: 'monthWeek',
+            checkable: true,
+            supportType: [DropKeyEnum.row],
+          },
+          {
+            title: '周',
+            key: 'week',
+            checkable: true,
+            supportType: [DropKeyEnum.row],
+          },
+        ],
+      },
+      {
+        title: '客户',
+        key: 'customer',
+        checkable: false,
+        children: [
+          {
+            title: '客户名称',
+            key: 'customerName',
+            checkable: true,
+            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+          },
+          {
+            title: '客户类型',
+            key: 'customerType',
+            checkable: true,
+            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+          },
+        ],
+      },
+      {
+        title: '门店',
+        key: 'store',
+        checkable: false,
+        children: [
+          {
+            title: '门店名称',
+            key: 'storeName',
+            checkable: true,
+            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+          },
+        ],
+      },
+      {
+        title: '值',
+        key: 'vvvv',
+        checkable: false,
+        children: [
+          {
+            title: `${prefix}数量`,
+            key: 'quantity',
+            checkable: true,
+            supportType: [DropKeyEnum.value],
+          },
+          {
+            title: `${prefix}总额`,
+            key: 'total',
+            checkable: true,
+            supportType: [DropKeyEnum.value],
+          },
+          {
+            title: `${prefix}价格`,
+            key: 'price',
+            checkable: true,
+            supportType: [DropKeyEnum.value],
+          },
+        ],
+      },
+    ];
+    if (type === 'sale') {
+      result.push({
+        title: '采购客户',
+        key: 'buyer',
+        checkable: false,
+        children: [
+          {
+            title: '采购客户名称',
+            key: 'buyerName',
+            checkable: true,
+            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+          },
+          {
+            title: '采购客户类型',
+            key: 'buyerCustomerType',
+            checkable: true,
+            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+          },
+        ],
+      });
+    }
+    return result;
+  }, [type]);
 
   const onChangeTab = (activeKey: string) => {
     setType(activeKey);
@@ -182,8 +345,7 @@ const Channel: React.FC = () => {
     setDropListMap({} as DropMap);
   };
 
-  const onChangeCheckbox = (list: CheckboxValueType[]) => {
-    // 判断list长度是否大于checkList的长度，就是不允许直接☑
+  const onCheck = (list: Key[]) => {
     if (list.length > checkList.length) {
       message.warning('请拖拽到下方的区域');
       return;
@@ -229,6 +391,28 @@ const Channel: React.FC = () => {
     setCheckList(resultList);
   };
 
+  const titleRender = (nodeData: TreeData) => {
+    if (nodeData.checkable) {
+      const option = {
+        label: nodeData.title,
+        value: nodeData.key,
+        supportType: nodeData.supportType,
+      };
+      return (
+        <DragBox
+          option={option}
+          canDrag={() => {
+            return !checkList.includes(option.value);
+          }}
+        >
+          {option.label}
+        </DragBox>
+      );
+    } else {
+      return <div>{nodeData.title}</div>;
+    }
+  };
+
   console.log(checkList);
   console.log(dropListMap);
 
@@ -248,22 +432,15 @@ const Channel: React.FC = () => {
                   <TabPane tab={item.tabName} key={item.tabValue}>
                     <div className={styles.flexColumn}>
                       <div className={styles.drags}>
-                        <Checkbox.Group value={checkList} onChange={onChangeCheckbox}>
-                          {item.dragItems.map((option) => {
-                            return (
-                              <Row key={option.value} style={{ marginBottom: '6px' }}>
-                                <DragBox
-                                  option={option}
-                                  canDrag={() => {
-                                    return !checkList.includes(option.value);
-                                  }}
-                                >
-                                  <Checkbox value={option.value}>{option.label}</Checkbox>
-                                </DragBox>
-                              </Row>
-                            );
-                          })}
-                        </Checkbox.Group>
+                        <Tree
+                          selectable={false}
+                          defaultExpandAll
+                          checkedKeys={checkList}
+                          treeData={treeData}
+                          checkable={true}
+                          onCheck={onCheck}
+                          titleRender={titleRender}
+                        />
                       </div>
                       <div className={styles.drops}>
                         <div className={styles.flexRow}>
@@ -282,7 +459,10 @@ const Channel: React.FC = () => {
                                   onDrop={(option: Option) => {
                                     onDrop(option, key);
                                   }}
-                                  onOpenDetail={(option: Option) => {}}
+                                  onOpenDetail={(option: Option) => {
+                                    setVisible(true);
+                                    set;
+                                  }}
                                 />
                               </div>
                             );
