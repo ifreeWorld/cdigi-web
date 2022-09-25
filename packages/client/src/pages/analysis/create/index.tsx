@@ -13,7 +13,8 @@ import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { stockHeaderMap, saleHeaderMap } from '../../../constants';
 import styles from './style.less';
-import { ModalForm, ProFormText } from '@ant-design/pro-form';
+import OperationModal from './components/OperationModal';
+import { isEmpty } from 'lodash';
 
 interface Option {
   value: string;
@@ -413,8 +414,17 @@ const Channel: React.FC = () => {
     }
   };
 
-  console.log(checkList);
-  console.log(dropListMap);
+  const handleCancel = () => {
+    setVisible(false);
+    // setCurrentRow({});
+  };
+
+  const handleSubmit = (values) => {
+    if (!isEmpty(values)) {
+      const field = Object.keys(values)[0];
+      const value = values[field];
+    }
+  };
 
   return (
     <PageContainer className={styles.pageContainer}>
@@ -461,7 +471,6 @@ const Channel: React.FC = () => {
                                   }}
                                   onOpenDetail={(option: Option) => {
                                     setVisible(true);
-                                    set;
                                   }}
                                 />
                               </div>
@@ -478,6 +487,7 @@ const Channel: React.FC = () => {
         </div>
         <div className={styles.right}></div>
       </div>
+      <OperationModal visible={visible} onCancel={handleCancel} onSubmit={handleSubmit} />
     </PageContainer>
   );
 };
