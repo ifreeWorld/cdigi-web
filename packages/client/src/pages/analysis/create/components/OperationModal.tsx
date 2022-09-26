@@ -1,16 +1,19 @@
 import type { FC } from 'react';
 import { useState } from 'react';
-import { ModalForm, ProFormTreeSelect } from '@ant-design/pro-form';
+import { Select } from 'sensd';
+import ProForm, { ModalForm, ProFormTreeSelect } from '@ant-design/pro-form';
 
 type OperationModalProps = {
   visible: boolean;
   onCancel: () => void;
   onSubmit: (values: any) => void;
   current: any;
+  modalOptions: any[];
+  detailField: string;
 };
 
 const OperationModal: FC<OperationModalProps> = (props) => {
-  const { visible, current, onCancel, onSubmit } = props;
+  const { visible, current = {}, modalOptions = [], detailField = '', onCancel, onSubmit } = props;
   if (!visible) {
     return null;
   }
@@ -33,7 +36,17 @@ const OperationModal: FC<OperationModalProps> = (props) => {
       }}
     >
       <>
-        <ProFormTreeSelect></ProFormTreeSelect>
+        <ProForm.Item name={detailField}>
+          <Select
+            mode="multiple"
+            showDropdownSearch
+            showCheckAll
+            showConfirm
+            selectorSimpleMode
+            options={modalOptions}
+            selectAllText="全选"
+          ></Select>
+        </ProForm.Item>
       </>
     </ModalForm>
   );

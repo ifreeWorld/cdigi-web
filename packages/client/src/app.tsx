@@ -3,14 +3,17 @@ import { PageLoading } from '@ant-design/pro-layout';
 import type { RequestConfig, RunTimeLayoutConfig } from 'umi';
 import { history, Link } from 'umi';
 import { ConfigProvider } from 'antd';
+import { ConfigProvider as SensdConfigProvider } from 'sensd';
 import Footer from '@/components/Footer';
 import { currentUser as queryCurrentUser } from './services/ant-design-pro/api';
 import { BookOutlined, LinkOutlined } from '@ant-design/icons';
 import locale from 'antd/es/locale/zh_CN';
+import sensdLocale from 'sensd/lib/locale/zh_CN';
 import defaultSettings from '../config/defaultSettings';
 import { errorHandler, requestInterceptors, responseInterceptors } from './utils/request';
 import DateSetting from './components/DateSetting';
 import RightContent from './components/RightContent';
+import 'sensd/dist/sensd.css';
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
@@ -90,7 +93,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       return (
         <ConfigProvider locale={locale}>
           {!props.location?.pathname?.includes('/login') && <DateSetting />}
-          {children}
+          <SensdConfigProvider locale={sensdLocale}>{children}</SensdConfigProvider>
           {/* {!props.location?.pathname?.includes('/login') && (
             <SettingDrawer
               disableUrlParams

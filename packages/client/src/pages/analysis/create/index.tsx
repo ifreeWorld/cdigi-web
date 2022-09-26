@@ -14,6 +14,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { stockHeaderMap, saleHeaderMap } from '../../../constants';
 import styles from './style.less';
 import OperationModal from './components/OperationModal';
+import { getAllValues } from './service';
 import { isEmpty } from 'lodash';
 
 interface Option {
@@ -138,7 +139,17 @@ const DragBox = ({
   );
 };
 
-const DropBox = ({ onDrop, list, config }: { onDrop: any; list: Option[]; config: DropConfig }) => {
+const DropBox = ({
+  onDrop,
+  list,
+  config,
+  onOpenDetail,
+}: {
+  onDrop: any;
+  list: Option[];
+  config: DropConfig;
+  onOpenDetail: (option: Option, key: DropKeyEnum) => void;
+}) => {
   const [{ isOver, canDrop }, drop] = useDrop(
     {
       accept: TYPE,
@@ -177,7 +188,14 @@ const DropBox = ({ onDrop, list, config }: { onDrop: any; list: Option[]; config
             >
               <div className={styles.dropItem}>
                 <div className={styles.itemTitle}>{option.label}</div>
-                {config.config && <SettingOutlined className={styles.itemIcon} />}
+                {config.config && (
+                  <SettingOutlined
+                    className={styles.itemIcon}
+                    onClick={() => {
+                      onOpenDetail(option, config.key);
+                    }}
+                  />
+                )}
               </div>
             </DragBox>
           );
@@ -191,7 +209,9 @@ const Channel: React.FC = () => {
   const [type, setType] = useState('stock');
   const [checkList, setCheckList] = useState<Key[]>([]);
   const [dropListMap, setDropListMap] = useState<DropMap>({} as DropMap);
+  const [modalOptions, setModalOptions] = useState<any[]>([]);
   const [visible, setVisible] = useState<boolean>(false);
+  const [detailConfig, setDetailConfig] = useState<{ key: DropKeyEnum; field: string }>();
 
   const treeData: TreeData[] = useMemo(() => {
     const prefix = type === 'stock' ? '库存' : '销售';
@@ -419,12 +439,24 @@ const Channel: React.FC = () => {
     // setCurrentRow({});
   };
 
-  const handleSubmit = (values) => {
-    if (!isEmpty(values)) {
+  const handleSubmit = (values: any) => {
+    if (!isEmpty(values) && !isEmpty(detailConfig)) {
       const field = Object.keys(values)[0];
       const value = values[field];
+      const key = detailConfig.key;
+      const arr = dropListMap[key];
+      dropListMap[key] = arr.map((item) => {
+        if (item.value === field) {
+          item.detail = value;
+        }
+        return item;
+      });
+      setDropListMap(dropListMap);
     }
+    setVisible(false);
   };
+
+  console.log(dropListMap);
 
   return (
     <PageContainer className={styles.pageContainer}>
@@ -469,8 +501,14 @@ const Channel: React.FC = () => {
                                   onDrop={(option: Option) => {
                                     onDrop(option, key);
                                   }}
-                                  onOpenDetail={(option: Option) => {
+                                  onOpenDetail={async (option: Option, key: DropKeyEnum) => {
+                                    const res = await getAllValues(option.value);
+                                    setModalOptions(res.data);
                                     setVisible(true);
+                                    setDetailConfig({
+                                      key,
+                                      field: option.value,
+                                    });
                                   }}
                                 />
                               </div>
@@ -487,7 +525,14 @@ const Channel: React.FC = () => {
         </div>
         <div className={styles.right}></div>
       </div>
-      <OperationModal visible={visible} onCancel={handleCancel} onSubmit={handleSubmit} />
+      <OperationModal
+        visible={visible}
+        onCancel={handleCancel}
+        onSubmit={handleSubmit}
+        detailField={detailConfig?.field || ''}
+        modalOptions={modalOptions}
+        current={{}}
+      />
     </PageContainer>
   );
 };

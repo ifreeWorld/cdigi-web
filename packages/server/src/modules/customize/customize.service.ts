@@ -271,14 +271,16 @@ export class CustomizeService {
         .distinct(true)
         .where('creator_id = :creatorId', { creatorId })
         .getRawMany();
-      return res.map((item) => ({
-        value: item.value,
-        label: item.value,
-      }));
+      return res
+        .filter((item) => item.value)
+        .map((item) => ({
+          value: item.value,
+          label: item.value,
+        }));
     } else {
       // 定制化字段
       // 1.客户，需要带上客户类型
-      if (field === 'customerId') {
+      if (field === 'customerName') {
         const res = await this.customerService.findAll(creatorId);
         return res.map((item) => ({
           value: item.id,
@@ -287,7 +289,7 @@ export class CustomizeService {
         }));
       }
       // 2.采购客户，需要带上客户类型
-      if (field === 'buyerId') {
+      if (field === 'buyerName') {
         const disty = await this.customerService.findAll(
           creatorId,
           CustomerType.disty,
@@ -303,7 +305,7 @@ export class CustomizeService {
         }));
       }
       // 3.门店，需要带上所属经销商字段
-      if (field === 'storeId') {
+      if (field === 'storeName') {
         const res = await this.storeService.findAll({
           creatorId,
         });

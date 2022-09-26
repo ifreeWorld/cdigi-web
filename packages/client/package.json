@@ -46,6 +46,23 @@
     "last 2 versions",
     "not ie <= 10"
   ],
+  "resolutions": {
+    "@sensd/compatible": "file:vendor/sensd-compatible-0.1.12.tgz",
+    "@sensd/icons": "file:vendor/sensd-icons-1.3.22.tgz",
+    "@sensd/icons-svg": "file:vendor/sensd-icons-svg-1.4.22.tgz",
+    "@sensd/rc-cascader": "file:vendor/sensd-rc-cascader-1.0.0.tgz",
+    "@sensd/rc-checkbox": "file:vendor/sensd-rc-checkbox-0.1.1.tgz",
+    "@sensd/rc-drawer": "file:vendor/sensd-rc-drawer-0.1.1.tgz",
+    "@sensd/rc-notification": "file:vendor/sensd-rc-notification-0.0.2.tgz",
+    "@sensd/rc-select": "file:vendor/sensd-rc-select-0.1.12.tgz",
+    "@sensd/rc-tabs": "file:vendor/sensd-rc-tabs-0.1.1.tgz",
+    "@sensd/rc-tree": "file:vendor/sensd-rc-tree-1.0.2.tgz",
+    "@sensd/rc-tree-select": "file:vendor/sensd-rc-tree-select-1.0.2.tgz",
+    "@sensd/rc-util": "file:vendor/sensd-rc-util-0.1.0.tgz",
+    "@sensd/result-component": "file:vendor/sensd-result-component-1.0.2.tgz",
+    "@sensd/result-svg": "file:vendor/sensd-result-svg-1.0.2.tgz",
+    "@sensd/tools": "file:vendor/sensd-tools-1.0.0-alpha.5.tgz"
+  },
   "dependencies": {
     "@ant-design/charts": "^0.9.4",
     "@ant-design/icons": "^4.7.0",
@@ -84,7 +101,7 @@
     "react-fittext": "^1.0.0",
     "react-helmet-async": "^1.2.0",
     "react-router": "^4.3.1",
-    "sensd": "file:vendor\\sensd-2.1.25.tgz",
+    "sensd": "file:vendor/sensd-2.1.25.tgz",
     "umi": "^3.5.0",
     "umi-request": "~1.4.0",
     "umi-serve": "^1.9.10"
