@@ -2,9 +2,10 @@
  * 数据透视的数据结构
  */
 export interface PivotData {
+  type: 'sale' | 'stock';
   filter: PivotFilter[];
   row: PivotRow;
-  line: PivotLine;
+  column: PivotColumn;
   value: PivotValue;
 }
 
@@ -13,22 +14,11 @@ export type PivotFilterValue = string | number | boolean;
 /**
  * 筛选
  */
-export type PivotFilter =
-  | {
-      field: string;
-      op: '=';
-      value: PivotFilterValue;
-    }
-  | {
-      field: string;
-      op: 'in';
-      value: PivotFilterValue[];
-    }
-  | {
-      field: string;
-      op: 'between';
-      value: [PivotFilterValue, PivotFilterValue];
-    };
+export type PivotFilter = {
+  field: string;
+  op: 'in';
+  value: PivotFilterValue[];
+};
 
 /**
  * 行
@@ -45,7 +35,7 @@ export interface PivotRow {
 /**
  * 列
  */
-export interface PivotLine {
+export interface PivotColumn {
   field: string;
 
   /**
@@ -63,5 +53,12 @@ export interface PivotValue {
   /**
    * 聚合类型
    */
-  aggregator: 'sum' | 'avg' | 'max' | 'min';
+  aggregator: 'sum' | 'count' | 'avg' | 'max' | 'min';
+}
+
+export enum DropKeyEnum {
+  filter = 'filter',
+  column = 'column',
+  row = 'row',
+  value = 'value',
 }

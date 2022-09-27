@@ -16,18 +16,13 @@ import styles from './style.less';
 import OperationModal from './components/OperationModal';
 import { getAllValues } from './service';
 import { isEmpty } from 'lodash';
+import type { PivotData } from './data.d';
+import { DropKeyEnum } from './data.d';
 
 interface Option {
   value: string;
   label: string;
   supportType?: DropKeyEnum[];
-}
-
-enum DropKeyEnum {
-  filter = 'filter',
-  column = 'column',
-  row = 'row',
-  value = 'value',
 }
 
 interface DropConfig {
@@ -106,7 +101,7 @@ const dropConfigs: DropConfig[] = [
     key: DropKeyEnum.value,
     label: '值',
     icon: <UnderlineOutlined className={styles.icon} />,
-    config: false,
+    config: true,
     max: 1,
   },
 ];
@@ -206,7 +201,7 @@ const DropBox = ({
 };
 
 const Channel: React.FC = () => {
-  const [type, setType] = useState('stock');
+  const [type, setType] = useState<PivotData['type']>('stock');
   const [checkList, setCheckList] = useState<Key[]>([]);
   const [dropListMap, setDropListMap] = useState<DropMap>({} as DropMap);
   const [modalOptions, setModalOptions] = useState<any[]>([]);
@@ -444,19 +439,67 @@ const Channel: React.FC = () => {
       const field = Object.keys(values)[0];
       const value = values[field];
       const key = detailConfig.key;
-      const arr = dropListMap[key];
-      dropListMap[key] = arr.map((item) => {
+      const resultMap = {
+        ...dropListMap,
+      };
+      const arr = resultMap[key];
+      resultMap[key] = arr.map((item) => {
         if (item.value === field) {
           item.detail = value;
         }
         return item;
       });
-      setDropListMap(dropListMap);
+      setDropListMap(resultMap);
     }
     setVisible(false);
   };
 
-  console.log(dropListMap);
+  const serviceData = useMemo(() => {
+    const result: PivotData = {
+      type,
+      filter:
+        dropListMap?.filter?.map((item) => {
+          return {
+            field: item.value,
+            op: 'in',
+            value: item.detail,
+          };
+        }) || [],
+      row: {
+        field: dropListMap?.row?.[0].value,
+        filter: {
+          field: dropListMap?.row?.[0].value,
+          op: 'in',
+          value: dropListMap?.row?.[0].detail,
+        },
+      },
+      column: {
+        field: dropListMap?.column?.[0].value,
+        filter: {
+          field: dropListMap?.column?.[0].value,
+          op: 'in',
+          value: dropListMap?.column?.[0].detail,
+        },
+      },
+      value: {
+        field: dropListMap?.value?.[0].value,
+        aggregator: dropListMap?.value?.[0].detail,
+      },
+    };
+    return result;
+  }, [dropListMap, type]);
+
+  const currentDetail = useMemo(() => {
+    if (!detailConfig || !dropListMap) {
+      return;
+    }
+    const { key, field } = detailConfig;
+    const arr = dropListMap[key];
+    const obj = arr.find((item) => item.value === field);
+    return {
+      [field]: obj?.detail,
+    };
+  }, [dropListMap, detailConfig]);
 
   return (
     <PageContainer className={styles.pageContainer}>
@@ -504,11 +547,11 @@ const Channel: React.FC = () => {
                                   onOpenDetail={async (option: Option, key: DropKeyEnum) => {
                                     const res = await getAllValues(option.value);
                                     setModalOptions(res.data);
-                                    setVisible(true);
                                     setDetailConfig({
                                       key,
                                       field: option.value,
                                     });
+                                    setVisible(true);
                                   }}
                                 />
                               </div>
@@ -529,9 +572,9 @@ const Channel: React.FC = () => {
         visible={visible}
         onCancel={handleCancel}
         onSubmit={handleSubmit}
-        detailField={detailConfig?.field || ''}
+        detailConfig={detailConfig}
         modalOptions={modalOptions}
-        current={{}}
+        current={currentDetail}
       />
     </PageContainer>
   );
