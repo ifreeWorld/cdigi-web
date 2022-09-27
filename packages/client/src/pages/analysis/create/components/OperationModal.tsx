@@ -63,14 +63,12 @@ const OperationModal: FC<OperationModalProps> = (props) => {
     const result = [
       {
         title: '品牌商',
-        selectable: false,
         key: 'vendor',
         value: 'vendor',
         children: [],
       },
       {
         title: '代理商',
-        selectable: false,
         key: 'disty',
         value: 'disty',
         children: [],
@@ -112,10 +110,82 @@ const OperationModal: FC<OperationModalProps> = (props) => {
 
   // 展示tree select
   if (field === 'buyerName') {
+    const result = [
+      {
+        title: '代理商',
+        key: 'disty',
+        value: 'disty',
+        children: [],
+      },
+      {
+        title: '经销商',
+        key: 'dealer',
+        value: 'dealer',
+        children: [],
+      },
+    ];
+    if (modalOptions && modalOptions.length > 0) {
+      modalOptions.forEach((customer) => {
+        if (customer.customerType) {
+          const child = {
+            title: customer.label,
+            key: customer.value,
+            value: customer.value,
+            customerType: customer.customerType,
+          };
+          // @ts-ignore
+          result[customer.customerType - 2].children.push(child);
+        }
+      });
+    }
+    select = (
+      <TreeSelect
+        treeData={result}
+        showSearch
+        showCheckAll
+        showConfirm
+        multiple
+        selectorSimpleMode
+        selectAllText="全选"
+      />
+    );
   }
 
   // 展示tree select
   if (field === 'storeName') {
+    let result: any = [];
+    const map = {};
+    if (modalOptions && modalOptions.length > 0) {
+      modalOptions.forEach((item) => {
+        if (!map[item.customerId]) {
+          map[item.customerId] = {
+            title: item.customerName,
+            key: item.customerId,
+            value: item.customerId,
+            children: [],
+          };
+        }
+        const obj = {
+          title: item.label,
+          key: item.value,
+          value: item.value,
+          children: [],
+        };
+        map[item.customerId].children.push(obj);
+      });
+      result = Object.values(map).map((item) => item);
+    }
+    select = (
+      <TreeSelect
+        treeData={result}
+        showSearch
+        showCheckAll
+        showConfirm
+        multiple
+        selectorSimpleMode
+        selectAllText="全选"
+      />
+    );
   }
   // TODO 4.国家&区域
 

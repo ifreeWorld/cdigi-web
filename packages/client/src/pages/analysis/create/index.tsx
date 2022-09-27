@@ -494,7 +494,7 @@ const Channel: React.FC = () => {
       return;
     }
     const { key, field } = detailConfig;
-    const arr = dropListMap[key];
+    const arr = dropListMap[key] || [];
     const obj = arr.find((item) => item.value === field);
     return {
       [field]: obj?.detail,

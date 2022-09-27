@@ -64,6 +64,7 @@ export class StoreService {
     query: SearchDto & {
       creatorId: number;
     },
+    relation?: boolean,
   ): Promise<StoreEntity[]> {
     const where: FindOptionsWhere<StoreEntity> = {};
     const { storeName, region, customerId, creatorId } = query;
@@ -81,6 +82,9 @@ export class StoreService {
     setCreatorWhere(where, creatorId);
     return await this.repository.find({
       where: where,
+      relations: {
+        customer: relation || false,
+      },
     });
   }
 

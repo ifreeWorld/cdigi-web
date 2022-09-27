@@ -306,9 +306,12 @@ export class CustomizeService {
       }
       // 3.门店，需要带上所属经销商字段
       if (field === 'storeName') {
-        const res = await this.storeService.findAll({
-          creatorId,
-        });
+        const res = await this.storeService.findAll(
+          {
+            creatorId,
+          },
+          true,
+        );
         return res.map((item) => ({
           value: item.id,
           label: item.storeName,
