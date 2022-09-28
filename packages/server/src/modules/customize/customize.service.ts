@@ -8,7 +8,7 @@ import {
   CustomizeCreateDto,
   CustomizeUpdateDto,
 } from './customize.dto';
-import { ERROR } from 'src/constant/error';
+import { CustomResponse, ERROR } from 'src/constant/error';
 import { indexOfLike, setCreatorWhere } from '../../utils';
 import { CustomerService } from '../customer/customer.service';
 import { appLogger } from 'src/logger';
@@ -94,6 +94,9 @@ export class CustomizeService {
         column;
       const { value: filterValue } = columnFilter;
       const { field: valueField, aggregator } = value;
+      if (!aggregator) {
+        throw new CustomResponse('请先选择值的聚合类型');
+      }
       // 用户选择了列的filter，就拼接CASE WHEN
       if (filterValue && filterValue.length > 0) {
         filterValue.forEach((v) => {
@@ -141,8 +144,6 @@ export class CustomizeService {
       return `
         SELECT
           a.*,
-          SUBSTRING_INDEX( a.WEEK, '-', 1 ) AS year,
-          SUBSTRING_INDEX( a.WEEK, '-', - 1 ) AS weekstr,
           b.vendor_name AS vendorName,
           b.category_first_name AS categoryFirstName,
           b.category_second_name AS categorySecondName,
@@ -166,6 +167,11 @@ export class CustomizeService {
               sale.week_start_date AS weekStartDate,
               sale.week_end_date AS weekEndDate,
               sale.week,
+              sale.year,
+              sale.month,
+              sale.quarter,
+              sale.month_week as monthWeek,
+              sale.weekalone,
               sale.customer_id as customerId,
               sale.product_id as productId,
               sale.product_name as productName,
@@ -190,8 +196,6 @@ export class CustomizeService {
       return `
         SELECT
           a.*,
-          SUBSTRING_INDEX( a.WEEK, '-', 1 ) AS year,
-          SUBSTRING_INDEX( a.WEEK, '-', - 1 ) AS weekstr,
           b.vendor_name AS vendorName,
           b.category_first_name AS categoryFirstName,
           b.category_second_name AS categorySecondName,
@@ -215,6 +219,11 @@ export class CustomizeService {
               stock.week_start_date AS weekStartDate,
               stock.week_end_date AS weekEndDate,
               stock.week,
+              stock.year,
+              stock.month,
+              stock.quarter,
+              stock.month_week as monthWeek,
+              stock.weekalone,
               stock.customer_id as customerId,
               stock.product_id as productId,
               stock.product_name as productName,

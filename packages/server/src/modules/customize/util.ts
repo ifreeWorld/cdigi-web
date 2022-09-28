@@ -10,17 +10,17 @@ export const setFilterQb = (
   if (!validator.isEmpty(filter)) {
     if (Array.isArray(filter)) {
       filter.forEach((item, index) => {
-        const { field, op, value } = item;
+        const { field, op, value = [] } = item;
         // 当前只支持in
-        if (op === 'in') {
+        if (op === 'in' && value.length > 0) {
           const key = random();
           qb.andWhere(`${field} IN (:...${key})`, { [key]: value });
         }
       });
     } else {
-      const { field, op, value } = filter;
+      const { field, op, value = [] } = filter;
       // 当前只支持in
-      if (op === 'in') {
+      if (op === 'in' && value.length > 0) {
         const key = random();
         qb.andWhere(`${field} IN (:...${key})`, { [key]: value });
       }

@@ -80,10 +80,7 @@ export class CustomizeController {
     type: CustomizePivotResult,
   })
   async pivot(@Body() body: CustomizePivotDto, @CurrentUser() currentUser) {
-    const list = await this.customizeService.getPivotData(
-      body.pivot,
-      currentUser.id,
-    );
+    const list = await this.customizeService.getPivotData(body, currentUser.id);
     return list;
   }
 

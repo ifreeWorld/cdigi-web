@@ -1,4 +1,4 @@
-import { Tabs, message, Tree } from 'antd';
+import { Tabs, message, Tree, Button } from 'antd';
 import React, { useMemo, useState } from 'react';
 import {
   FilterOutlined,
@@ -14,10 +14,11 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { stockHeaderMap, saleHeaderMap } from '../../../constants';
 import styles from './style.less';
 import OperationModal from './components/OperationModal';
-import { getAllValues } from './service';
+import { getAllValues, getPivotData } from './service';
 import { isEmpty } from 'lodash';
 import type { PivotData } from './data.d';
 import { DropKeyEnum } from './data.d';
+import ProForm, { ProFormText } from '@ant-design/pro-form';
 
 interface Option {
   value: string;
@@ -566,7 +567,62 @@ const Channel: React.FC = () => {
             </Tabs>
           </DndProvider>
         </div>
-        <div className={styles.right}></div>
+        <div className={styles.right}>
+          <div className={styles.top}>
+            <ProForm
+              initialValues={{}}
+              onFinish={async (values) => {
+                if (
+                  isEmpty(dropListMap.column) ||
+                  isEmpty(dropListMap.row) ||
+                  isEmpty(dropListMap.value)
+                ) {
+                  message.warning('行、列、值不能为空，请先选择');
+                  return;
+                }
+                console.log(values);
+              }}
+              submitter={{
+                render: (props, doms) => {
+                  return [
+                    <Button htmlType="button" onClick={() => {}} key="clear">
+                      清空
+                    </Button>,
+                    <Button
+                      htmlType="button"
+                      onClick={async () => {
+                        getPivotData(serviceData);
+                      }}
+                      key="test"
+                    >
+                      测试
+                    </Button>,
+                    <Button htmlType="submit" type="primary" key="create">
+                      创建自定义分析
+                    </Button>,
+                  ];
+                },
+              }}
+            >
+              <>
+                <ProFormText
+                  name="customizeName"
+                  label="名称"
+                  placeholder="请输入名称"
+                  rules={[
+                    {
+                      required: true,
+                      message: '请输入名称!',
+                    },
+                  ]}
+                />
+                <ProFormText name="desc" label="名称" placeholder="请输入名称" />
+              </>
+            </ProForm>
+          </div>
+          <div className={styles.middle}></div>
+          <div className={styles.bottom}></div>
+        </div>
       </div>
       <OperationModal
         visible={visible}

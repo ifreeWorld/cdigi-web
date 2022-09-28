@@ -11,3 +11,10 @@ export async function getAllValues(field: string, type: 'sale' | 'stock') {
     method: 'POST',
   });
 }
+
+export async function getPivotData(data: any) {
+  return request<ResultSuccessPromise<any>>(`/api/customize/pivot`, {
+    data,
+    method: 'POST',
+  });
+}

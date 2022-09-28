@@ -9,9 +9,26 @@ export class SearchDto extends PaginationDto {
 }
 export class CustomizePivotDto {
   @IsNotEmpty({
-    message: '数据透视表配置不能为空',
+    message: 'type不能为空',
   })
-  pivot: CustomizeEntity['pivot'];
+  type: CustomizeEntity['pivot']['type'];
+
+  filter: CustomizeEntity['pivot']['filter'];
+
+  @IsNotEmpty({
+    message: '行不能为空',
+  })
+  row: CustomizeEntity['pivot']['row'];
+
+  @IsNotEmpty({
+    message: '列不能为空',
+  })
+  column: CustomizeEntity['pivot']['column'];
+
+  @IsNotEmpty({
+    message: '值不能为空',
+  })
+  value: CustomizeEntity['pivot']['value'];
 }
 export class CustomizeValuesDto {
   @IsNotEmpty({
@@ -75,7 +92,10 @@ export class SaleWideTable {
   weekEndDate: Date;
   week: string;
   year: string;
-  weekstr: string;
+  weekalone: string;
+  quarter: string;
+  month: string;
+  monthWeek: string;
   customerId: number;
   customerName: string;
   customerType: CustomerType;
@@ -108,7 +128,10 @@ export class StockWideTable {
   weekEndDate: Date;
   week: string;
   year: string;
-  weekstr: string;
+  weekalone: string;
+  quarter: string;
+  month: string;
+  monthWeek: string;
   customerId: number;
   customerName: string;
   customerType: CustomerType;
