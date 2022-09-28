@@ -95,10 +95,12 @@ export class CustomizeController {
   })
   async getAllValues(
     @Param() { field }: CustomizeValuesDto,
+    @Body() body: { type: 'sale' | 'stock' },
     @CurrentUser() currentUser,
   ) {
     const list = await this.customizeService.getAllValues(
       field,
+      body.type,
       currentUser.id,
     );
     return list;

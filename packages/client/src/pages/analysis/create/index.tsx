@@ -267,7 +267,7 @@ const Channel: React.FC = () => {
           },
           {
             title: '周',
-            key: 'week',
+            key: 'weekalone',
             checkable: true,
             supportType: [DropKeyEnum.row],
           },
@@ -466,24 +466,24 @@ const Channel: React.FC = () => {
           };
         }) || [],
       row: {
-        field: dropListMap?.row?.[0].value,
+        field: dropListMap?.row?.[0]?.value,
         filter: {
-          field: dropListMap?.row?.[0].value,
+          field: dropListMap?.row?.[0]?.value,
           op: 'in',
-          value: dropListMap?.row?.[0].detail,
+          value: dropListMap?.row?.[0]?.detail,
         },
       },
       column: {
-        field: dropListMap?.column?.[0].value,
+        field: dropListMap?.column?.[0]?.value,
         filter: {
-          field: dropListMap?.column?.[0].value,
+          field: dropListMap?.column?.[0]?.value,
           op: 'in',
-          value: dropListMap?.column?.[0].detail,
+          value: dropListMap?.column?.[0]?.detail,
         },
       },
       value: {
-        field: dropListMap?.value?.[0].value,
-        aggregator: dropListMap?.value?.[0].detail,
+        field: dropListMap?.value?.[0]?.value,
+        aggregator: dropListMap?.value?.[0]?.detail,
       },
     };
     return result;
@@ -545,7 +545,7 @@ const Channel: React.FC = () => {
                                     onDrop(option, key);
                                   }}
                                   onOpenDetail={async (option: Option, key: DropKeyEnum) => {
-                                    const res = await getAllValues(option.value);
+                                    const res = await getAllValues(option.value, type);
                                     setModalOptions(res.data);
                                     setDetailConfig({
                                       key,

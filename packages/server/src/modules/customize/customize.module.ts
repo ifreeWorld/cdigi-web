@@ -6,6 +6,8 @@ import { CustomizeService } from './customize.service';
 import { CustomizeEntity } from './customize.entity';
 import { ProductModule } from '../product/product.module';
 import { StoreModule } from '../store/store.module';
+import { SaleModule } from '../sale/sale.module';
+import { StockModule } from '../stock/stock.module';
 
 @Module({
   imports: [
@@ -13,6 +15,8 @@ import { StoreModule } from '../store/store.module';
     CustomerModule,
     ProductModule,
     StoreModule,
+    SaleModule,
+    StockModule,
   ],
   exports: [CustomizeService],
   controllers: [CustomizeController],

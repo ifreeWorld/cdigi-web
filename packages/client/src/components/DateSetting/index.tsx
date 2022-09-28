@@ -71,6 +71,7 @@ const DateSetting: React.FC = () => {
       // 有就不展示弹层
       setVisible(false);
       setValue(res.data);
+      window.moment = moment;
       moment.locale('zh-cn', {
         week: {
           dow: Number(res.data),

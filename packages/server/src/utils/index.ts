@@ -92,3 +92,26 @@ export function lowerCase(n: string | undefined | null) {
 export function random() {
   return Math.random().toString(16).substring(2);
 }
+
+export function getYearText(year: string | number) {
+  return `${year}`;
+}
+
+export function getMonthText(month: string | number) {
+  return `${month}`;
+}
+
+export function getQuarterText(quarter: string | number) {
+  return `第${quarter}季度`;
+}
+
+export function getMonthWeekText(
+  month: string | number,
+  weekalone: string | number,
+) {
+  return `${month}月${weekalone}周`;
+}
+
+export function getWeekaloneText(weekalone: string | number) {
+  return `${weekalone}周`;
+}

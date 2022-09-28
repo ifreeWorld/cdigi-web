@@ -26,6 +26,11 @@ import { ConfigService } from '../config/config.service';
 import { getTree } from './util';
 import {
   fixImportedDate,
+  getMonthText,
+  getMonthWeekText,
+  getQuarterText,
+  getWeekaloneText,
+  getYearText,
   lowerCase,
   setCreatorQb,
   setCreatorWhere,
@@ -147,8 +152,12 @@ export class StockService {
     body: StockParseDto,
     creatorId: number,
   ): Promise<StockInnerParseResult | ErrorConstant> {
-    const { weekStartDate, weekEndDate, week, customerId } = body;
+    // @ts-ignore
+    moment.fn.weekOfMonth = function () {
+      return Math.ceil(this.date() / 7);
+    };
 
+    const { weekStartDate, weekEndDate, week, customerId } = body;
     const arrs = utils.sheet_to_json<any[]>(sheet, {
       header: 1,
       dateNF: dateFormat,
@@ -181,20 +190,18 @@ export class StockService {
 
     // 查询周开始日
     let weekStartIndex = '1';
-    if (importType === 2) {
-      weekStartIndex = await this.configService.hget(
-        'getWeekStartIndex',
-        String(creatorId),
-      );
-      if (!weekStartIndex) {
-        weekStartIndex = '1';
-      }
-      moment.locale('zh-cn', {
-        week: {
-          dow: Number(weekStartIndex),
-        },
-      });
+    weekStartIndex = await this.configService.hget(
+      'getWeekStartIndex',
+      String(creatorId),
+    );
+    if (!weekStartIndex) {
+      weekStartIndex = '1';
     }
+    moment.locale('zh-cn', {
+      week: {
+        dow: Number(weekStartIndex),
+      },
+    });
 
     const is_date1904 = workbook.Workbook.WBProps.date1904;
     const result = data.map((item) => {
@@ -215,6 +222,28 @@ export class StockService {
             temp[newKey] = fixImportedDate(temp[newKey], is_date1904);
           }
         }
+      }
+      if (week) {
+        const year = Number(week.split('-')[0]);
+        const weekalone = Number(week.split('-')[1]);
+        const quarter = moment()
+          .year(year)
+          .week(weekalone)
+          .startOf('week')
+          .quarter();
+        const month =
+          moment().year(year).week(weekalone).startOf('week').month() + 1;
+        const monthWeek = moment()
+          .year(year)
+          .week(weekalone)
+          .startOf('week')
+          // @ts-ignore
+          .weekOfMonth();
+        temp.year = getYearText(year);
+        temp.month = getMonthText(month);
+        temp.weekalone = getWeekaloneText(weekalone);
+        temp.quarter = getQuarterText(quarter);
+        temp.monthWeek = getMonthWeekText(month, monthWeek);
       }
       return temp;
     });
@@ -366,6 +395,27 @@ export class StockService {
         entity.weekStartDate = startDate;
         // @ts-ignore
         entity.weekEndDate = endDate;
+
+        const year = Number(weekStr.split('-')[0]);
+        const weekalone = Number(weekStr.split('-')[1]);
+        const quarter = moment()
+          .year(year)
+          .week(weekalone)
+          .startOf('week')
+          .quarter();
+        const month =
+          moment().year(year).week(weekalone).startOf('week').month() + 1;
+        const monthWeek = moment()
+          .year(year)
+          .week(weekalone)
+          .startOf('week')
+          // @ts-ignore
+          .weekOfMonth();
+        entity.year = getYearText(year);
+        entity.month = getMonthText(month);
+        entity.weekalone = getWeekaloneText(weekalone);
+        entity.quarter = getQuarterText(quarter);
+        entity.monthWeek = getMonthWeekText(month, monthWeek);
       }
 
       // 有失败的话，就在entity中添加失败原因，方便进行导出

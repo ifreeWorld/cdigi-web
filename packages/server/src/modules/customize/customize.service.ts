@@ -16,6 +16,8 @@ import { setFilterQb } from './util';
 import { ProductEntity } from '../product/product.entity';
 import { CustomerType } from '../tag/customerType.enum';
 import { StoreService } from '../store/store.service';
+import { SaleEntity } from '../sale/sale.entity';
+import { StockEntity } from '../stock/stock.entity';
 
 @Injectable()
 export class CustomizeService {
@@ -102,7 +104,7 @@ export class CustomizeService {
         });
       } else {
         // 用户没选择，就先查询数据库中column field的所有的选项
-        const data = await this.getAllValues(columnField, creatorId);
+        const data = await this.getAllValues(columnField, type, creatorId);
         data.forEach((item) => {
           qb.addSelect(
             `IFNULL(${aggregator}( CASE WHEN t.${columnField} = '${item.value}' THEN t.${valueField} END ),0)`,
@@ -237,7 +239,7 @@ export class CustomizeService {
    * 获取所有值
    * @param field 字段
    */
-  async getAllValues(field: string, creatorId: number) {
+  async getAllValues(field: string, type: 'sale' | 'stock', creatorId: number) {
     // 规范的字段map
     const field2DataMap = {
       productName: {
@@ -260,6 +262,22 @@ export class CustomizeService {
         field: 'vendor_name',
         entity: ProductEntity,
       },
+      year: {
+        field: 'year',
+        entity: type === 'sale' ? SaleEntity : StockEntity,
+      },
+      quarter: {
+        field: 'quarter',
+        entity: type === 'sale' ? SaleEntity : StockEntity,
+      },
+      monthWeek: {
+        field: 'month_week',
+        entity: type === 'sale' ? SaleEntity : StockEntity,
+      },
+      weekalone: {
+        field: 'weekalone',
+        entity: type === 'sale' ? SaleEntity : StockEntity,
+      },
     };
     const data = field2DataMap[field];
     // 规范的直接distinct查询出列表进行展示即可
@@ -278,6 +296,34 @@ export class CustomizeService {
           label: item.value,
         }));
     } else {
+      if (field === 'customerType') {
+        return [
+          {
+            value: CustomerType.vendor,
+            label: '品牌商',
+          },
+          {
+            value: CustomerType.disty,
+            label: '代理商',
+          },
+          {
+            value: CustomerType.dealer,
+            label: '经销商',
+          },
+        ];
+      }
+      if (field === 'buyerCustomerType') {
+        return [
+          {
+            value: CustomerType.disty,
+            label: '代理商',
+          },
+          {
+            value: CustomerType.dealer,
+            label: '经销商',
+          },
+        ];
+      }
       // 定制化字段
       // 1.客户，需要带上客户类型
       if (field === 'customerName') {
