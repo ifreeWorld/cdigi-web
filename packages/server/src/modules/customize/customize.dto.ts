@@ -63,7 +63,12 @@ export class CustomizeDeleteDto {
 }
 
 export class CustomizePivotResult extends BaseResult {
-  data: unknown[];
+  data: {
+    list: unknown[];
+    row: string;
+    column: string;
+    value: string;
+  };
 }
 export class CustomizeDataResult extends BaseResult {
   data: CustomizeEntity[];

@@ -66,6 +66,10 @@
 
           .itemIcon {
             font-size: 12px;
+
+            &.highlight {
+              color: #165dff;
+            }
           }
         }
       }
@@ -103,23 +107,43 @@
   width: calc(100% - 16px - 264px);
   height: 100%;
   margin-left: 16px;
-  padding: 20px;
-  padding-top: 0;
+  padding: 0 20px;
 
   .top {
+    height: 244px;
     padding: 20px;
     background-color: #fff;
   }
 
   .middle {
+    height: 417px;
     margin-top: 16px;
     padding: 20px;
+    overflow-y: auto;
     background-color: #fff;
   }
 
   .bottom {
+    height: 417px;
     margin-top: 16px;
     padding: 20px;
+    overflow-y: auto;
     background-color: #fff;
+  }
+}
+
+.lineChart {
+  .title {
+    margin-bottom: 16px;
+    color: #000;
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  .parameter {
+    margin-left: 16px;
+    color: #86909c;
+    font-weight: 400;
+    font-size: 14px;
   }
 }

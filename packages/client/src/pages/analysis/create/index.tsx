@@ -1,5 +1,6 @@
 import { Tabs, message, Tree, Button } from 'antd';
 import React, { useMemo, useState } from 'react';
+import classNames from 'classnames';
 import {
   FilterOutlined,
   MenuOutlined,
@@ -11,7 +12,6 @@ import { PageContainer } from '@ant-design/pro-layout';
 import type { Key } from 'rc-tree/lib/interface';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { stockHeaderMap, saleHeaderMap } from '../../../constants';
 import styles from './style.less';
 import OperationModal from './components/OperationModal';
 import { getAllValues, getPivotData } from './service';
@@ -19,6 +19,8 @@ import { isEmpty } from 'lodash';
 import type { PivotData } from './data.d';
 import { DropKeyEnum } from './data.d';
 import ProForm, { ProFormText } from '@ant-design/pro-form';
+import LineChart from './components/LineChart';
+import TableChart from './components/TableChart';
 
 interface Option {
   value: string;
@@ -54,25 +56,14 @@ interface TreeData {
 const { TabPane } = Tabs;
 const TYPE = 'customize';
 
-const getOptions = (map: Record<string, string>) => {
-  return Object.keys(map).map((label: string) => {
-    return {
-      label,
-      value: map[label],
-    };
-  });
-};
-
 const data = [
   {
     tabName: '库存',
     tabValue: 'stock',
-    dragItems: getOptions(stockHeaderMap),
   },
   {
     tabName: '销售',
     tabValue: 'sale',
-    dragItems: getOptions(saleHeaderMap),
   },
 ];
 
@@ -142,7 +133,7 @@ const DropBox = ({
   onOpenDetail,
 }: {
   onDrop: any;
-  list: Option[];
+  list: DropMapItem[];
   config: DropConfig;
   onOpenDetail: (option: Option, key: DropKeyEnum) => void;
 }) => {
@@ -173,7 +164,7 @@ const DropBox = ({
   return (
     <div ref={drop} data-testid="dustbin">
       <div className={styles.drop} style={{ backgroundColor }}>
-        {list.map((option: Option) => {
+        {list.map((option: DropMapItem) => {
           return (
             <DragBox
               key={option.value}
@@ -186,7 +177,10 @@ const DropBox = ({
                 <div className={styles.itemTitle}>{option.label}</div>
                 {config.config && (
                   <SettingOutlined
-                    className={styles.itemIcon}
+                    className={classNames(
+                      styles.itemIcon,
+                      !isEmpty(option.detail) ? styles.highlight : '',
+                    )}
                     onClick={() => {
                       onOpenDetail(option, config.key);
                     }}
@@ -208,6 +202,25 @@ const Channel: React.FC = () => {
   const [modalOptions, setModalOptions] = useState<any[]>([]);
   const [visible, setVisible] = useState<boolean>(false);
   const [detailConfig, setDetailConfig] = useState<{ key: DropKeyEnum; field: string }>();
+  const [pivotData, setPivotData] = useState<{
+    list: any[];
+    row: string;
+    rowLabel: string;
+    column: string;
+    columnLabel: string;
+    value: string;
+    valueLabel: string;
+    filterLabel: string;
+  }>({
+    list: [],
+    row: '',
+    rowLabel: '',
+    column: '',
+    columnLabel: '',
+    value: '',
+    valueLabel: '',
+    filterLabel: '',
+  });
 
   const treeData: TreeData[] = useMemo(() => {
     const prefix = type === 'stock' ? '库存' : '销售';
@@ -432,7 +445,6 @@ const Channel: React.FC = () => {
 
   const handleCancel = () => {
     setVisible(false);
-    // setCurrentRow({});
   };
 
   const handleSubmit = (values: any) => {
@@ -455,7 +467,7 @@ const Channel: React.FC = () => {
     setVisible(false);
   };
 
-  const serviceData = useMemo(() => {
+  const clientData = useMemo(() => {
     const result: PivotData = {
       type,
       filter:
@@ -583,15 +595,43 @@ const Channel: React.FC = () => {
                 console.log(values);
               }}
               submitter={{
-                render: (props, doms) => {
+                render: () => {
                   return [
-                    <Button htmlType="button" onClick={() => {}} key="clear">
+                    <Button
+                      htmlType="button"
+                      onClick={() => {
+                        setCheckList([]);
+                        setDropListMap({} as DropMap);
+                        setModalOptions([]);
+                        setVisible(false);
+                        setDetailConfig(undefined);
+                        setPivotData({
+                          list: [],
+                          row: '',
+                          rowLabel: '',
+                          column: '',
+                          columnLabel: '',
+                          value: '',
+                          valueLabel: '',
+                          filterLabel: '',
+                        });
+                      }}
+                      key="clear"
+                    >
                       清空
                     </Button>,
                     <Button
                       htmlType="button"
                       onClick={async () => {
-                        getPivotData(serviceData);
+                        const res = await getPivotData(clientData);
+                        setPivotData({
+                          ...res.data,
+                          rowLabel: dropListMap.row?.[0]?.label || '',
+                          columnLabel: dropListMap.column?.[0]?.label || '',
+                          valueLabel: dropListMap.value?.[0]?.label || '',
+                          filterLabel:
+                            dropListMap.filter?.map((item) => item.label).join('、') || '',
+                        });
                       }}
                       key="test"
                     >
@@ -620,8 +660,30 @@ const Channel: React.FC = () => {
               </>
             </ProForm>
           </div>
-          <div className={styles.middle}></div>
-          <div className={styles.bottom}></div>
+          <div className={styles.middle}>
+            <LineChart
+              data={pivotData.list}
+              xField={pivotData.row}
+              yField={pivotData.value}
+              seriesField={pivotData.column}
+              xFieldLabel={pivotData.rowLabel}
+              yFieldLabel={pivotData.valueLabel}
+              seriesFieldLabel={pivotData.columnLabel}
+              filterLabel={pivotData.filterLabel}
+            />
+          </div>
+          <div className={styles.bottom}>
+            <TableChart
+              data={pivotData.list}
+              xField={pivotData.row}
+              yField={pivotData.value}
+              seriesField={pivotData.column}
+              xFieldLabel={pivotData.rowLabel}
+              yFieldLabel={pivotData.valueLabel}
+              seriesFieldLabel={pivotData.columnLabel}
+              filterLabel={pivotData.filterLabel}
+            />
+          </div>
         </div>
       </div>
       <OperationModal

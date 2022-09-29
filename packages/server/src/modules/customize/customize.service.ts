@@ -105,6 +105,12 @@ export class CustomizeService {
             `${v}`,
           );
         });
+        qb.addSelect(
+          `IFNULL(${aggregator}( CASE WHEN t.${columnField} in '${filterValue.join(
+            ',',
+          )}' THEN t.${valueField} END ),0)`,
+          '全部',
+        );
       } else {
         // 用户没选择，就先查询数据库中column field的所有的选项
         const data = await this.getAllValues(columnField, type, creatorId);
@@ -114,8 +120,8 @@ export class CustomizeService {
             `${item.value}`,
           );
         });
+        qb.addSelect(`IFNULL(${aggregator}( t.${valueField} ),0)`, '全部');
       }
-      qb.addSelect(`${aggregator}( t.${valueField} )`, 'all');
     }
 
     qb.from('(' + wideSql + ')', 't');
@@ -132,8 +138,21 @@ export class CustomizeService {
       `getPivotData generate sql; creatorId: ${creatorId}; sql: ${qb.getSql()}`,
     );
 
-    const data = await qb.getRawMany();
-    return data;
+    let data = await qb.getRawMany();
+    data = data.map((item) => {
+      for (const key in item) {
+        if (key !== row.field) {
+          item[key] = Number(item[key]);
+        }
+      }
+      return item;
+    });
+    return {
+      list: data,
+      row: row.field,
+      column: column.field,
+      value: value.field,
+    };
   }
 
   /**

@@ -82,6 +82,7 @@
     "bizcharts": "^3.5.3-beta.0",
     "bizcharts-plugin-slider": "^2.1.1-beta.1",
     "classnames": "^2.3.0",
+    "country-region-data": "^2.6.0",
     "file-saver": "~2.0.5",
     "gg-editor": "^2.0.2",
     "js-cookie": "~3.0.1",

@@ -1,8 +1,10 @@
 import type { FC } from 'react';
 import { useRef } from 'react';
-import { Tag, AutoComplete } from 'antd';
+import { Tag } from 'antd';
 import type { ProFormInstance } from '@ant-design/pro-form';
-import { ModalForm, ProFormSelect, ProFormText, ProForm } from '@ant-design/pro-form';
+import { ModalForm, ProFormSelect, ProFormText } from '@ant-design/pro-form';
+import { countryNames } from 'country-region-data';
+import allCountryRegions from 'country-region-data/data.json';
 import type { CustomerListItem } from '../data.d';
 import type { CustomerTag } from '../../tag/data.d';
 import { customerTypeMap } from '../../../../constants';
@@ -126,26 +128,27 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           placeholder="请选择客户类型"
           disabled={opType === 'edit'}
         />
-        <ProForm.Item
+        <ProFormSelect
           name="country"
           label="国家"
-          rules={[{ required: true, message: '请输入国家' }]}
-        >
-          <AutoComplete
-            placeholder="请输入国家"
-            options={allCountryList.map((item) => ({ value: item }))}
-          />
-        </ProForm.Item>
-        <ProForm.Item
+          rules={[{ required: true, message: '请选择国家' }]}
+          options={countryNames.map((item) => ({ value: item, label: item }))}
+          placeholder="请选择国家"
+        />
+        <ProFormSelect
           name="region"
           label="区域"
           rules={[{ required: true, message: '请输入区域' }]}
-        >
-          <AutoComplete
-            placeholder="请输入区域"
-            options={allRegionList.map((item) => ({ value: item }))}
-          />
-        </ProForm.Item>
+          placeholder="请输入区域"
+          dependencies={['country']}
+          request={async (params) => {
+            const { country } = params;
+            const data = allCountryRegions.find((item) => item.countryName === country) || {
+              regions: [],
+            };
+            return data.regions;
+          }}
+        />
         <ProFormText
           name="email"
           label="邮箱"
