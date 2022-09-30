@@ -47,7 +47,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           dateFormatter={1}
           transform={(value: string) => {
             const date = moment(value);
-            const week = date.format('gggg-w');
+            const week = date.format('gggg-ww');
             const startDate = date.startOf('week').format(dateFormat);
             const endDate = date.endOf('week').format(dateFormat);
             return {

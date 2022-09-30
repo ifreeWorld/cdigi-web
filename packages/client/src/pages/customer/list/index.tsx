@@ -17,7 +17,6 @@ import {
   addCustomer,
   updateCustomer,
   deleteCustomer,
-  getAllByKey,
 } from './service';
 
 const TableList: React.FC = () => {
@@ -29,28 +28,6 @@ const TableList: React.FC = () => {
   const { data: tagRes } = useRequest(async () => {
     return await getAllTag();
   });
-
-  const { run: runCountry, data: allCountryList } = useRequest(
-    async () => {
-      return await getAllByKey({
-        key: 'country',
-      });
-    },
-    {
-      manual: true,
-    },
-  );
-
-  const { run: runRegion, data: allRegionList } = useRequest(
-    async () => {
-      return await getAllByKey({
-        key: 'region',
-      });
-    },
-    {
-      manual: true,
-    },
-  );
 
   const { run: runAll, data: allCustomerList } = useRequest(
     async () => {
@@ -279,8 +256,6 @@ const TableList: React.FC = () => {
         ]}
         request={async (params) => {
           runAll();
-          runCountry();
-          runRegion();
           const res = await run({
             ...params,
             parent: true,
@@ -300,8 +275,6 @@ const TableList: React.FC = () => {
         onCancel={handleCancel}
         onSubmit={handleSubmit}
         allTagList={tagRes}
-        allCountryList={allCountryList}
-        allRegionList={allRegionList}
         allCustomerList={allCustomerList}
         allCustomerNames={allCustomerNames}
       />

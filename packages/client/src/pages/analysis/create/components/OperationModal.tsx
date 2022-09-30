@@ -187,7 +187,6 @@ const OperationModal: FC<OperationModalProps> = (props) => {
       />
     );
   }
-  // TODO 4.国家&区域
 
   return (
     <ModalForm

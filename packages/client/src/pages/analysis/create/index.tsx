@@ -320,6 +320,25 @@ const Channel: React.FC = () => {
         ],
       },
       {
+        title: '区域',
+        key: 'geography',
+        checkable: false,
+        children: [
+          {
+            title: '国家',
+            key: 'country',
+            checkable: true,
+            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+          },
+          {
+            title: '区域',
+            key: 'region',
+            checkable: true,
+            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+          },
+        ],
+      },
+      {
         title: '值',
         key: 'vvvv',
         checkable: false,

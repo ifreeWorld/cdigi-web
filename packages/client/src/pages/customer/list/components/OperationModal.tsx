@@ -3,8 +3,7 @@ import { useRef } from 'react';
 import { Tag } from 'antd';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import { ModalForm, ProFormSelect, ProFormText } from '@ant-design/pro-form';
-import { countryNames } from 'country-region-data';
-import allCountryRegions from 'country-region-data/data.json';
+import allCountryRegions from '../../../../constants/data.json';
 import type { CustomerListItem } from '../data.d';
 import type { CustomerTag } from '../../tag/data.d';
 import { customerTypeMap } from '../../../../constants';
@@ -16,8 +15,6 @@ type OperationModalProps = {
   onCancel: () => void;
   onSubmit: (values: CustomerListItem) => void;
   allTagList: CustomerTag[] | undefined;
-  allCountryList: string[] | undefined;
-  allRegionList: string[] | undefined;
   allCustomerList: CustomerListItem[] | undefined;
   allCustomerNames: string[] | undefined;
 };
@@ -29,8 +26,6 @@ const OperationModal: FC<OperationModalProps> = (props) => {
     visible,
     current,
     allTagList = [],
-    allCountryList = [],
-    allRegionList = [],
     allCustomerList = [],
     allCustomerNames = [],
     onCancel,
@@ -96,6 +91,11 @@ const OperationModal: FC<OperationModalProps> = (props) => {
             parent: [],
           });
         }
+        if (changeValues.country) {
+          formRef?.current?.setFieldsValue?.({
+            region: '',
+          });
+        }
       }}
     >
       <>
@@ -132,8 +132,12 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           name="country"
           label="国家"
           rules={[{ required: true, message: '请选择国家' }]}
-          options={countryNames.map((item) => ({ value: item, label: item }))}
+          options={allCountryRegions.map((item) => ({
+            value: item.countryName,
+            label: item.countryName,
+          }))}
           placeholder="请选择国家"
+          fieldProps={{ showSearch: true }}
         />
         <ProFormSelect
           name="region"
@@ -146,7 +150,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
             const data = allCountryRegions.find((item) => item.countryName === country) || {
               regions: [],
             };
-            return data.regions;
+            return data.regions.map((item) => ({ label: item.name, value: item.name }));
           }}
         />
         <ProFormText

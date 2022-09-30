@@ -229,7 +229,7 @@ const Sale = ({ customerId, customerType }: { customerId: number; customerType: 
   }, [customerId]);
 
   const dataFormat = (date: moment.Moment, dateString: string) => {
-    const weekStr = date.format('gggg-w');
+    const weekStr = date.format('gggg-ww');
     const year = Number(weekStr.split('-')[0]);
     const week = Number(weekStr.split('-')[1]);
     const startDate = date.startOf('week').format(dateFormat);

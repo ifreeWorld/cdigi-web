@@ -7838,11 +7838,6 @@ cosmiconfig@^7.0.0:
     path-type "^4.0.0"
     yaml "^1.10.0"
 
-country-region-data@^2.6.0:
-  version "2.6.0"
-  resolved "https://registry.npmmirror.com/country-region-data/-/country-region-data-2.6.0.tgz#eda1f56ae3cebb53ed1040e1993a11daeef553c6"
-  integrity sha512-DWbBVwx+IVFKIL32Lw78ZOFEIL7Frfc7IoUIqiZKilDYfustS+QrKINR7AmtqajonU494VUfcXBi/TlJUFqbrA==
-
 create-ecdh@^4.0.0:
   version "4.0.4"
   resolved "https://registry.npmmirror.com/create-ecdh/-/create-ecdh-4.0.4.tgz#d6e7f4bffa66736085a0762fd3a632684dabcc4e"

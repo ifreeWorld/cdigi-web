@@ -27,11 +27,6 @@ import { ConfigService } from '../config/config.service';
 import { getTree } from './util';
 import {
   fixImportedDate,
-  getMonthText,
-  getMonthWeekText,
-  getQuarterText,
-  getWeekaloneText,
-  getYearText,
   lowerCase,
   setCreatorQb,
   setCreatorWhere,
@@ -242,11 +237,11 @@ export class SaleService {
           .startOf('week')
           // @ts-ignore
           .weekOfMonth();
-        temp.year = getYearText(year);
-        temp.month = getMonthText(month);
-        temp.weekalone = getWeekaloneText(weekalone);
-        temp.quarter = getQuarterText(quarter);
-        temp.monthWeek = getMonthWeekText(month, monthWeek);
+        temp.year = year;
+        temp.month = month;
+        temp.weekalone = weekalone;
+        temp.quarter = quarter;
+        temp.monthWeek = monthWeek;
       }
       return temp;
     });
@@ -403,7 +398,7 @@ export class SaleService {
       if (importType === 2 && date) {
         const dateMoment = moment(date);
         const dateStr = dateMoment.format(dateFormat);
-        const weekStr = dateMoment.format('gggg-w');
+        const weekStr = dateMoment.format('gggg-ww');
         const startDate = dateMoment.startOf('week').format(dateFormat);
         const endDate = dateMoment.endOf('week').format(dateFormat);
         entity.week = weekStr;
@@ -429,11 +424,11 @@ export class SaleService {
           .startOf('week')
           // @ts-ignore
           .weekOfMonth();
-        entity.year = getYearText(year);
-        entity.month = getMonthText(month);
-        entity.weekalone = getWeekaloneText(weekalone);
-        entity.quarter = getQuarterText(quarter);
-        entity.monthWeek = getMonthWeekText(month, monthWeek);
+        entity.year = year;
+        entity.month = month;
+        entity.weekalone = weekalone;
+        entity.quarter = quarter;
+        entity.monthWeek = monthWeek;
       }
 
       // 有失败的话，就在entity中添加失败原因，方便进行导出

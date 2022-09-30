@@ -13,11 +13,19 @@ import { indexOfLike, setCreatorWhere } from '../../utils';
 import { CustomerService } from '../customer/customer.service';
 import { appLogger } from 'src/logger';
 import { setFilterQb } from './util';
+import {
+  getMonthText,
+  getMonthWeekText,
+  getQuarterText,
+  getWeekaloneText,
+  getYearText,
+} from '../../utils';
 import { ProductEntity } from '../product/product.entity';
 import { CustomerType } from '../tag/customerType.enum';
 import { StoreService } from '../store/store.service';
 import { SaleEntity } from '../sale/sale.entity';
 import { StockEntity } from '../stock/stock.entity';
+import { CustomerEntity } from '../customer/customer.entity';
 
 @Injectable()
 export class CustomizeService {
@@ -88,6 +96,9 @@ export class CustomizeService {
 
     const wideSql = await this.getWideSql(type, creatorId);
     const qb = this.dataSource.createQueryBuilder().select(`t.${row.field}`);
+    if (row.field === 'monthWeek') {
+      qb.addSelect('t.month');
+    }
 
     if (!validator.isEmpty(column) && !validator.isEmpty(value)) {
       const { filter: columnFilter = { value: [] }, field: columnField } =
@@ -126,7 +137,20 @@ export class CustomizeService {
 
     qb.from('(' + wideSql + ')', 't');
     // group by
-    qb.groupBy(`t.${row.field}`);
+    if (row.field === 'monthWeek') {
+      qb.groupBy('t.month');
+      qb.addGroupBy(`t.${row.field}`);
+    } else {
+      qb.groupBy(`t.${row.field}`);
+    }
+    // order by
+    if (row.field === 'monthWeek') {
+      qb.orderBy('t.month');
+      qb.addOrderBy(`t.${row.field}`);
+    } else {
+      qb.orderBy(`t.${row.field}`);
+    }
+    // 筛选
     qb.where('1=1');
     // filter中的筛选
     setFilterQb(qb, filter);
@@ -143,6 +167,27 @@ export class CustomizeService {
       for (const key in item) {
         if (key !== row.field) {
           item[key] = Number(item[key]);
+        }
+        // 设置format
+        if (key === 'year') {
+          item[key] = getYearText(item[key]);
+        }
+        // 设置format
+        if (key === 'month') {
+          item[key] = getMonthText(item[key]);
+        }
+        // 设置format
+        if (key === 'quarter') {
+          item[key] = getQuarterText(item[key]);
+        }
+        // 设置format
+        if (key === 'weekalone') {
+          item[key] = getWeekaloneText(item[key]);
+        }
+        // 设置format
+        if (key === 'monthWeek') {
+          item[key] = getMonthWeekText(item.month, item[key]);
+          delete item.month;
         }
       }
       return item;
@@ -306,6 +351,14 @@ export class CustomizeService {
         field: 'weekalone',
         entity: type === 'sale' ? SaleEntity : StockEntity,
       },
+      country: {
+        field: 'country',
+        entity: CustomerEntity,
+      },
+      region: {
+        field: 'region',
+        entity: CustomerEntity,
+      },
     };
     const data = field2DataMap[field];
     // 规范的直接distinct查询出列表进行展示即可
@@ -357,7 +410,7 @@ export class CustomizeService {
       if (field === 'customerName') {
         const res = await this.customerService.findAll(creatorId);
         return res.map((item) => ({
-          value: item.id,
+          value: item.customerName,
           label: item.customerName,
           customerType: item.customerType,
         }));
@@ -373,7 +426,7 @@ export class CustomizeService {
           CustomerType.dealer,
         );
         return [...disty, ...dealer].map((item) => ({
-          value: item.id,
+          value: item.customerName,
           label: item.customerName,
           customerType: item.customerType,
         }));
@@ -387,13 +440,12 @@ export class CustomizeService {
           true,
         );
         return res.map((item) => ({
-          value: item.id,
+          value: item.storeName,
           label: item.storeName,
           customerId: item.customer?.id || -1,
           customerName: item.customer?.customerName || '',
         }));
       }
-      // TODO 4.国家&区域
     }
     return [];
   }
