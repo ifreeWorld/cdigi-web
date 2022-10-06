@@ -18,3 +18,10 @@ export async function getPivotData(data: any) {
     method: 'POST',
   });
 }
+
+export async function add(data: any) {
+  return request<ResultSuccessPromise<any>>(`/api/customize/add`, {
+    data,
+    method: 'POST',
+  });
+}

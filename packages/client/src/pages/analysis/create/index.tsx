@@ -8,13 +8,14 @@ import {
   UnderlineOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
+import { history } from 'umi';
 import { PageContainer } from '@ant-design/pro-layout';
 import type { Key } from 'rc-tree/lib/interface';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import styles from './style.less';
 import OperationModal from './components/OperationModal';
-import { getAllValues, getPivotData } from './service';
+import { getAllValues, getPivotData, add } from './service';
 import { isEmpty } from 'lodash';
 import type { PivotData } from './data.d';
 import { DropKeyEnum } from './data.d';
@@ -547,7 +548,7 @@ const Channel: React.FC = () => {
               {data.map((item) => {
                 return (
                   <TabPane tab={item.tabName} key={item.tabValue}>
-                    <div className={styles.flexColumn}>
+                    <div>
                       <div className={styles.drags}>
                         <Tree
                           selectable={false}
@@ -611,7 +612,18 @@ const Channel: React.FC = () => {
                   message.warning('行、列、值不能为空，请先选择');
                   return;
                 }
-                console.log(values);
+                if (isEmpty(clientData.value?.aggregator)) {
+                  message.warning('请先选择值的聚合类型');
+                  return;
+                }
+                const res = await add({
+                  customizeName: values.customizeName,
+                  desc: values.desc,
+                  pivot: clientData,
+                });
+                if (res.code === 0) {
+                  history.push('/analysis/list');
+                }
               }}
               submitter={{
                 render: () => {
@@ -675,7 +687,7 @@ const Channel: React.FC = () => {
                     },
                   ]}
                 />
-                <ProFormText name="desc" label="名称" placeholder="请输入名称" />
+                <ProFormText name="desc" label="描述" placeholder="请输入名称" />
               </>
             </ProForm>
           </div>

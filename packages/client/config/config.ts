@@ -132,12 +132,12 @@ export default defineConfig({
           path: '/analysis',
           redirect: '/analysis/list',
         },
-        // {
-        //   name: 'analysisList',
-        //   icon: 'smile',
-        //   path: '/analysis/list',
-        //   component: './analysis/list',
-        // },
+        {
+          name: 'analysisList',
+          icon: 'smile',
+          path: '/analysis/list',
+          component: './analysis/list',
+        },
         {
           name: 'create',
           icon: 'smile',

@@ -33,7 +33,7 @@ import { CustomizeEntity } from './customize.entity';
 export class CustomizeController {
   constructor(private customizeService: CustomizeService) {}
 
-  /** 门店列表 */
+  /** 分页列表 */
   @UseGuards(JwtGuard)
   @Get('/list')
   @ApiOkResponse({
@@ -51,7 +51,14 @@ export class CustomizeController {
       query,
     );
     return {
-      list: list,
+      list: list.map((item) => {
+        return {
+          name: item.customizeName,
+          analysisType: '1',
+          source: '1',
+          createTime: item.createTime,
+        };
+      }),
       total: total,
     };
   }
