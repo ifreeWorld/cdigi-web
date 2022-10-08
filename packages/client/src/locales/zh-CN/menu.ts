@@ -63,4 +63,7 @@ export default {
   'menu.analysis': '分析',
   'menu.analysis.analysisList': '分析管理',
   'menu.analysis.create': '自定义分析',
+  // 自定义
+  'menu.review': '回顾',
+  'menu.review.search': '库存销售查询',
 };

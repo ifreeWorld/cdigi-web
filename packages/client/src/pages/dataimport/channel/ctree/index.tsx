@@ -15,6 +15,7 @@ const CTree: React.FC<Props> = (props) => {
     const res = await getAllCustomer({});
     if (res.data[0] && res.data[0].id) {
       setCustomerId(res.data[0].id);
+      props.onSelect(res.data[0].id, res.data[0].customerType);
     }
     return res;
   });

@@ -11,15 +11,23 @@ import { StockModule } from '../stock/stock.module';
 import { SaleEntity } from '../sale/sale.entity';
 import { StockEntity } from '../stock/stock.entity';
 import { ConfigModule } from '../config/config.module';
+import { TransitModule } from '../transit/transit.module';
+import { TransitEntity } from '../transit/transit.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([CustomizeEntity, SaleEntity, StockEntity]),
+    TypeOrmModule.forFeature([
+      CustomizeEntity,
+      SaleEntity,
+      StockEntity,
+      TransitEntity,
+    ]),
     CustomerModule,
     ProductModule,
     StoreModule,
     SaleModule,
     StockModule,
+    TransitModule,
     ConfigModule,
   ],
   exports: [CustomizeService],

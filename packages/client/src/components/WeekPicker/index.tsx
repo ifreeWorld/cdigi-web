@@ -24,13 +24,14 @@ export const ProFormWeekPicker = (props: any) => {
 
 // 限制了8周的
 export const WeekRangePicker = (props: {
+  defaultValue: RangeValue;
   value: RangeValue;
   onChange: (v: RangeValue) => void;
 }) => {
   const [dates, setDates] = useState<RangeValue>(null);
   const [hackValue, setHackValue] = useState<RangeValue>(null);
   const [value, setValue] = useState<RangeValue>(null);
-  const { value: propValue, onChange, placeholder, ...extProps } = props;
+  const { value: propValue, defaultValue, onChange, placeholder, ...extProps } = props;
 
   useEffect(() => {
     setValue(propValue);
@@ -79,6 +80,7 @@ export const WeekRangePicker = (props: {
 
   return (
     <RangePicker
+      allowClear={false}
       picker="week"
       value={hackValue || value}
       disabledDate={disabledDate}

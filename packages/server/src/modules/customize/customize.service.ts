@@ -4,6 +4,7 @@ import {
   DataSource,
   FindOptionsWhere,
   In,
+  IsNull,
   LessThanOrEqual,
   MoreThanOrEqual,
   Repository,
@@ -36,6 +37,8 @@ import { StockEntity } from '../stock/stock.entity';
 import { CustomerEntity } from '../customer/customer.entity';
 import * as moment from 'moment';
 import { ConfigService } from '../config/config.service';
+import { TransitEntity } from '../transit/transit.entity';
+import { dateFormat } from 'src/constant/file';
 
 @Injectable()
 export class CustomizeService {
@@ -46,6 +49,8 @@ export class CustomizeService {
     private saleRepository: Repository<SaleEntity>,
     @InjectRepository(StockEntity)
     private stockRepository: Repository<StockEntity>,
+    @InjectRepository(TransitEntity)
+    private transitRepository: Repository<TransitEntity>,
     private customerService: CustomerService,
     private storeService: StoreService,
     private dataSource: DataSource,
@@ -510,7 +515,8 @@ export class CustomizeService {
    * @param ids
    */
   async saleAndStock(body: SaleAndStockDto, creatorId: number) {
-    const { startWeek, endWeek, customerId, productNames } = body;
+    const { startWeek, endWeek, customerId } = body;
+    let productNames = body.productNames;
     // 销售
     const saleWhere: FindOptionsWhere<SaleEntity> = {};
     if (validator.isNotEmpty(customerId)) {
@@ -553,6 +559,42 @@ export class CustomizeService {
       where: stockWhere,
     });
 
+    // 在途库存
+    const qb = this.dataSource
+      .getRepository(TransitEntity)
+      .createQueryBuilder('transit')
+      .select('eta')
+      .addSelect('product_name', 'productName')
+      .addSelect('sum(`quantity`)', 'quantity')
+      .where('warehousing_date is null');
+    if (validator.isNotEmpty(productNames)) {
+      qb.andWhere('product_name IN (:...productNames)', { productNames });
+    }
+    qb.andWhere(`creator_id = :creatorId`, { creatorId })
+      .groupBy('eta')
+      .addGroupBy('product_name')
+      .orderBy('eta', 'DESC');
+    const transitData = await qb.getRawMany();
+
+    // const transitWhere: FindOptionsWhere<TransitEntity> = {};
+    // if (validator.isNotEmpty(customerId)) {
+    //   transitWhere.customer = {
+    //     id: customerId,
+    //   };
+    // }
+    // if (validator.isNotEmpty(productNames)) {
+    //   transitWhere.productName = In(productNames);
+    // }
+    // transitWhere.warehousingDate = IsNull();
+    // setCreatorWhere(stockWhere, creatorId);
+    // const transitData = await this.transitRepository.find({
+    //   where: transitWhere,
+    //   order: {
+    //     warehousingDate: 'DESC',
+    //   },
+    // });
+    const etas = transitData.map((item) => item.eta);
+
     // 查询周开始日
     let weekStartIndex = '1';
     weekStartIndex = await this.configService.hget(
@@ -570,10 +612,28 @@ export class CustomizeService {
 
     const result = [];
     const weekArr = this.getWeekArr(startWeek, endWeek);
+
+    // 如果没传productNames，就查询所有的productNames
+    if (!productNames || productNames.length === 0) {
+      const res = await this.getAllValues('productName', 'sale', creatorId);
+      productNames = res.map((item) => item.value);
+    }
     productNames.forEach((productName) => {
       const temp = {
         productName,
+        transit: {},
       };
+      if (etas.length > 0) {
+        etas.forEach((eta) => {
+          const transit =
+            transitData.find(
+              (item) => item.eta === eta && item.productName === productName,
+            ) || {};
+          const k = eta ? moment(eta).format(dateFormat) : '';
+          // @ts-ignore
+          temp.transit[k] = transit.quantity || 0;
+        });
+      }
       weekArr.forEach((week) => {
         const sale =
           saleData.find(
@@ -604,12 +664,12 @@ export class CustomizeService {
 
     const diff = endWeek.diff(startWeek, 'weeks');
     const result = [];
-    result.push(start);
+    result.push(end);
     for (let i = 1; i < diff; i++) {
-      const temp = startWeek.clone().add(i, 'weeks');
+      const temp = endWeek.clone().subtract(i, 'weeks');
       result.push(temp.format('gggg-ww'));
     }
-    result.push(end);
+    result.push(start);
     return result;
   }
 }

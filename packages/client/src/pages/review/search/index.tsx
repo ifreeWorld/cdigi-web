@@ -1,17 +1,18 @@
-import { DatePicker } from 'antd';
+import { DatePicker, message } from 'antd';
 import { useRequest } from 'umi';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import moment, { Moment } from 'moment';
+import { isEmpty } from 'lodash';
 import { PageContainer } from '@ant-design/pro-layout';
-import styles from './style.less';
-import CTree from '@/pages/dataimport/channel/ctree';
-import { CustomerType } from '@/types/common';
+import CTree from '../../dataimport/channel/ctree';
+import { CustomerType } from '../../../types/common';
 import { getAllSale } from './service';
-import { getAllValues } from '@/pages/analysis/create/service';
+import { getAllValues } from '../../analysis/create/service';
 import { Select } from 'sensd';
-import { WeekRangePicker } from '@/components/WeekPicker';
+import { WeekRangePicker } from '../../../components/WeekPicker';
+import styles from './style.less';
 
 const Search = () => {
   const [customerId, setCustomerId] = useState<number>(0);
@@ -24,7 +25,7 @@ const Search = () => {
     setCustomerType(b);
   };
 
-  const { run } = useRequest(
+  const { run, data: tableData } = useRequest(
     async (params) => {
       return await getAllSale(params);
     },
@@ -37,45 +38,109 @@ const Search = () => {
     return await getAllValues('productName', 'sale');
   });
 
+  const lastWeek = useMemo(() => moment().subtract(1, 'weeks'), []);
+  const last2Week = useMemo(() => moment().subtract(2, 'weeks'), []);
+
   useEffect(() => {
     actionRef.current?.reset?.();
+    if (isEmpty(searchRef.current?.getFieldValue('week'))) {
+      searchRef.current?.setFieldsValue?.({
+        week: [last2Week, lastWeek],
+      });
+    }
     searchRef.current?.submit?.();
   }, [customerId]);
 
-  const columns: ProColumns[] = [
-    {
-      title: '时间',
-      dataIndex: 'week',
-      colSize: 2,
-      renderFormItem: (item, { type, fieldProps }) => {
-        if (type === 'form') {
-          return null;
-        }
+  useEffect(() => {}, []);
 
-        return <WeekRangePicker {...fieldProps} />;
+  const columns = useMemo(() => {
+    const c: ProColumns[] = [
+      {
+        title: '时间',
+        dataIndex: 'week',
+        renderFormItem: (item, { type, fieldProps }) => {
+          if (type === 'form') {
+            return null;
+          }
+
+          return <WeekRangePicker {...fieldProps} />;
+        },
+        formItemProps: {
+          rules: [
+            {
+              required: true,
+              message: '此项为必填项',
+            },
+          ],
+        },
+        hideInTable: true,
       },
-    },
-    {
-      title: '产品型号',
-      dataIndex: 'productNames',
-      renderFormItem: (item, { type }) => {
-        if (type === 'form') {
-          return null;
-        }
-        return (
-          <Select
-            mode="multiple"
-            showDropdownSearch
-            showCheckAll
-            showConfirm
-            selectorSimpleMode
-            options={allProductNames}
-            selectAllText="全选"
-          />
-        );
+      {
+        title: '产品型号',
+        dataIndex: 'productNames',
+        renderFormItem: (item, { type }) => {
+          if (type === 'form') {
+            return null;
+          }
+          return (
+            <Select
+              mode="multiple"
+              showDropdownSearch
+              showCheckAll
+              showConfirm
+              selectorSimpleMode
+              options={allProductNames}
+              selectAllText="全选"
+            />
+          );
+        },
+        hideInTable: true,
       },
-    },
-  ];
+      {
+        title: '产品型号',
+        dataIndex: 'productName',
+        hideInSearch: true,
+      },
+    ];
+    if (!tableData || tableData.length === 0) {
+      return c;
+    }
+    let keys = Object.keys(tableData[0]);
+    const etas = Object.keys(tableData[0].transit || {}) || [];
+    const etaColumn: ProColumns = {
+      title: 'eta',
+      children: [],
+    };
+    etas.forEach((eta) => {
+      etaColumn.children.push({
+        title: eta || '空',
+        dataIndex: ['transit', eta],
+        hideInSearch: true,
+      });
+    });
+    c.push(etaColumn);
+    keys.forEach((key) => {
+      if (key !== 'productName' && key !== 'transit') {
+        c.push({
+          title: key,
+          hideInSearch: true,
+          children: [
+            {
+              title: '销量',
+              dataIndex: [key, 'sale'],
+              hideInSearch: true,
+            },
+            {
+              title: '库存',
+              dataIndex: [key, 'stock'],
+              hideInSearch: true,
+            },
+          ],
+        });
+      }
+    });
+    return c;
+  }, [tableData]);
 
   return (
     <PageContainer className={styles.pageContainer}>
@@ -87,11 +152,13 @@ const Search = () => {
         <div className={styles.right}>
           <ProTable
             actionRef={actionRef}
-            rowKey="id"
+            rowKey="productName"
             formRef={searchRef}
             search={{
               labelWidth: 'auto',
             }}
+            scroll={{ x: 'max-content' }}
+            pagination={false}
             request={async (params) => {
               if (!customerId) {
                 return {
@@ -100,13 +167,14 @@ const Search = () => {
                   success: true,
                 };
               }
+              if (!params.week || params.week?.length < 2) {
+                return;
+              }
               const res = await run({
-                ...params,
                 customerId,
-                startWeek: week[0],
-                endWeek,
-                customerId,
-                productNames,
+                startWeek: moment(params.week[0]).format('gggg-ww'),
+                endWeek: moment(params.week[1]).format('gggg-ww'),
+                productNames: params.productNames,
               });
               return {
                 data: res,
