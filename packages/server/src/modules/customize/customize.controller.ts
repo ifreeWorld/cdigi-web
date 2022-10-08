@@ -24,6 +24,7 @@ import {
   CustomizePivotDto,
   CustomizePivotResult,
   CustomizeValuesDto,
+  SaleAndStockDto,
 } from './customize.dto';
 import { CustomizeEntity } from './customize.entity';
 
@@ -107,6 +108,17 @@ export class CustomizeController {
       body.type,
       currentUser.id,
     );
+    return list;
+  }
+
+  /** 获取销售库存数据 */
+  @UseGuards(JwtGuard)
+  @Post('/saleAndStock')
+  async saleAndStock(
+    @Body() body: SaleAndStockDto,
+    @CurrentUser() currentUser,
+  ) {
+    const list = await this.customizeService.saleAndStock(body, currentUser.id);
     return list;
   }
 

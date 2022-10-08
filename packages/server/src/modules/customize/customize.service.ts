@@ -1,12 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindOptionsWhere, Repository } from 'typeorm';
+import {
+  DataSource,
+  FindOptionsWhere,
+  In,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 import * as validator from 'class-validator';
 import { CustomizeEntity } from './customize.entity';
 import {
   SearchDto,
   CustomizeCreateDto,
   CustomizeUpdateDto,
+  SaleAndStockDto,
 } from './customize.dto';
 import { CustomResponse, ERROR } from 'src/constant/error';
 import { indexOfLike, setCreatorWhere } from '../../utils';
@@ -26,15 +34,22 @@ import { StoreService } from '../store/store.service';
 import { SaleEntity } from '../sale/sale.entity';
 import { StockEntity } from '../stock/stock.entity';
 import { CustomerEntity } from '../customer/customer.entity';
+import * as moment from 'moment';
+import { ConfigService } from '../config/config.service';
 
 @Injectable()
 export class CustomizeService {
   constructor(
     @InjectRepository(CustomizeEntity)
     private repository: Repository<CustomizeEntity>,
+    @InjectRepository(SaleEntity)
+    private saleRepository: Repository<SaleEntity>,
+    @InjectRepository(StockEntity)
+    private stockRepository: Repository<StockEntity>,
     private customerService: CustomerService,
     private storeService: StoreService,
     private dataSource: DataSource,
+    private configService: ConfigService,
   ) {}
 
   /**
@@ -488,5 +503,113 @@ export class CustomizeService {
   async delete(ids: number[]): Promise<boolean> {
     await this.repository.delete(ids);
     return true;
+  }
+
+  /**
+   * 获取销售库存数据
+   * @param ids
+   */
+  async saleAndStock(body: SaleAndStockDto, creatorId: number) {
+    const { startWeek, endWeek, customerId, productNames } = body;
+    // 销售
+    const saleWhere: FindOptionsWhere<SaleEntity> = {};
+    if (validator.isNotEmpty(customerId)) {
+      saleWhere.customer = {
+        id: customerId,
+      };
+    }
+    if (validator.isNotEmpty(productNames)) {
+      saleWhere.productName = In(productNames);
+    }
+    if (validator.isNotEmpty(startWeek)) {
+      saleWhere.week = MoreThanOrEqual(startWeek);
+    }
+    if (validator.isNotEmpty(endWeek)) {
+      saleWhere.week = LessThanOrEqual(endWeek);
+    }
+    setCreatorWhere(saleWhere, creatorId);
+    const saleData = await this.saleRepository.find({
+      where: saleWhere,
+    });
+
+    // 库存
+    const stockWhere: FindOptionsWhere<SaleEntity> = {};
+    if (validator.isNotEmpty(customerId)) {
+      stockWhere.customer = {
+        id: customerId,
+      };
+    }
+    if (validator.isNotEmpty(productNames)) {
+      stockWhere.productName = In(productNames);
+    }
+    if (validator.isNotEmpty(startWeek)) {
+      stockWhere.week = MoreThanOrEqual(startWeek);
+    }
+    if (validator.isNotEmpty(endWeek)) {
+      stockWhere.week = LessThanOrEqual(endWeek);
+    }
+    setCreatorWhere(stockWhere, creatorId);
+    const stockData = await this.stockRepository.find({
+      where: stockWhere,
+    });
+
+    // 查询周开始日
+    let weekStartIndex = '1';
+    weekStartIndex = await this.configService.hget(
+      'getWeekStartIndex',
+      String(creatorId),
+    );
+    if (!weekStartIndex) {
+      weekStartIndex = '1';
+    }
+    moment.locale('zh-cn', {
+      week: {
+        dow: Number(weekStartIndex),
+      },
+    });
+
+    const result = [];
+    const weekArr = this.getWeekArr(startWeek, endWeek);
+    productNames.forEach((productName) => {
+      const temp = {
+        productName,
+      };
+      weekArr.forEach((week) => {
+        const sale =
+          saleData.find(
+            (item) => item.week === week && item.productName === productName,
+          )?.quantity || 0;
+        const stock =
+          stockData.find(
+            (item) => item.week === week && item.productName === productName,
+          )?.quantity || 0;
+        if (!temp[week]) {
+          temp[week] = {};
+        }
+        temp[week].sale = sale;
+        temp[week].stock = stock;
+      });
+      result.push(temp);
+    });
+    return result;
+  }
+
+  getWeekArr(start: string, end: string) {
+    let year = Number(start.split('-')[0]);
+    let weekalone = Number(start.split('-')[1]);
+    const startWeek = moment().year(year).week(weekalone);
+    year = Number(end.split('-')[0]);
+    weekalone = Number(end.split('-')[1]);
+    const endWeek = moment().year(year).week(weekalone);
+
+    const diff = endWeek.diff(startWeek, 'weeks');
+    const result = [];
+    result.push(start);
+    for (let i = 1; i < diff; i++) {
+      const temp = startWeek.clone().add(i, 'weeks');
+      result.push(temp.format('gggg-ww'));
+    }
+    result.push(end);
+    return result;
   }
 }

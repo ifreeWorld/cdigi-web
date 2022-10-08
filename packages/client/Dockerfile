@@ -10,8 +10,9 @@ RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM"
 WORKDIR /code
 COPY package.json /code/package.json
 COPY yarn.lock /code/yarn.lock
-RUN yarn install --frozen-lockfile --registry=https://registry.npmmirror.com/
+COPY vendor /code/vendor
 COPY . /code
+RUN yarn install --frozen-lockfile --registry=https://registry.npmmirror.com/
 
 RUN yarn build
 

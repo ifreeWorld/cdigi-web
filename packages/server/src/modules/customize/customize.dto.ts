@@ -3,6 +3,7 @@ import { PaginationDto } from '../../dto';
 import { CustomizeEntity } from './customize.entity';
 import { BaseResult } from 'src/interface/base.interface';
 import { CustomerType } from '../tag/customerType.enum';
+import { CustomerEntity } from '../customer/customer.entity';
 
 export class SearchDto extends PaginationDto {
   customizeName?: CustomizeEntity['customizeName'];
@@ -155,4 +156,23 @@ export class StockWideTable {
   storeId?: number;
   storeName?: string;
   date?: Date;
+}
+
+export class SaleAndStockDto {
+  @IsNotEmpty({
+    message: '开始周不能为空',
+  })
+  startWeek: string;
+
+  @IsNotEmpty({
+    message: '结束周不能为空',
+  })
+  endWeek: string;
+
+  @IsNotEmpty({
+    message: '客户id不能为空',
+  })
+  customerId: CustomerEntity['id'];
+
+  productNames?: string[];
 }

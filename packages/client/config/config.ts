@@ -147,6 +147,23 @@ export default defineConfig({
       ],
     },
     {
+      path: '/review',
+      name: 'review',
+      icon: 'dashboard',
+      routes: [
+        {
+          path: '/review',
+          redirect: '/review/search',
+        },
+        {
+          name: 'search',
+          icon: 'smile',
+          path: '/review/search',
+          component: './review/search',
+        },
+      ],
+    },
+    {
       path: '/dashboard',
       name: 'dashboard',
       icon: 'dashboard',
