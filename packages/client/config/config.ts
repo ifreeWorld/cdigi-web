@@ -138,6 +138,12 @@ export default defineConfig({
           path: '/review/search',
           component: './review/search',
         },
+        {
+          name: 'suggest',
+          icon: 'smile',
+          path: '/review/suggest',
+          component: './review/suggest',
+        },
       ],
     },
     {

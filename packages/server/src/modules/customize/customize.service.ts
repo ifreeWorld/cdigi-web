@@ -49,8 +49,8 @@ export class CustomizeService {
     private saleRepository: Repository<SaleEntity>,
     @InjectRepository(StockEntity)
     private stockRepository: Repository<StockEntity>,
-    @InjectRepository(TransitEntity)
-    private transitRepository: Repository<TransitEntity>,
+    @InjectRepository(CustomerEntity)
+    private customerRepository: Repository<CustomerEntity>,
     private customerService: CustomerService,
     private storeService: StoreService,
     private dataSource: DataSource,
@@ -567,6 +567,9 @@ export class CustomizeService {
       .addSelect('product_name', 'productName')
       .addSelect('sum(`quantity`)', 'quantity')
       .where('warehousing_date is null');
+    if (validator.isNotEmpty(customerId)) {
+      qb.andWhere('customer_id = :customerId', { customerId });
+    }
     if (validator.isNotEmpty(productNames)) {
       qb.andWhere('product_name IN (:...productNames)', { productNames });
     }
@@ -575,24 +578,6 @@ export class CustomizeService {
       .addGroupBy('product_name')
       .orderBy('eta', 'DESC');
     const transitData = await qb.getRawMany();
-
-    // const transitWhere: FindOptionsWhere<TransitEntity> = {};
-    // if (validator.isNotEmpty(customerId)) {
-    //   transitWhere.customer = {
-    //     id: customerId,
-    //   };
-    // }
-    // if (validator.isNotEmpty(productNames)) {
-    //   transitWhere.productName = In(productNames);
-    // }
-    // transitWhere.warehousingDate = IsNull();
-    // setCreatorWhere(stockWhere, creatorId);
-    // const transitData = await this.transitRepository.find({
-    //   where: transitWhere,
-    //   order: {
-    //     warehousingDate: 'DESC',
-    //   },
-    // });
     const etas = transitData.map((item) => item.eta);
 
     // 查询周开始日
@@ -671,5 +656,81 @@ export class CustomizeService {
     }
     result.push(start);
     return result;
+  }
+
+  async getUploadSummary(week: string, creatorId: number) {
+    const customerData = await this.customerRepository.find({
+      where: {
+        creatorId,
+      },
+    });
+    const sales = await this.dataSource
+      .getRepository(SaleEntity)
+      .createQueryBuilder('sale')
+      .select('customer_id', 'customerId')
+      .distinct(true)
+      .where('creator_id = :creatorId', { creatorId })
+      .andWhere('week = :week', { week })
+      .getRawMany();
+    const stocks = await this.dataSource
+      .getRepository(StockEntity)
+      .createQueryBuilder('stock')
+      .select('customer_id', 'customerId')
+      .distinct(true)
+      .where('creator_id = :creatorId', { creatorId })
+      .andWhere('week = :week', { week })
+      .getRawMany();
+    const saleData = sales.map((item) => item.customerId);
+    const stockData = stocks.map((item) => item.customerId);
+    const data = [
+      {
+        key: 'vendor',
+        title: '品牌商',
+        saleTotal: 0,
+        saleNumber: 0,
+        stockTotal: 0,
+        stockNumber: 0,
+        noUpload: [],
+      },
+      {
+        key: 'disty',
+        title: '代理商',
+        saleTotal: 0,
+        saleNumber: 0,
+        stockTotal: 0,
+        stockNumber: 0,
+        noUpload: [],
+      },
+      {
+        key: 'dealer',
+        title: '经销商',
+        saleTotal: 0,
+        saleNumber: 0,
+        stockTotal: 0,
+        stockNumber: 0,
+        noUpload: [],
+      },
+    ];
+    customerData.forEach((item) => {
+      const { customerType, id, customerName } = item;
+      const index = customerType - 1;
+      let flag = false;
+      if (stockData.includes(id)) {
+        data[index].stockNumber += 1;
+      } else {
+        flag = true;
+      }
+      if (saleData.includes(id)) {
+        data[index].saleNumber += 1;
+      } else {
+        flag = true;
+      }
+      if (flag) {
+        data[index].noUpload.push(customerName);
+      }
+      data[index].stockTotal += 1;
+      data[index].saleTotal += 1;
+    });
+    return data;
   }
 }

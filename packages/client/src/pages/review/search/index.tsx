@@ -58,6 +58,7 @@ const Search = () => {
       {
         title: '时间',
         dataIndex: 'week',
+        colSize: 2,
         renderFormItem: (item, { type, fieldProps }) => {
           if (type === 'form') {
             return null;
@@ -105,11 +106,12 @@ const Search = () => {
     if (!tableData || tableData.length === 0) {
       return c;
     }
-    let keys = Object.keys(tableData[0]);
+    const keys = Object.keys(tableData[0]);
     const etas = Object.keys(tableData[0].transit || {}) || [];
     const etaColumn: ProColumns = {
       title: 'eta',
       children: [],
+      hideInSearch: true,
     };
     etas.forEach((eta) => {
       etaColumn.children.push({

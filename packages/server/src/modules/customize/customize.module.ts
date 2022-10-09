@@ -13,6 +13,7 @@ import { StockEntity } from '../stock/stock.entity';
 import { ConfigModule } from '../config/config.module';
 import { TransitModule } from '../transit/transit.module';
 import { TransitEntity } from '../transit/transit.entity';
+import { CustomerEntity } from '../customer/customer.entity';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { TransitEntity } from '../transit/transit.entity';
       SaleEntity,
       StockEntity,
       TransitEntity,
+      CustomerEntity,
     ]),
     CustomerModule,
     ProductModule,

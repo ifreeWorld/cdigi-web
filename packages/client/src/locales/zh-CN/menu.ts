@@ -66,4 +66,5 @@ export default {
   // 自定义
   'menu.review': '回顾',
   'menu.review.search': '库存销售查询',
+  'menu.review.suggest': '推荐订单',
 };

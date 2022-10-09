@@ -122,6 +122,20 @@ export class CustomizeController {
     return list;
   }
 
+  /** 获取销售库存数据 */
+  @UseGuards(JwtGuard)
+  @Get('/getUploadSummary')
+  async getUploadSummary(
+    @Query('week') week: string,
+    @CurrentUser() currentUser,
+  ) {
+    const list = await this.customizeService.getUploadSummary(
+      week,
+      currentUser.id,
+    );
+    return list;
+  }
+
   /** 创建 */
   @UseGuards(JwtGuard)
   @Post('/add')

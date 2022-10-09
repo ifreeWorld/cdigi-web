@@ -2,6 +2,7 @@ import { ValidationPipe, INestApplication } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NestFactory } from '@nestjs/core';
 import * as fs from 'fs';
+import * as bodyParser from 'body-parser';
 import 'moment/locale/zh-cn';
 import { AppModule } from './app.module';
 import { appLogger } from './logger';
@@ -28,6 +29,9 @@ async function bootstrap() {
     new ErrorsInterceptor(),
   );
   app.useGlobalFilters(new AppExceptionFilter());
+  app.use(bodyParser.json({ limit: '50mb' }));
+  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+  app.enableCors();
 
   const options = new DocumentBuilder()
     .addBearerAuth()
