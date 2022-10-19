@@ -16,6 +16,7 @@ import { StockModule } from './modules/stock/stock.module';
 import { SaleModule } from './modules/sale/sale.module';
 import { TransitModule } from './modules/transit/transit.module';
 import { CustomizeModule } from './modules/customize/customize.module';
+import { ReportModule } from './modules/report/report.module';
 import { REDIS_CONFIG } from './constant/app.config';
 
 @Module({
@@ -38,6 +39,7 @@ import { REDIS_CONFIG } from './constant/app.config';
     SaleModule,
     TransitModule,
     CustomizeModule,
+    ReportModule,
     RedisModule.forRoot({
       config: {
         port: REDIS_CONFIG.port,

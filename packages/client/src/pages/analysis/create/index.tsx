@@ -1,5 +1,5 @@
 import { Tabs, message, Tree, Button } from 'antd';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import classNames from 'classnames';
 import {
   FilterOutlined,
@@ -11,7 +11,7 @@ import {
 import { history } from 'umi';
 import { PageContainer } from '@ant-design/pro-layout';
 import type { Key } from 'rc-tree/lib/interface';
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { DndProvider, DragSourceMonitor, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import styles from './style.less';
 import OperationModal from './components/OperationModal';
@@ -103,10 +103,12 @@ const DragBox = ({
   option,
   canDrag,
   children,
+  end,
 }: {
   option: Option;
   canDrag: () => boolean;
   children: JSX.Element | string;
+  end?: (item: Option, monitor: DragSourceMonitor<Option, unknown>) => void;
 }) => {
   const [{ opacity }, drag] = useDrag(
     () => ({
@@ -116,6 +118,7 @@ const DragBox = ({
       collect: (monitor) => ({
         opacity: monitor.isDragging() ? 0.4 : 1,
       }),
+      end,
     }),
     [option, canDrag],
   );
@@ -132,11 +135,13 @@ const DropBox = ({
   list,
   config,
   onOpenDetail,
+  onDragOut,
 }: {
   onDrop: any;
   list: DropMapItem[];
   config: DropConfig;
   onOpenDetail: (option: Option, key: DropKeyEnum) => void;
+  onDragOut: (key: DropKeyEnum, value: Option['value']) => void;
 }) => {
   const [{ isOver, canDrop }, drop] = useDrop(
     {
@@ -172,6 +177,13 @@ const DropBox = ({
               option={option}
               canDrag={() => {
                 return true;
+              }}
+              end={(item, monitor) => {
+                const { value } = item;
+                const didDrop = monitor.didDrop();
+                if (!didDrop) {
+                  onDragOut(config.key, value);
+                }
               }}
             >
               <div className={styles.dropItem}>
@@ -212,6 +224,7 @@ const Channel: React.FC = () => {
     value: string;
     valueLabel: string;
     filterLabel: string;
+    sort: string[];
   }>({
     list: [],
     row: '',
@@ -221,6 +234,7 @@ const Channel: React.FC = () => {
     value: '',
     valueLabel: '',
     filterLabel: '',
+    sort: [],
   });
 
   const treeData: TreeData[] = useMemo(() => {
@@ -235,25 +249,25 @@ const Channel: React.FC = () => {
             title: '产品型号',
             key: 'productName',
             checkable: true,
-            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+            supportType: [DropKeyEnum.filter, DropKeyEnum.row, DropKeyEnum.column],
           },
           {
             title: '一级分类',
             key: 'categoryFirstName',
             checkable: true,
-            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+            supportType: [DropKeyEnum.filter, DropKeyEnum.row, DropKeyEnum.column],
           },
           {
             title: '二级分类',
             key: 'categorySecondName',
             checkable: true,
-            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+            supportType: [DropKeyEnum.filter, DropKeyEnum.row, DropKeyEnum.column],
           },
           {
             title: '三级分类',
             key: 'categoryThirdName',
             checkable: true,
-            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+            supportType: [DropKeyEnum.filter, DropKeyEnum.row, DropKeyEnum.column],
           },
         ],
       },
@@ -266,25 +280,31 @@ const Channel: React.FC = () => {
             title: '年',
             key: 'year',
             checkable: true,
-            supportType: [DropKeyEnum.row],
+            supportType: [DropKeyEnum.filter, DropKeyEnum.row, DropKeyEnum.column],
           },
           {
             title: '季度',
             key: 'quarter',
             checkable: true,
-            supportType: [DropKeyEnum.row],
+            supportType: [DropKeyEnum.filter, DropKeyEnum.row, DropKeyEnum.column],
+          },
+          {
+            title: '月',
+            key: 'month',
+            checkable: true,
+            supportType: [DropKeyEnum.filter, DropKeyEnum.row, DropKeyEnum.column],
           },
           {
             title: '月-周',
-            key: 'monthWeek',
+            key: 'monthAndWeek',
             checkable: true,
-            supportType: [DropKeyEnum.row],
+            supportType: [DropKeyEnum.filter, DropKeyEnum.row, DropKeyEnum.column],
           },
           {
             title: '周',
             key: 'weekalone',
             checkable: true,
-            supportType: [DropKeyEnum.row],
+            supportType: [DropKeyEnum.filter, DropKeyEnum.row, DropKeyEnum.column],
           },
         ],
       },
@@ -300,8 +320,20 @@ const Channel: React.FC = () => {
             supportType: [DropKeyEnum.filter, DropKeyEnum.column],
           },
           {
-            title: '客户类型',
+            title: '渠道层级',
             key: 'customerType',
+            checkable: true,
+            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+          },
+          {
+            title: '国家',
+            key: 'country',
+            checkable: true,
+            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+          },
+          {
+            title: '区域',
+            key: 'region',
             checkable: true,
             supportType: [DropKeyEnum.filter, DropKeyEnum.column],
           },
@@ -315,25 +347,6 @@ const Channel: React.FC = () => {
           {
             title: '门店名称',
             key: 'storeName',
-            checkable: true,
-            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
-          },
-        ],
-      },
-      {
-        title: '区域',
-        key: 'geography',
-        checkable: false,
-        children: [
-          {
-            title: '国家',
-            key: 'country',
-            checkable: true,
-            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
-          },
-          {
-            title: '区域',
-            key: 'region',
             checkable: true,
             supportType: [DropKeyEnum.filter, DropKeyEnum.column],
           },
@@ -378,8 +391,20 @@ const Channel: React.FC = () => {
             supportType: [DropKeyEnum.filter, DropKeyEnum.column],
           },
           {
-            title: '采购客户类型',
+            title: '采购渠道层级',
             key: 'buyerCustomerType',
+            checkable: true,
+            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+          },
+          {
+            title: '采购客户的国家',
+            key: 'buyerCountry',
+            checkable: true,
+            supportType: [DropKeyEnum.filter, DropKeyEnum.column],
+          },
+          {
+            title: '采购客户的区域',
+            key: 'buyerRegion',
             checkable: true,
             supportType: [DropKeyEnum.filter, DropKeyEnum.column],
           },
@@ -435,10 +460,26 @@ const Channel: React.FC = () => {
       if (!resultMap[key]) {
         resultMap[key] = [];
       }
-      resultMap[key].push(option);
+      // 值默认给求和
+      let temp: DropMapItem = {
+        ...option,
+      };
+      if (key === DropKeyEnum.value) {
+        temp.detail = 'sum';
+      }
+      resultMap[key].push(temp);
     }
     setDropListMap(resultMap);
     setCheckList(resultList);
+  };
+
+  const onDragOut = (k: DropKeyEnum, value: string) => {
+    const resultMap = {
+      ...dropListMap,
+    };
+    resultMap[k] = resultMap[k].filter((item) => item.value !== value);
+    setDropListMap(resultMap);
+    setCheckList(checkList.filter((item) => item !== value));
   };
 
   const titleRender = (nodeData: TreeData) => {
@@ -534,6 +575,41 @@ const Channel: React.FC = () => {
     };
   }, [dropListMap, detailConfig]);
 
+  const getData = async () => {
+    const res = await getPivotData(clientData);
+    setPivotData({
+      ...res.data,
+      rowLabel: dropListMap.row?.[0]?.label || '',
+      columnLabel: dropListMap.column?.[0]?.label || '',
+      valueLabel: dropListMap.value?.[0]?.label || '',
+      filterLabel: dropListMap.filter?.map((item) => item.label).join('、') || '',
+    });
+  };
+
+  useEffect(() => {
+    const { row, column, value } = clientData;
+    if (!value.field && !row.field && !column.field) {
+      return;
+    }
+    if (!value.field) {
+      message.warning('请选择值');
+      return;
+    }
+    if (!value.aggregator) {
+      message.warning('请选择值的聚合');
+      return;
+    }
+    if (!row.field) {
+      message.warning('请选择行');
+      return;
+    }
+    if (!column.field) {
+      message.warning('请选择列');
+      return;
+    }
+    getData();
+  }, [clientData]);
+
   return (
     <PageContainer className={styles.pageContainer}>
       <div className={styles.container}>
@@ -548,7 +624,7 @@ const Channel: React.FC = () => {
               {data.map((item) => {
                 return (
                   <TabPane tab={item.tabName} key={item.tabValue}>
-                    <div>
+                    <div className={styles.tabItem}>
                       <div className={styles.drags}>
                         <Tree
                           selectable={false}
@@ -586,6 +662,7 @@ const Channel: React.FC = () => {
                                     });
                                     setVisible(true);
                                   }}
+                                  onDragOut={onDragOut}
                                 />
                               </div>
                             );
@@ -645,29 +722,20 @@ const Channel: React.FC = () => {
                           value: '',
                           valueLabel: '',
                           filterLabel: '',
+                          sort: [],
                         });
                       }}
                       key="clear"
                     >
                       清空
                     </Button>,
-                    <Button
-                      htmlType="button"
-                      onClick={async () => {
-                        const res = await getPivotData(clientData);
-                        setPivotData({
-                          ...res.data,
-                          rowLabel: dropListMap.row?.[0]?.label || '',
-                          columnLabel: dropListMap.column?.[0]?.label || '',
-                          valueLabel: dropListMap.value?.[0]?.label || '',
-                          filterLabel:
-                            dropListMap.filter?.map((item) => item.label).join('、') || '',
-                        });
-                      }}
-                      key="test"
-                    >
-                      测试
-                    </Button>,
+                    // <Button
+                    //   htmlType="button"
+                    //   onClick={getData}
+                    //   key="test"
+                    // >
+                    //   测试
+                    // </Button>,
                     <Button htmlType="submit" type="primary" key="create">
                       创建自定义分析
                     </Button>,
@@ -701,6 +769,7 @@ const Channel: React.FC = () => {
               yFieldLabel={pivotData.valueLabel}
               seriesFieldLabel={pivotData.columnLabel}
               filterLabel={pivotData.filterLabel}
+              sort={pivotData.sort}
             />
           </div>
           <div className={styles.bottom}>
@@ -713,6 +782,7 @@ const Channel: React.FC = () => {
               yFieldLabel={pivotData.valueLabel}
               seriesFieldLabel={pivotData.columnLabel}
               filterLabel={pivotData.filterLabel}
+              sort={pivotData.sort}
             />
           </div>
         </div>

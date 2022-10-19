@@ -144,6 +144,12 @@ export default defineConfig({
           path: '/review/suggest',
           component: './review/suggest',
         },
+        {
+          name: 'weekly',
+          icon: 'smile',
+          path: '/review/weekly',
+          component: './review/weekly',
+        },
       ],
     },
     {

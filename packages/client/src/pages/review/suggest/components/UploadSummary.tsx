@@ -3,11 +3,27 @@ import { Table } from 'antd';
 import { getUploadSummary } from '../service';
 import styles from '../style.less';
 import type { Summary } from '../data.d';
+import { useEffect } from 'react';
 
-const UploadSummary = () => {
-  const { data } = useRequest(async (params) => {
-    return await getUploadSummary(params);
-  });
+interface Props {
+  week: string;
+}
+
+const UploadSummary = (props: Props) => {
+  const { data, run } = useRequest(
+    async (params) => {
+      return await getUploadSummary(params);
+    },
+    {
+      manual: true,
+    },
+  );
+
+  useEffect(() => {
+    run({
+      week: props.week,
+    });
+  }, [props.week]);
 
   const columns = [
     {
@@ -37,7 +53,7 @@ const UploadSummary = () => {
 
   return (
     <div className={styles.box}>
-      <Table columns={columns} dataSource={data} />
+      <Table columns={columns} dataSource={data} pagination={false} />
     </div>
   );
 };

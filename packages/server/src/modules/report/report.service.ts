@@ -5,19 +5,24 @@ import * as validator from 'class-validator';
 import * as moment from 'moment';
 import { plainToInstance } from 'class-transformer';
 import { ReportEntity } from './report.entity';
-import { SearchDto, ReportCreateDto, ReportUpdateDto } from './report.dto';
+import {
+  SearchDto,
+  ReportCreateDto,
+  ReportUpdateDto,
+  SummaryDto,
+} from './report.dto';
 import { ERROR, ErrorConstant } from 'src/constant/error';
 import { setCreatorWhere } from '../../utils';
-import { TagService } from '../tag/tag.service';
 import { ConfigService } from '../config/config.service';
 import { dateFormat } from 'src/constant/file';
+import { getRingRatio } from './util';
+import { CustomerType } from '../tag/customerType.enum';
 
 @Injectable()
 export class ReportService {
   constructor(
     @InjectRepository(ReportEntity)
     private repository: Repository<ReportEntity>,
-    private tagService: TagService,
     private dataSource: DataSource,
     private configService: ConfigService,
   ) {}
@@ -52,7 +57,7 @@ export class ReportService {
    */
   async findAll(creatorId: number, query: SearchDto): Promise<ReportEntity[]> {
     const where: FindOptionsWhere<ReportEntity> = {};
-    const { date, reportType } = query;
+    const { date, reportType, summary } = query;
     if (validator.isNotEmpty(date)) {
       where.date = date;
     }
@@ -60,9 +65,163 @@ export class ReportService {
       where.reportType = reportType;
     }
     setCreatorWhere(where, creatorId);
-    return await this.repository.find({
+    const data = await this.repository.find({
       where: where,
     });
+    const res = [];
+    for (let i = 0; i < data.length; i++) {
+      const productNames = data[i].productNames;
+      const summaryData = await this.summary(creatorId, {
+        date,
+        productNames,
+        reportType: 1,
+      });
+      res[i] = {
+        ...data[i],
+        saleRingRatio: summaryData.saleRingRatio,
+        stockRingRatio: summaryData.stockRingRatio,
+      };
+    }
+    return res;
+  }
+
+  /**
+   * 汇总
+   */
+  async summary(
+    creatorId: number,
+    query: SummaryDto,
+  ): Promise<{
+    saleRingRatio: Record<CustomerType, number>;
+    stockRingRatio: Record<CustomerType, number>;
+  }> {
+    const { date, productNames, reportType } = query;
+    // 查询周开始日
+    let weekStartIndex = '1';
+    weekStartIndex = await this.configService.hget(
+      'getWeekStartIndex',
+      String(creatorId),
+    );
+    if (!weekStartIndex) {
+      weekStartIndex = '1';
+    }
+    moment.locale('zh-cn', {
+      week: {
+        dow: Number(weekStartIndex),
+      },
+    });
+
+    let saleRingRatio = {
+      [CustomerType.vendor]: 0,
+      [CustomerType.disty]: 0,
+      [CustomerType.dealer]: 0,
+    };
+    let stockRingRatio = {
+      [CustomerType.vendor]: 0,
+      [CustomerType.disty]: 0,
+      [CustomerType.dealer]: 0,
+    };
+
+    // 周报
+    if (reportType === 1) {
+      const lastWeek = moment(date, 'gggg-ww')
+        .subtract(7, 'day')
+        .format('gggg-ww');
+      const sql = `SELECT s.*, c.customer_type FROM tbl_stock s LEFT JOIN tbl_customer c ON s.customer_id = c.id`;
+      const saleQb = this.dataSource
+        .createQueryBuilder()
+        .select('t.week')
+        .addSelect('t.customer_type', 'customerType')
+        .addSelect('sum(t.quantity)', 'quantity')
+        .where('week IN (:...dates)', { dates: [lastWeek, date] })
+        .andWhere('product_name IN (:...productNames)', {
+          productNames: productNames.split(';'),
+        })
+        .andWhere(`creator_id = :creatorId`, { creatorId })
+        .from('(' + sql + ')', 't')
+        .groupBy('week')
+        .addGroupBy('customerType')
+        .orderBy('week', 'ASC');
+      let curV = {
+        [CustomerType.vendor]: 0,
+        [CustomerType.disty]: 0,
+        [CustomerType.dealer]: 0,
+      };
+      let lastV = {
+        [CustomerType.vendor]: 0,
+        [CustomerType.disty]: 0,
+        [CustomerType.dealer]: 0,
+      };
+      const saleData = await saleQb.getRawMany();
+      saleData.forEach((item) => {
+        if (item.week === date) {
+          curV[item.customerType] += Number(item.quantity);
+        } else if (item.week === lastWeek) {
+          lastV[item.customerType] += Number(item.quantity);
+        }
+      });
+      saleRingRatio[CustomerType.vendor] = getRingRatio(
+        curV[CustomerType.vendor],
+        lastV[CustomerType.vendor],
+      );
+      saleRingRatio[CustomerType.disty] = getRingRatio(
+        curV[CustomerType.disty],
+        lastV[CustomerType.disty],
+      );
+      saleRingRatio[CustomerType.dealer] = getRingRatio(
+        curV[CustomerType.dealer],
+        lastV[CustomerType.dealer],
+      );
+
+      const stockQb = this.dataSource
+        .createQueryBuilder()
+        .select('week')
+        .addSelect('t.customer_type', 'customerType')
+        .addSelect('sum(`quantity`)', 'quantity')
+        .where('week IN (:...dates)', { dates: [lastWeek, date] })
+        .andWhere('product_name IN (:...productNames)', {
+          productNames: productNames.split(';'),
+        })
+        .andWhere(`creator_id = :creatorId`, { creatorId })
+        .from('(' + sql + ')', 't')
+        .groupBy('week')
+        .addGroupBy('customerType')
+        .orderBy('week', 'ASC');
+      curV = {
+        [CustomerType.vendor]: 0,
+        [CustomerType.disty]: 0,
+        [CustomerType.dealer]: 0,
+      };
+      lastV = {
+        [CustomerType.vendor]: 0,
+        [CustomerType.disty]: 0,
+        [CustomerType.dealer]: 0,
+      };
+      const stockData = await stockQb.getRawMany();
+      stockData.forEach((item) => {
+        if (item.week === date) {
+          curV[item.customerType] += Number(item.quantity);
+        } else if (item.week === lastWeek) {
+          lastV[item.customerType] += Number(item.quantity);
+        }
+      });
+      stockRingRatio[CustomerType.vendor] = getRingRatio(
+        curV[CustomerType.vendor],
+        lastV[CustomerType.vendor],
+      );
+      stockRingRatio[CustomerType.disty] = getRingRatio(
+        curV[CustomerType.disty],
+        lastV[CustomerType.disty],
+      );
+      stockRingRatio[CustomerType.dealer] = getRingRatio(
+        curV[CustomerType.dealer],
+        lastV[CustomerType.dealer],
+      );
+    }
+    return {
+      saleRingRatio,
+      stockRingRatio,
+    };
   }
 
   /**
@@ -114,6 +273,7 @@ export class ReportService {
       entity.startDate = startDate;
       // @ts-ignore
       entity.endDate = endDate;
+      entity.date = date;
       entity.year = year;
       entity.month = month;
       entity.weekalone = weekalone;
@@ -136,6 +296,7 @@ export class ReportService {
       entity.startDate = startDate;
       // @ts-ignore
       entity.endDate = endDate;
+      entity.date = date;
       entity.year = year;
       entity.month = month;
       entity.quarter = quarter;
@@ -227,12 +388,24 @@ export class ReportService {
     const res = await this.dataSource.manager.save(entity);
     return res.id;
   }
+
   /**
    * 根据 ids 删除
    * @param ids
    */
   async delete(ids: number[]): Promise<boolean> {
     await this.repository.delete(ids);
+    return true;
+  }
+
+  /**
+   * 根据 ids 删除
+   * @param ids
+   */
+  async deleteByReportName(reportName: string): Promise<boolean> {
+    const where: FindOptionsWhere<ReportEntity> = {};
+    where.reportName = reportName;
+    await this.repository.delete(where);
     return true;
   }
 }

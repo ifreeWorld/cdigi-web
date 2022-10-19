@@ -1,0 +1,52 @@
+.container {
+  margin-top: 16px;
+  padding: 20px;
+  background-color: #fff;
+
+  .title {
+    margin-bottom: 16px;
+    font-weight: bold;
+    font-size: 18px;
+
+    .floatRight {
+      float: right;
+    }
+  }
+
+  .reportList {
+    .reportItem {
+      padding-top: 16px;
+      border-top: 1px solid #e5e6eb;
+
+      .row {
+        position: relative;
+        display: flex;
+        margin-bottom: 16px;
+
+        .left {
+          flex: 0 0 70px;
+          color: #86909c;
+        }
+
+        .right {
+          color: #1d2129;
+          word-break: break-all;
+        }
+
+        .absolute {
+          position: absolute;
+          top: 0;
+          right: 0;
+
+          .tag {
+            margin-left: 8px;
+            padding: 4px 12px;
+            color: #4e5969;
+            font-size: 12px;
+            background-color: #f2f3f5;
+          }
+        }
+      }
+    }
+  }
+}

@@ -102,6 +102,7 @@ export class SaleWideTable {
   quarter: string;
   month: string;
   monthWeek: string;
+  monthAndWeek: string;
   customerId: number;
   customerName: string;
   customerType: CustomerType;
@@ -123,6 +124,8 @@ export class SaleWideTable {
   buyerId?: number;
   buyerName?: string;
   buyerCustomerType: CustomerType;
+  buyerRegion: string;
+  buyerCountry: string;
 }
 
 export class StockWideTable {
@@ -138,6 +141,7 @@ export class StockWideTable {
   quarter: string;
   month: string;
   monthWeek: string;
+  monthAndWeek: string;
   customerId: number;
   customerName: string;
   customerType: CustomerType;
@@ -175,4 +179,11 @@ export class SaleAndStockDto {
   customerId: CustomerEntity['id'];
 
   productNames?: string[];
+}
+
+export class UploadSummaryDto {
+  @IsNotEmpty({
+    message: 'week不能为空',
+  })
+  week: string;
 }

@@ -74,6 +74,12 @@ docker exec -it eefdb7ea6a4d //bin//sh
 docker run -it --privileged --pid=host debian nsenter -t 1 -m -u -n -i sh
 ```
 
+### 构建
+
+```
+docker compose build --no-cache
+```
+
 ### 首次 push 前需要 tag
 
 ```

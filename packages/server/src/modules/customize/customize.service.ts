@@ -18,7 +18,7 @@ import {
   SaleAndStockDto,
 } from './customize.dto';
 import { CustomResponse, ERROR } from 'src/constant/error';
-import { indexOfLike, setCreatorWhere } from '../../utils';
+import { getMonthAndWeekText, indexOfLike, setCreatorWhere } from '../../utils';
 import { CustomerService } from '../customer/customer.service';
 import { appLogger } from 'src/logger';
 import { setFilterQb } from './util';
@@ -39,6 +39,10 @@ import * as moment from 'moment';
 import { ConfigService } from '../config/config.service';
 import { TransitEntity } from '../transit/transit.entity';
 import { dateFormat } from 'src/constant/file';
+import { customerTypeMap } from 'src/constant/map';
+
+const timeFields = ['year', 'quarter', 'month', 'monthAndWeek', 'weekalone'];
+const allFieldText = '全部';
 
 @Injectable()
 export class CustomizeService {
@@ -116,60 +120,82 @@ export class CustomizeService {
 
     const wideSql = await this.getWideSql(type, creatorId);
     const qb = this.dataSource.createQueryBuilder().select(`t.${row.field}`);
-    if (row.field === 'monthWeek') {
-      qb.addSelect('t.month');
-    }
+    // if (row.field === 'monthWeek') {
+    //   qb.addSelect('t.month');
+    // }
+
+    let finalColumns;
 
     if (!validator.isEmpty(column) && !validator.isEmpty(value)) {
       const { filter: columnFilter = { value: [] }, field: columnField } =
         column;
-      const { value: filterValue } = columnFilter;
+      let { value: filterValue } = columnFilter;
       const { field: valueField, aggregator } = value;
       if (!aggregator) {
         throw new CustomResponse('请先选择值的聚合类型');
       }
       // 用户选择了列的filter，就拼接CASE WHEN
       if (filterValue && filterValue.length > 0) {
+        finalColumns = filterValue;
         filterValue.forEach((v) => {
+          let alias = v;
+          if (['customerType', 'buyerCustomerType'].includes(columnField)) {
+            alias = customerTypeMap[v];
+          }
           qb.addSelect(
             `IFNULL(${aggregator}( CASE WHEN t.${columnField} = '${v}' THEN t.${valueField} END ),0)`,
-            `${v}`,
+            alias,
           );
         });
+        let inTxt = '';
+        filterValue.forEach((v, index) => {
+          inTxt += `'${v}'`;
+          if (index !== filterValue.length - 1) {
+            inTxt += ',';
+          }
+        });
         qb.addSelect(
-          `IFNULL(${aggregator}( CASE WHEN t.${columnField} in '${filterValue.join(
-            ',',
-          )}' THEN t.${valueField} END ),0)`,
-          '全部',
+          `IFNULL(${aggregator}( CASE WHEN t.${columnField} in (${inTxt}) THEN t.${valueField} END ),0)`,
+          allFieldText,
         );
       } else {
         // 用户没选择，就先查询数据库中column field的所有的选项
         const data = await this.getAllValues(columnField, type, creatorId);
+        finalColumns = data.map((item) => item.value);
         data.forEach((item) => {
+          let alias = item.value;
+          if (['customerType', 'buyerCustomerType'].includes(columnField)) {
+            alias = customerTypeMap[item.value];
+          }
           qb.addSelect(
             `IFNULL(${aggregator}( CASE WHEN t.${columnField} = '${item.value}' THEN t.${valueField} END ),0)`,
-            `${item.value}`,
+            alias,
           );
         });
-        qb.addSelect(`IFNULL(${aggregator}( t.${valueField} ),0)`, '全部');
+        qb.addSelect(
+          `IFNULL(${aggregator}( t.${valueField} ),0)`,
+          allFieldText,
+        );
       }
     }
 
     qb.from('(' + wideSql + ')', 't');
     // group by
-    if (row.field === 'monthWeek') {
-      qb.groupBy('t.month');
-      qb.addGroupBy(`t.${row.field}`);
-    } else {
-      qb.groupBy(`t.${row.field}`);
-    }
-    // order by
-    if (row.field === 'monthWeek') {
-      qb.orderBy('t.month');
-      qb.addOrderBy(`t.${row.field}`);
-    } else {
-      qb.orderBy(`t.${row.field}`);
-    }
+    qb.groupBy(`t.${row.field}`);
+    // if (row.field === 'monthWeek') {
+    //   qb.groupBy('t.month');
+    //   qb.addGroupBy(`t.${row.field}`);
+    // } else {
+    //   qb.groupBy(`t.${row.field}`);
+    // }
+    // // order by
+    // if (row.field === 'monthWeek') {
+    //   qb.orderBy('t.month');
+    //   qb.addOrderBy(`t.${row.field}`);
+    // } else {
+    //   qb.orderBy(`t.${row.field}`);
+    // }
+    qb.orderBy(`t.${row.field}`);
     // 筛选
     qb.where('1=1');
     // filter中的筛选
@@ -183,40 +209,133 @@ export class CustomizeService {
     );
 
     let data = await qb.getRawMany();
-    data = data.map((item) => {
-      for (const key in item) {
-        if (key !== row.field) {
-          item[key] = Number(item[key]);
+    let sort = [row.field, ...finalColumns, allFieldText];
+    // @ts-ignore
+    if (timeFields.includes(row.field)) {
+      // 行为时间字段时，需要进行format
+      data = data.map((item) => {
+        for (const key in item) {
+          if (key !== row.field) {
+            item[key] = Number(item[key]);
+          }
+          // 设置format
+          if (key === 'year') {
+            item[key] = getYearText(item[key]);
+          }
+          // 设置format
+          if (key === 'month') {
+            item[key] = getMonthText(item[key]);
+          }
+          // 设置format
+          if (key === 'quarter') {
+            item[key] = getQuarterText(item[key]);
+          }
+          // 设置format
+          if (key === 'weekalone') {
+            item[key] = getWeekaloneText(item[key]);
+          }
+          // 设置format
+          if (key === 'monthAndWeek') {
+            item[key] = getMonthAndWeekText(item[key]);
+            delete item.month;
+          }
         }
-        // 设置format
-        if (key === 'year') {
-          item[key] = getYearText(item[key]);
-        }
-        // 设置format
-        if (key === 'month') {
-          item[key] = getMonthText(item[key]);
-        }
-        // 设置format
-        if (key === 'quarter') {
-          item[key] = getQuarterText(item[key]);
-        }
-        // 设置format
-        if (key === 'weekalone') {
-          item[key] = getWeekaloneText(item[key]);
-        }
-        // 设置format
-        if (key === 'monthWeek') {
-          item[key] = getMonthWeekText(item.month, item[key]);
-          delete item.month;
-        }
+        return item;
+      });
+      // @ts-ignore
+    } else if (timeFields.includes(column.field)) {
+      if (column.field === 'year') {
+        data = data.map((item) => {
+          for (const key in item) {
+            // 设置format
+            if (key !== row.field && key !== allFieldText) {
+              const newKey = getYearText(key);
+              sort = sort.map((s) => (s === Number(key) ? newKey : s));
+              item[newKey] = Number(item[key]);
+              delete item[key];
+            }
+            if (key === allFieldText) {
+              item[key] = Number(item[key]);
+            }
+          }
+          return item;
+        });
       }
-      return item;
-    });
+      if (column.field === 'month') {
+        data = data.map((item) => {
+          for (const key in item) {
+            // 设置format
+            if (key !== row.field && key !== allFieldText) {
+              const newKey = getMonthText(key);
+              sort = sort.map((s) => (s === Number(key) ? newKey : s));
+              item[newKey] = Number(item[key]);
+              delete item[key];
+            }
+            if (key === allFieldText) {
+              item[key] = Number(item[key]);
+            }
+          }
+          return item;
+        });
+      }
+      if (column.field === 'quarter') {
+        data = data.map((item) => {
+          for (const key in item) {
+            // 设置format
+            if (key !== row.field && key !== allFieldText) {
+              const newKey = getQuarterText(key);
+              sort = sort.map((s) => (s === Number(key) ? newKey : s));
+              item[newKey] = Number(item[key]);
+              delete item[key];
+            }
+            if (key === allFieldText) {
+              item[key] = Number(item[key]);
+            }
+          }
+          return item;
+        });
+      }
+      if (column.field === 'weekalone') {
+        data = data.map((item) => {
+          for (const key in item) {
+            // 设置format
+            if (key !== row.field && key !== allFieldText) {
+              const newKey = getWeekaloneText(key);
+              sort = sort.map((s) => (s === Number(key) ? newKey : s));
+              item[newKey] = Number(item[key]);
+              delete item[key];
+            }
+            if (key === allFieldText) {
+              item[key] = Number(item[key]);
+            }
+          }
+          return item;
+        });
+      }
+      if (column.field === 'monthAndWeek') {
+        data = data.map((item) => {
+          for (const key in item) {
+            // 设置format
+            if (key !== row.field && key !== allFieldText) {
+              const newKey = getMonthAndWeekText(key);
+              sort = sort.map((s) => (s === Number(key) ? newKey : s));
+              item[newKey] = Number(item[key]);
+              delete item[key];
+            }
+            if (key === allFieldText) {
+              item[key] = Number(item[key]);
+            }
+          }
+          return item;
+        });
+      }
+    }
     return {
       list: data,
       row: row.field,
       column: column.field,
       value: value.field,
+      sort,
     };
   }
 
@@ -255,6 +374,7 @@ export class CustomizeService {
               sale.month,
               sale.quarter,
               sale.month_week as monthWeek,
+              concat(LPAD(sale.month, 2, 0),sale.month_week) AS monthAndWeek,
               sale.weekalone,
               sale.customer_id as customerId,
               sale.product_id as productId,
@@ -267,7 +387,9 @@ export class CustomizeService {
               sale.date,
               sale.buyer_id AS buyerId,
               sale.buyer_name AS buyerName,
-              buy.customer_type AS buyerCustomerType
+              buy.customer_type AS buyerCustomerType,
+              buy.region AS buyerRegion,
+              buy.country AS buyerCountry
             FROM
               tbl_sale sale
               LEFT JOIN tbl_customer buy ON sale.buyer_id = buy.id where sale.creator_id = ${creatorId}
@@ -307,6 +429,7 @@ export class CustomizeService {
               stock.month,
               stock.quarter,
               stock.month_week as monthWeek,
+              concat(LPAD(stock.month, 2, 0),stock.month_week) AS monthAndWeek,
               stock.weekalone,
               stock.customer_id as customerId,
               stock.product_id as productId,
@@ -363,6 +486,10 @@ export class CustomizeService {
         field: 'quarter',
         entity: type === 'sale' ? SaleEntity : StockEntity,
       },
+      month: {
+        field: 'month',
+        entity: type === 'sale' ? SaleEntity : StockEntity,
+      },
       monthWeek: {
         field: 'month_week',
         entity: type === 'sale' ? SaleEntity : StockEntity,
@@ -379,6 +506,14 @@ export class CustomizeService {
         field: 'region',
         entity: CustomerEntity,
       },
+      buyerCountry: {
+        field: 'country',
+        entity: CustomerEntity,
+      },
+      buyerRegion: {
+        field: 'region',
+        entity: CustomerEntity,
+      },
     };
     const data = field2DataMap[field];
     // 规范的直接distinct查询出列表进行展示即可
@@ -389,6 +524,7 @@ export class CustomizeService {
         .select(data.field, 'value')
         .distinct(true)
         .where('creator_id = :creatorId', { creatorId })
+        .orderBy('value', 'ASC')
         .getRawMany();
       return res
         .filter((item) => item.value)
@@ -426,7 +562,7 @@ export class CustomizeService {
         ];
       }
       // 定制化字段
-      // 1.客户，需要带上客户类型
+      // 1.客户，需要带上渠道层级
       if (field === 'customerName') {
         const res = await this.customerService.findAll(creatorId);
         return res.map((item) => ({
@@ -435,7 +571,7 @@ export class CustomizeService {
           customerType: item.customerType,
         }));
       }
-      // 2.采购客户，需要带上客户类型
+      // 2.采购客户，需要带上渠道层级
       if (field === 'buyerName') {
         const disty = await this.customerService.findAll(
           creatorId,
@@ -465,6 +601,23 @@ export class CustomizeService {
           customerId: item.customer?.id || -1,
           customerName: item.customer?.customerName || '',
         }));
+      }
+      // 4.monthAndWeek
+      if (field === 'monthAndWeek') {
+        const res = await this.dataSource
+          .getRepository(type === 'sale' ? SaleEntity : StockEntity)
+          .createQueryBuilder()
+          .select(`concat(LPAD(month, 2, 0),month_week)`, 'value')
+          .distinct(true)
+          .where('creator_id = :creatorId', { creatorId })
+          .orderBy('value', 'ASC')
+          .getRawMany();
+        return res
+          .filter((item) => item.value)
+          .map((item) => ({
+            value: item.value,
+            label: item.value,
+          }));
       }
     }
     return [];

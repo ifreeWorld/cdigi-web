@@ -13,11 +13,14 @@ import {
   ReportDeleteDto,
   ReportIdResult,
   ReportDataResult,
+  ReportDeleteByReportNameDto,
+  SummaryDto,
 } from './report.dto';
 import { ReportEntity } from './report.entity';
+import { CustomerType } from '../tag/customerType.enum';
 
 @ApiBearerAuth()
-@ApiTags('产品')
+@ApiTags('报告')
 @Controller('report')
 export class ReportController {
   constructor(private reportService: ReportService) {}
@@ -59,7 +62,21 @@ export class ReportController {
     return list;
   }
 
-  /** 更新 */
+  /** 汇总查询 */
+  @UseGuards(JwtGuard)
+  @Get('/summary')
+  async summary(
+    @Query() query: SummaryDto,
+    @CurrentUser() currentUser,
+  ): Promise<{
+    saleRingRatio: Record<CustomerType, number>;
+    stockRingRatio: Record<CustomerType, number>;
+  }> {
+    const data = await this.reportService.summary(currentUser.id, query);
+    return data;
+  }
+
+  /** 添加 */
   @UseGuards(JwtGuard)
   @Post('/add')
   @ApiOkResponse({
@@ -83,6 +100,20 @@ export class ReportController {
   })
   async update(@Body() body: ReportUpdateDto): Promise<number> {
     return this.reportService.update(body.id, body);
+  }
+
+  /**
+   * 删除
+   */
+  @UseGuards(JwtGuard)
+  @Post('/deleteByReportName')
+  @ApiOkResponse({
+    type: ReportIdResult,
+  })
+  async deleteByReportName(
+    @Body() { reportName }: ReportDeleteByReportNameDto,
+  ) {
+    return this.reportService.deleteByReportName(reportName);
   }
 
   /**

@@ -2,6 +2,7 @@ import { IsEnum, IsNotEmpty } from 'class-validator';
 import { PaginationDto } from '../../dto';
 import { ReportEntity } from './report.entity';
 import { BaseResult } from 'src/interface/base.interface';
+import { CustomerType } from '../tag/customerType.enum';
 
 export enum Type {
   cover = 'cover',
@@ -13,7 +14,25 @@ export class SearchDto extends PaginationDto {
   })
   date: ReportEntity['date'];
 
+  @IsNotEmpty({
+    message: '报告类型不能为空',
+  })
+  reportType: ReportEntity['reportType'];
+
   reportName?: ReportEntity['reportName'];
+
+  summary?: boolean;
+}
+export class SummaryDto {
+  @IsNotEmpty({
+    message: 'date不能为空',
+  })
+  date: ReportEntity['date'];
+
+  @IsNotEmpty({
+    message: 'productNames不能为空',
+  })
+  productNames: ReportEntity['productNames'];
 
   @IsNotEmpty({
     message: '报告类型不能为空',
@@ -53,7 +72,17 @@ export class ReportDeleteDto {
   })
   ids: ReportEntity['id'][];
 }
+export class ReportDeleteByReportNameDto {
+  @IsNotEmpty({
+    message: 'reportName不能为空',
+  })
+  reportName: ReportEntity['reportName'];
+}
 
+export class ReportSummaryRatio {
+  saleRingRatio: Record<CustomerType, number>;
+  stockRingRatio: Record<CustomerType, number>;
+}
 export class ReportListResult extends BaseResult {
   data: {
     list: ReportEntity[];
@@ -62,7 +91,7 @@ export class ReportListResult extends BaseResult {
 }
 
 export class ReportDataResult extends BaseResult {
-  data: ReportEntity[];
+  data: (ReportEntity & ReportSummaryRatio)[];
 }
 export class ReportIdResult extends BaseResult {
   data: number;

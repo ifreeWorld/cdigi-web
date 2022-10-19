@@ -10,6 +10,7 @@ interface Props {
   yFieldLabel: string;
   seriesFieldLabel: string;
   filterLabel: string;
+  sort: string[];
 }
 
 const LineChart = ({
@@ -21,10 +22,11 @@ const LineChart = ({
   yFieldLabel,
   seriesFieldLabel,
   filterLabel,
+  sort,
 }: Props) => {
   const result: any[] = [];
   data.forEach((item) => {
-    for (const key in item) {
+    for (const key of sort) {
       if (key !== xField) {
         const obj = {
           [xField]: item[xField],

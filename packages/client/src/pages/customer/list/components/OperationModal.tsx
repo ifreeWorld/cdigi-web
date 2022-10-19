@@ -122,10 +122,10 @@ const OperationModal: FC<OperationModalProps> = (props) => {
         />
         <ProFormSelect
           name="customerType"
-          label="客户类型"
-          rules={[{ required: true, message: '请选择客户类型' }]}
+          label="渠道层级"
+          rules={[{ required: true, message: '请选择渠道层级' }]}
           valueEnum={customerTypeMap}
-          placeholder="请选择客户类型"
+          placeholder="请选择渠道层级"
           disabled={opType === 'edit'}
         />
         <ProFormSelect
@@ -163,8 +163,8 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           name="tags"
           mode="multiple"
           label="标签"
-          tooltip="请先选择客户类型，再选择标签"
-          placeholder="请先选择客户类型，再选择标签"
+          tooltip="请先选择渠道层级，再选择标签"
+          placeholder="请先选择渠道层级，再选择标签"
           dependencies={['customerType']}
           transform={(values: number[], name) => {
             return {
@@ -192,8 +192,8 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           name="parent"
           mode="multiple"
           label="上级供应商"
-          tooltip="请先选择客户类型，再选择上级供应商"
-          placeholder="请先选择客户类型，再选择上级供应商"
+          tooltip="请先选择渠道层级，再选择上级供应商"
+          placeholder="请先选择渠道层级，再选择上级供应商"
           transform={(value, name) => {
             return {
               [name]: value?.map((v: number) => ({

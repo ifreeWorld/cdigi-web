@@ -5,7 +5,7 @@ import styles from './style.less';
 const Suggest = () => {
   return (
     <PageContainer className={styles.pageContainer}>
-      <UploadSummary />
+      <UploadSummary week="2022-10" />
     </PageContainer>
   );
 };

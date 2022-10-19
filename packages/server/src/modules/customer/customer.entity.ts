@@ -20,12 +20,12 @@ export class CustomerEntity extends BaseEntity {
   @Column({ name: 'customer_name', comment: '客户名称', unique: true })
   customerName: string;
 
-  /** 客户类型 */
+  /** 渠道层级 */
   @Column({
     name: 'customer_type',
     type: 'enum',
     enum: CustomerType,
-    comment: '客户类型 1|品牌商 2|代理商 3|经销商',
+    comment: '渠道层级 1|品牌商 2|代理商 3|经销商',
   })
   customerType: CustomerType;
 

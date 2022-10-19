@@ -29,14 +29,20 @@
 
 .leftTree {
   width: 364px;
-  height: 100%;
+  max-height: 700px;
   padding: 20px;
   background-color: #fff;
 
+  .tabItem {
+    height: 100%;
+  }
+
   .drags {
+    height: calc(100% - 368px);
+    margin-bottom: 8px;
     padding: 8px;
+    overflow: auto;
     user-select: none;
-    // background: #f2f3f5;
   }
 
   .drops {

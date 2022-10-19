@@ -98,7 +98,7 @@ export function getYearText(year: string | number) {
 }
 
 export function getMonthText(month: string | number) {
-  return `${month}`;
+  return `${month}月`;
 }
 
 export function getQuarterText(quarter: string | number) {
@@ -107,9 +107,19 @@ export function getQuarterText(quarter: string | number) {
 
 export function getMonthWeekText(
   month: string | number,
-  weekalone: string | number,
+  monthWeek: string | number,
 ) {
-  return `${month}月${weekalone}周`;
+  return `${month}月${monthWeek}W`;
+}
+
+export function getMonthAndWeekText(monthAndWeek: string) {
+  if (!monthAndWeek || monthAndWeek.length !== 3) {
+    return monthAndWeek;
+  }
+  const month =
+    (monthAndWeek[0] === '0' ? '' : monthAndWeek[0]) + monthAndWeek[1];
+  const monthWeek = monthAndWeek[2];
+  return `${month}月${monthWeek}W`;
 }
 
 export function getWeekaloneText(weekalone: string | number) {

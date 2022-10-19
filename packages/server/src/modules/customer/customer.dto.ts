@@ -36,7 +36,7 @@ export class CustomerCreateDto {
   customerName: CustomerEntity['customerName'];
 
   @IsNotEmpty({
-    message: '客户类型不能为空',
+    message: '渠道层级不能为空',
   })
   customerType: CustomerEntity['customerType'];
 

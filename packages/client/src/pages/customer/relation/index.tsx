@@ -35,7 +35,7 @@ const Relations = () => {
         //outDiv.style.padding = '0px 0px 20px 0px';
         outDiv.innerHTML = `
           <h3>客户名称: ${cfg.label}</h3>
-          <h3>客户类型: ${customerTypeMap[cfg.customerType] || ''}</h3>`;
+          <h3>渠道层级: ${customerTypeMap[cfg.customerType] || ''}</h3>`;
         return outDiv;
       },
     });

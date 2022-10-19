@@ -10,6 +10,7 @@ interface Props {
   yFieldLabel: string;
   seriesFieldLabel: string;
   filterLabel: string;
+  sort: string[];
 }
 
 const TableChart = ({
@@ -21,6 +22,7 @@ const TableChart = ({
   yFieldLabel,
   seriesFieldLabel,
   filterLabel,
+  sort,
 }: Props) => {
   const title = (
     <div className={styles.title}>
@@ -39,8 +41,7 @@ const TableChart = ({
       },
     ];
     if (data && data.length > 0) {
-      const item = data[0];
-      for (const key in item) {
+      for (const key of sort) {
         if (key !== xField) {
           const obj = {
             dataIndex: key,

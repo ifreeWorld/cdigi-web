@@ -81,7 +81,7 @@ const TableList: React.FC = () => {
       dataIndex: 'customerName',
     },
     {
-      title: '客户类型',
+      title: '渠道层级',
       dataIndex: 'customerType',
       valueType: 'select',
       valueEnum: customerTypeMap,

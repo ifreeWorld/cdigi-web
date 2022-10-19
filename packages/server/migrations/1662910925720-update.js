@@ -62,7 +62,7 @@ module.exports = class update1662910925720 {
       `ALTER TABLE \`tbl_customer\` CHANGE \`customer_name\` \`customer_name\` varchar(255) NOT NULL COMMENT '客户名称'`,
     );
     await queryRunner.query(
-      `ALTER TABLE \`tbl_customer\` CHANGE \`customer_type\` \`customer_type\` enum ('1', '2', '3') NOT NULL COMMENT '客户类型 1|品牌商 2|代理商 3|经销商'`,
+      `ALTER TABLE \`tbl_customer\` CHANGE \`customer_type\` \`customer_type\` enum ('1', '2', '3') NOT NULL COMMENT '渠道层级 1|品牌商 2|代理商 3|经销商'`,
     );
     await queryRunner.query(
       `ALTER TABLE \`tbl_customer\` CHANGE \`email\` \`email\` varchar(255) NOT NULL COMMENT '客户邮箱'`,

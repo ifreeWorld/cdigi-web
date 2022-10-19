@@ -25,6 +25,7 @@ import {
   CustomizePivotResult,
   CustomizeValuesDto,
   SaleAndStockDto,
+  UploadSummaryDto,
 } from './customize.dto';
 import { CustomizeEntity } from './customize.entity';
 
@@ -126,11 +127,11 @@ export class CustomizeController {
   @UseGuards(JwtGuard)
   @Get('/getUploadSummary')
   async getUploadSummary(
-    @Query('week') week: string,
+    @Query() query: UploadSummaryDto,
     @CurrentUser() currentUser,
   ) {
     const list = await this.customizeService.getUploadSummary(
-      week,
+      query.week,
       currentUser.id,
     );
     return list;

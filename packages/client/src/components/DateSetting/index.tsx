@@ -3,34 +3,7 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { request } from 'umi';
 import 'moment/locale/zh-cn';
-
-const options: {
-  label: number;
-  value: string;
-  id: number;
-}[] = [];
-
-const map = {
-  0: '周日',
-  1: '周一',
-  2: '周二',
-  3: '周三',
-  4: '周四',
-  5: '周五',
-  6: '周六',
-};
-
-function getLabel(i: number) {
-  return map[i];
-}
-
-for (let i = 0; i < 7; i++) {
-  options.push({
-    id: i,
-    label: getLabel(i),
-    value: i + '',
-  });
-}
+import { weekdayOptions } from '@/constants';
 
 const DateSetting: React.FC = () => {
   const [visible, setVisible] = useState(false);
@@ -103,7 +76,7 @@ const DateSetting: React.FC = () => {
       <div>周开始日</div>
       <Select
         value={value}
-        options={options}
+        options={weekdayOptions}
         onChange={(v) => {
           setValue(v);
         }}

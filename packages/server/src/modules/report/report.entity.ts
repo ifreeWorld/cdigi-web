@@ -10,7 +10,7 @@ export class ReportEntity extends BaseEntity {
   reportName: string;
 
   /** 产品型号 */
-  @Column({ name: 'product_names', comment: '产品型号，1;2;3;4' })
+  @Column({ name: 'product_names', comment: '产品型号，1;2;3;4', type: 'text' })
   productNames: string;
 
   /** 报告类型 */
