@@ -5,12 +5,10 @@ import { ResultSuccessPromise } from '../../../types/common';
 import { WeeklyData } from './data';
 
 /** 获取库存 POST /api/report/all */
-export async function getReportList(params: any) {
+export async function getReportList(data: any) {
   return request<ResultSuccessPromise<WeeklyData[]>>('/api/report/all', {
-    params: {
-      ...params,
-    },
-    method: 'GET',
+    data,
+    method: 'POST',
   });
 }
 

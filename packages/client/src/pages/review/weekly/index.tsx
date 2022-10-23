@@ -15,8 +15,9 @@ import {
   setWeeklyGenerateDay,
   getWeeklyGenerateDay,
 } from './service';
-import { useRequest } from 'umi';
+import { useRequest, history, Link } from 'umi';
 import { getAllValues } from '@/pages/analysis/create/service';
+import { CustomerType } from '@/types/common';
 
 const Weekly = () => {
   const cur = moment();
@@ -57,6 +58,7 @@ const Weekly = () => {
     runList({
       date: week,
       reportType: 1,
+      summary: true,
     });
   }, []);
 
@@ -77,6 +79,20 @@ const Weekly = () => {
     setAddVisible(true);
   };
 
+  const formatPerfect = (v: number) => {
+    if (!v) {
+      return `0%`;
+    }
+    return `${v * 100}%`;
+  };
+
+  const formatNumber = (v: number) => {
+    if (!v) {
+      return 0;
+    }
+    return v;
+  };
+
   return (
     <PageContainer className={styles.pageContainer}>
       <div className={styles.container}>
@@ -89,6 +105,7 @@ const Weekly = () => {
             runList({
               date: values.week,
               reportType: 1,
+              summary: true,
             });
           }}
           submitter={{
@@ -181,6 +198,7 @@ const Weekly = () => {
         </div>
         <div className={styles.reportList}>
           {weeklyData?.map((item, index) => {
+            const { saleRingRatio = {}, stockTurn = {}, saleNum = {}, stockNum = {} } = item;
             return (
               <div className={styles.reportItem}>
                 <div className={styles.row}>
@@ -197,9 +215,15 @@ const Weekly = () => {
                   <div className={styles.left}>产品型号：</div>
                   <div className={styles.right}>{item.productNames}</div>
                   <div className={styles.absolute}>
-                    <Button type="primary" style={{ marginRight: '4px' }} onClick={() => {}}>
-                      详情
-                    </Button>
+                    <Link
+                      key="create"
+                      to={`/review/weekly/detail?date=${item.date}&productNames=${item.productNames}&reportName=${item.reportName}`}
+                      target="_blank"
+                    >
+                      <Button type="primary" style={{ marginRight: '4px' }}>
+                        详情
+                      </Button>
+                    </Link>
                     <Button
                       type="primary"
                       onClick={async () => {
@@ -212,6 +236,7 @@ const Weekly = () => {
                         runList({
                           date: week,
                           reportType: 1,
+                          summary: true,
                         });
                       }}
                     >
@@ -221,11 +246,35 @@ const Weekly = () => {
                 </div>
                 <div className={styles.row}>
                   <div className={styles.left}>销售汇总：</div>
-                  <div className={styles.right}>{0}</div>
+                  <div className={styles.right}>{`Vendor实现销售数值（${formatNumber(
+                    saleNum[CustomerType.vendor],
+                  )}），销售指标（环比）实现数值（${formatPerfect(
+                    saleRingRatio[CustomerType.vendor],
+                  )}）；Disty实现销售数值（${formatNumber(
+                    saleNum[CustomerType.disty],
+                  )}）销售指标（环比）实现数值（${formatPerfect(
+                    saleRingRatio[CustomerType.disty],
+                  )}）；Dealer实现销售量数值（${formatNumber(
+                    saleNum[CustomerType.dealer],
+                  )}）,销售指标（环比）实现数值（${formatPerfect(
+                    saleRingRatio[CustomerType.dealer],
+                  )}）。`}</div>
                 </div>
                 <div className={styles.row}>
                   <div className={styles.left}>库存汇总：</div>
-                  <div className={styles.right}>{0}</div>
+                  <div className={styles.right}>{`Vendor实现库存数值（${formatNumber(
+                    stockNum[CustomerType.vendor],
+                  )}），库存指标（库存周转天数）实现数值（${formatNumber(
+                    stockTurn[CustomerType.vendor],
+                  )}）；Disty实现库存数值（${formatNumber(
+                    stockNum[CustomerType.disty],
+                  )}），库存指标（库存周转天数）实现数值（${formatNumber(
+                    stockTurn[CustomerType.vendor],
+                  )}）；Dealer实现库存量数值（${formatNumber(
+                    stockNum[CustomerType.dealer],
+                  )}），库存指标（库存周转天数）实现数值（${formatNumber(
+                    stockTurn[CustomerType.vendor],
+                  )}）。`}</div>
                 </div>
               </div>
             );
@@ -250,6 +299,7 @@ const Weekly = () => {
             runList({
               date: week,
               reportType: 1,
+              summary: true,
             });
           }}
           initialValues={{}}

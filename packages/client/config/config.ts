@@ -150,6 +150,12 @@ export default defineConfig({
           path: '/review/weekly',
           component: './review/weekly',
         },
+        {
+          name: 'weekly-detail',
+          icon: 'smile',
+          path: '/review/weekly/detail',
+          component: './review/weekly/detail',
+        },
       ],
     },
     {

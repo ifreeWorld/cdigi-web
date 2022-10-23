@@ -3,6 +3,7 @@ import { PaginationDto } from '../../dto';
 import { ReportEntity } from './report.entity';
 import { BaseResult } from 'src/interface/base.interface';
 import { CustomerType } from '../tag/customerType.enum';
+import { SaleEntity } from '../sale/sale.entity';
 
 export enum Type {
   cover = 'cover',
@@ -12,7 +13,7 @@ export class SearchDto extends PaginationDto {
   @IsNotEmpty({
     message: 'date不能为空',
   })
-  date: ReportEntity['date'];
+  date: string;
 
   @IsNotEmpty({
     message: '报告类型不能为空',
@@ -27,7 +28,7 @@ export class SummaryDto {
   @IsNotEmpty({
     message: 'date不能为空',
   })
-  date: ReportEntity['date'];
+  date: string;
 
   @IsNotEmpty({
     message: 'productNames不能为空',
@@ -38,6 +39,11 @@ export class SummaryDto {
     message: '报告类型不能为空',
   })
   reportType: ReportEntity['reportType'];
+}
+export class DetailDto extends SummaryDto {
+  customerId?: SaleEntity['customer']['id'];
+
+  customerType?: SaleEntity['customer']['customerType'];
 }
 export class ReportCreateDto {
   @IsNotEmpty({
@@ -54,11 +60,6 @@ export class ReportCreateDto {
     message: '产品型号不能为空',
   })
   productNames: ReportEntity['productNames'];
-
-  @IsNotEmpty({
-    message: 'date不能为空',
-  })
-  date: ReportEntity['date'];
 }
 export class ReportUpdateDto extends ReportCreateDto {
   @IsNotEmpty({
@@ -80,8 +81,17 @@ export class ReportDeleteByReportNameDto {
 }
 
 export class ReportSummaryRatio {
-  saleRingRatio: Record<CustomerType, number>;
-  stockRingRatio: Record<CustomerType, number>;
+  startDate: string;
+  endDate: string;
+  date: string;
+  // 销售环比
+  saleRingRatio?: Record<CustomerType, number>;
+  // 库存周转天数
+  stockTurn?: Record<CustomerType, number>;
+  // 销量
+  saleNum?: Record<CustomerType, number>;
+  // 库存量
+  stockNum?: Record<CustomerType, number>;
 }
 export class ReportListResult extends BaseResult {
   data: {

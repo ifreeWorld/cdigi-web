@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository, DataSource } from 'typeorm';
+import { FindOptionsWhere, Repository, DataSource, In } from 'typeorm';
 import * as validator from 'class-validator';
 import * as moment from 'moment';
 import { plainToInstance } from 'class-transformer';
@@ -10,13 +10,24 @@ import {
   ReportCreateDto,
   ReportUpdateDto,
   SummaryDto,
+  ReportSummaryRatio,
+  DetailDto,
 } from './report.dto';
 import { ERROR, ErrorConstant } from 'src/constant/error';
 import { setCreatorWhere } from '../../utils';
 import { ConfigService } from '../config/config.service';
 import { dateFormat } from 'src/constant/file';
-import { getRingRatio } from './util';
+import {
+  getAvgNum,
+  getAvgRatio,
+  getRingRatio,
+  getSameRatio,
+  getStockTurn,
+} from './util';
 import { CustomerType } from '../tag/customerType.enum';
+import { StockEntity } from '../stock/stock.entity';
+import { SaleEntity } from '../sale/sale.entity';
+const allFieldText = '全部';
 
 @Injectable()
 export class ReportService {
@@ -37,10 +48,7 @@ export class ReportService {
     query: SearchDto,
   ): Promise<[ReportEntity[], number]> {
     const where: FindOptionsWhere<ReportEntity> = {};
-    const { date, reportType } = query;
-    if (validator.isNotEmpty(date)) {
-      where.date = date;
-    }
+    const { reportType } = query;
     if (validator.isNotEmpty(reportType)) {
       where.reportType = reportType;
     }
@@ -55,12 +63,27 @@ export class ReportService {
   /**
    * 全量查询
    */
-  async findAll(creatorId: number, query: SearchDto): Promise<ReportEntity[]> {
-    const where: FindOptionsWhere<ReportEntity> = {};
-    const { date, reportType, summary } = query;
-    if (validator.isNotEmpty(date)) {
-      where.date = date;
+  async findAll(
+    creatorId: number,
+    body: SearchDto,
+  ): Promise<(ReportEntity & ReportSummaryRatio)[]> {
+    // 查询周开始日
+    let weekStartIndex = '1';
+    weekStartIndex = await this.configService.hget(
+      'getWeekStartIndex',
+      String(creatorId),
+    );
+    if (!weekStartIndex) {
+      weekStartIndex = '1';
     }
+    moment.locale('zh-cn', {
+      week: {
+        dow: Number(weekStartIndex),
+      },
+    });
+
+    const where: FindOptionsWhere<ReportEntity> = {};
+    const { date, reportType, summary } = body;
     if (validator.isNotEmpty(reportType)) {
       where.reportType = reportType;
     }
@@ -68,19 +91,35 @@ export class ReportService {
     const data = await this.repository.find({
       where: where,
     });
-    const res = [];
-    for (let i = 0; i < data.length; i++) {
-      const productNames = data[i].productNames;
-      const summaryData = await this.summary(creatorId, {
-        date,
-        productNames,
-        reportType: 1,
+    let res: (ReportEntity & ReportSummaryRatio)[] = [];
+    if (summary) {
+      for (let i = 0; i < data.length; i++) {
+        const productNames = data[i].productNames;
+        const summaryData = await this.summary(creatorId, {
+          date,
+          productNames,
+          reportType: 1,
+        });
+        res[i] = {
+          ...data[i],
+          date,
+          startDate: moment(date, 'gggg-ww').startOf('week').format(dateFormat),
+          endDate: moment(date, 'gggg-ww').endOf('week').format(dateFormat),
+          saleRingRatio: summaryData.saleRingRatio,
+          stockTurn: summaryData.stockTurn,
+          saleNum: summaryData.saleNum,
+          stockNum: summaryData.stockNum,
+        };
+      }
+    } else {
+      res = data.map((item) => {
+        return {
+          ...item,
+          date,
+          startDate: moment(date, 'gggg-ww').startOf('week').format(dateFormat),
+          endDate: moment(date, 'gggg-ww').endOf('week').format(dateFormat),
+        };
       });
-      res[i] = {
-        ...data[i],
-        saleRingRatio: summaryData.saleRingRatio,
-        stockRingRatio: summaryData.stockRingRatio,
-      };
     }
     return res;
   }
@@ -93,7 +132,9 @@ export class ReportService {
     query: SummaryDto,
   ): Promise<{
     saleRingRatio: Record<CustomerType, number>;
-    stockRingRatio: Record<CustomerType, number>;
+    stockTurn: Record<CustomerType, number>;
+    saleNum: Record<CustomerType, number>;
+    stockNum: Record<CustomerType, number>;
   }> {
     const { date, productNames, reportType } = query;
     // 查询周开始日
@@ -111,12 +152,22 @@ export class ReportService {
       },
     });
 
-    let saleRingRatio = {
+    let saleRingRatio: any = {
       [CustomerType.vendor]: 0,
       [CustomerType.disty]: 0,
       [CustomerType.dealer]: 0,
     };
-    let stockRingRatio = {
+    let stockTurn: any = {
+      [CustomerType.vendor]: 0,
+      [CustomerType.disty]: 0,
+      [CustomerType.dealer]: 0,
+    };
+    let saleNum: any = {
+      [CustomerType.vendor]: 0,
+      [CustomerType.disty]: 0,
+      [CustomerType.dealer]: 0,
+    };
+    let stockNum: any = {
       [CustomerType.vendor]: 0,
       [CustomerType.disty]: 0,
       [CustomerType.dealer]: 0,
@@ -127,13 +178,21 @@ export class ReportService {
       const lastWeek = moment(date, 'gggg-ww')
         .subtract(7, 'day')
         .format('gggg-ww');
-      const sql = `SELECT s.*, c.customer_type FROM tbl_stock s LEFT JOIN tbl_customer c ON s.customer_id = c.id`;
+      const last2Week = moment(date, 'gggg-ww')
+        .subtract(14, 'day')
+        .format('gggg-ww');
+      const last3Week = moment(date, 'gggg-ww')
+        .subtract(21, 'day')
+        .format('gggg-ww');
+      let sql = `SELECT s.*, c.customer_type FROM tbl_sale s LEFT JOIN tbl_customer c ON s.customer_id = c.id`;
       const saleQb = this.dataSource
         .createQueryBuilder()
         .select('t.week')
         .addSelect('t.customer_type', 'customerType')
         .addSelect('sum(t.quantity)', 'quantity')
-        .where('week IN (:...dates)', { dates: [lastWeek, date] })
+        .where('week IN (:...dates)', {
+          dates: [last3Week, last2Week, lastWeek, date],
+        })
         .andWhere('product_name IN (:...productNames)', {
           productNames: productNames.split(';'),
         })
@@ -153,12 +212,15 @@ export class ReportService {
         [CustomerType.dealer]: 0,
       };
       const saleData = await saleQb.getRawMany();
+      let saleTotal = 0;
       saleData.forEach((item) => {
         if (item.week === date) {
           curV[item.customerType] += Number(item.quantity);
+          saleNum[item.customerType] = Number(item.quantity);
         } else if (item.week === lastWeek) {
           lastV[item.customerType] += Number(item.quantity);
         }
+        saleTotal += Number(item.quantity);
       });
       saleRingRatio[CustomerType.vendor] = getRingRatio(
         curV[CustomerType.vendor],
@@ -173,12 +235,13 @@ export class ReportService {
         lastV[CustomerType.dealer],
       );
 
+      sql = `SELECT s.*, c.customer_type FROM tbl_stock s LEFT JOIN tbl_customer c ON s.customer_id = c.id`;
       const stockQb = this.dataSource
         .createQueryBuilder()
         .select('week')
         .addSelect('t.customer_type', 'customerType')
         .addSelect('sum(`quantity`)', 'quantity')
-        .where('week IN (:...dates)', { dates: [lastWeek, date] })
+        .where('week IN (:...dates)', { dates: [date] })
         .andWhere('product_name IN (:...productNames)', {
           productNames: productNames.split(';'),
         })
@@ -187,52 +250,36 @@ export class ReportService {
         .groupBy('week')
         .addGroupBy('customerType')
         .orderBy('week', 'ASC');
-      curV = {
-        [CustomerType.vendor]: 0,
-        [CustomerType.disty]: 0,
-        [CustomerType.dealer]: 0,
-      };
-      lastV = {
-        [CustomerType.vendor]: 0,
-        [CustomerType.disty]: 0,
-        [CustomerType.dealer]: 0,
-      };
       const stockData = await stockQb.getRawMany();
       stockData.forEach((item) => {
         if (item.week === date) {
-          curV[item.customerType] += Number(item.quantity);
-        } else if (item.week === lastWeek) {
-          lastV[item.customerType] += Number(item.quantity);
+          stockNum[item.customerType] += Number(item.quantity);
         }
       });
-      stockRingRatio[CustomerType.vendor] = getRingRatio(
-        curV[CustomerType.vendor],
-        lastV[CustomerType.vendor],
+
+      stockTurn[CustomerType.vendor] = getStockTurn(
+        stockNum[CustomerType.vendor],
+        saleTotal,
       );
-      stockRingRatio[CustomerType.disty] = getRingRatio(
-        curV[CustomerType.disty],
-        lastV[CustomerType.disty],
+      stockTurn[CustomerType.disty] = getStockTurn(
+        stockNum[CustomerType.disty],
+        saleTotal,
       );
-      stockRingRatio[CustomerType.dealer] = getRingRatio(
-        curV[CustomerType.dealer],
-        lastV[CustomerType.dealer],
+      stockTurn[CustomerType.dealer] = getStockTurn(
+        stockNum[CustomerType.dealer],
+        saleTotal,
       );
     }
     return {
       saleRingRatio,
-      stockRingRatio,
+      stockTurn,
+      saleNum,
+      stockNum,
     };
   }
 
-  /**
-   * 新增
-   */
-  async insert(
-    info: ReportCreateDto & {
-      creatorId: number;
-    },
-  ): Promise<number> {
-    const { reportName, reportType, productNames, date, creatorId } = info;
+  async detail(creatorId: number, body: DetailDto) {
+    const { date, reportType, productNames, customerId, customerType } = body;
     // @ts-ignore
     moment.fn.weekOfMonth = function () {
       return Math.ceil(this.date() / 7);
@@ -251,125 +298,204 @@ export class ReportService {
         dow: Number(weekStartIndex),
       },
     });
-    const entity = plainToInstance(ReportEntity, {
-      creatorId,
+    const lastWeek = moment(date, 'gggg-ww')
+      .subtract(7, 'day')
+      .format('gggg-ww');
+    const last2Week = moment(date, 'gggg-ww')
+      .subtract(14, 'day')
+      .format('gggg-ww');
+    const last3Week = moment(date, 'gggg-ww')
+      .subtract(21, 'day')
+      .format('gggg-ww');
+    const last4Week = moment(date, 'gggg-ww')
+      .subtract(28, 'day')
+      .format('gggg-ww');
+    const last5Week = moment(date, 'gggg-ww')
+      .subtract(35, 'day')
+      .format('gggg-ww');
+    let lastSameWeek;
+    // @ts-ignore
+    let curMonthWeek = moment(item, 'gggg-ww').startOf('week').weekOfMonth();
+    if (curMonthWeek === 5) {
+      curMonthWeek = 4;
+    }
+    [last5Week, last4Week, last3Week, last2Week, lastWeek].forEach((item) => {
+      // @ts-ignore
+      const monthWeek = moment(item, 'gggg-ww').startOf('week').weekOfMonth();
+      if (curMonthWeek === monthWeek) {
+        lastSameWeek = item;
+      }
     });
+    const dates = [last5Week, last4Week, last3Week, last2Week, lastWeek, date];
+    const allProductNames = productNames.split(';');
+
     // 周报
     if (reportType === 1) {
-      const year = Number(date.split('-')[0]);
-      const weekalone = Number(date.split('-')[1]);
-      const time = moment().year(year).week(weekalone);
-      const startDate = time.startOf('week').format(dateFormat);
-      const endDate = time.endOf('week').format(dateFormat);
-      const month = time.startOf('week').month() + 1;
-      const quarter = time.startOf('week').quarter();
-      // @ts-ignore
-      const monthWeek = time.startOf('week').weekOfMonth();
+      let sql = `SELECT s.*, c.customer_type FROM tbl_sale s LEFT JOIN tbl_customer c ON s.customer_id = c.id`;
+      const saleQb = this.dataSource
+        .createQueryBuilder()
+        .select('t.week')
+        .select('t.product_name', 'productName')
+        .addSelect('sum(t.quantity)', 'quantity')
+        .where('week IN (:...dates)', {
+          dates: dates,
+        })
+        .andWhere('product_name IN (:...productNames)', {
+          productNames: allProductNames,
+        })
+        .andWhere(`creator_id = :creatorId`, { creatorId });
+      if (validator.isNotEmpty(customerId)) {
+        saleQb.andWhere(`customer_id = :customerId`, { customerId });
+      } else if (validator.isNotEmpty(customerType)) {
+        saleQb.andWhere(`customer_type = :customerType`, { customerType });
+      }
+      saleQb
+        .from('(' + sql + ')', 't')
+        .groupBy('week')
+        .addGroupBy('productName');
+      saleQb.orderBy('week', 'ASC');
+      const saleData = await saleQb.getRawMany();
+      // 销售数量
+      const saleNumArr = [];
+      allProductNames.forEach((productName) => {
+        const obj = {
+          productName,
+        };
+        dates.forEach((d) => {
+          obj[d] =
+            Number(
+              saleData.find(
+                (item) => item.productName === productName && item.week === d,
+              )?.quantity,
+            ) || 0;
+        });
+        saleNumArr.push(obj);
+      });
+      // 销售数量中的汇总
+      const saleSumObj = { productName: allFieldText };
+      dates.forEach((d) => {
+        const dNum = saleNumArr.reduce((prev, next) => prev + next[d], 0);
+        saleSumObj[d] = dNum;
+      });
+      saleNumArr.push(saleSumObj);
+      // 当前周的销售数据汇总
+      const curWeekSaleTotal = saleSumObj[date];
+      // 上周的销售数据汇总
+      const lastWeekSaleTotal = saleSumObj[lastWeek];
+      // 当前周的销售总环比
+      const curWeekSaleRingRatio = getRingRatio(
+        curWeekSaleTotal,
+        lastWeekSaleTotal,
+      );
+      // 销售指标（比例）
+      const saleRatioArr = [];
+      allProductNames.forEach((productName) => {
+        const obj: any = {
+          productName,
+        };
+        const curWeekV =
+          Number(
+            saleData.find(
+              (item) => item.productName === productName && item.week === date,
+            )?.quantity,
+          ) || 0;
+        const lastWeekV =
+          Number(
+            saleData.find(
+              (item) =>
+                item.productName === productName && item.week === lastWeek,
+            )?.quantity,
+          ) || 0;
+        const last2WeekV =
+          Number(
+            saleData.find(
+              (item) =>
+                item.productName === productName && item.week === lastWeek,
+            )?.quantity,
+          ) || 0;
+        const last3WeekV =
+          Number(
+            saleData.find(
+              (item) =>
+                item.productName === productName && item.week === lastWeek,
+            )?.quantity,
+          ) || 0;
+        const lastSameV =
+          Number(
+            saleData.find(
+              (item) =>
+                item.productName === productName && item.week === lastSameWeek,
+            )?.quantity,
+          ) || 0;
+        obj.ringRatio = getRingRatio(curWeekV, lastWeekV);
+        obj.sameRatio = getSameRatio(curWeekV, lastSameV);
+        obj.avgRatio = getAvgRatio(
+          curWeekV,
+          getAvgNum([curWeekV, lastWeekV, last2WeekV, last3WeekV]),
+        );
 
-      entity.reportName = reportName;
-      entity.productNames = productNames;
-      entity.reportType = reportType;
-      // @ts-ignore
-      entity.startDate = startDate;
-      // @ts-ignore
-      entity.endDate = endDate;
-      entity.date = date;
-      entity.year = year;
-      entity.month = month;
-      entity.weekalone = weekalone;
-      entity.quarter = quarter;
-      entity.monthWeek = monthWeek;
-    } else if (reportType === 2) {
-      const year = Number(date.split('-')[0]);
-      const month = Number(date.split('-')[1]);
-      const time = moment()
-        .year(year)
-        .month(month - 1);
-      const startDate = time.startOf('month').format(dateFormat);
-      const endDate = time.endOf('month').format(dateFormat);
-      const quarter = time.startOf('month').quarter();
-
-      entity.reportName = reportName;
-      entity.productNames = productNames;
-      entity.reportType = reportType;
-      // @ts-ignore
-      entity.startDate = startDate;
-      // @ts-ignore
-      entity.endDate = endDate;
-      entity.date = date;
-      entity.year = year;
-      entity.month = month;
-      entity.quarter = quarter;
+        saleRatioArr.push(obj);
+      });
+      // 销售指标（比例）中的汇总
+      const saleRatioObj = {
+        productName: allFieldText,
+        ringRatio: curWeekSaleRingRatio,
+        sameRatio: getSameRatio(curWeekSaleTotal, saleSumObj[lastSameWeek]),
+        avgRatio: getAvgRatio(
+          curWeekSaleTotal,
+          getAvgNum([
+            saleSumObj[date],
+            saleSumObj[lastWeek],
+            saleSumObj[last2Week],
+            saleSumObj[last3Week],
+          ]),
+        ),
+      };
+      saleRatioArr.push(saleRatioObj);
+      // TODO 计算库存
+      sql = `SELECT s.*, c.customer_type FROM tbl_stock s LEFT JOIN tbl_customer c ON s.customer_id = c.id`;
+      const stockQb = this.dataSource
+        .createQueryBuilder()
+        .select('t.week')
+        .select('t.product_name', 'productName')
+        .addSelect('sum(t.quantity)', 'quantity')
+        .where('week IN (:...dates)', {
+          dates: dates,
+        })
+        .andWhere('product_name IN (:...productNames)', {
+          productNames: allProductNames,
+        })
+        .andWhere(`creator_id = :creatorId`, { creatorId });
+      if (validator.isNotEmpty(customerId)) {
+        stockQb.andWhere(`customer_id = :customerId`, { customerId });
+      } else if (validator.isNotEmpty(customerType)) {
+        stockQb.andWhere(`customer_type = :customerType`, { customerType });
+      }
+      stockQb
+        .from('(' + sql + ')', 't')
+        .groupBy('week')
+        .addGroupBy('productName');
+      stockQb.orderBy('week', 'ASC');
+      const stockData = await stockQb.getRawMany();
     }
-    const res = await this.dataSource.manager.save(entity);
-    return res.id;
   }
+
   /**
    * 新增
    */
-  async copy(
-    reportType: number,
-    date: string,
-    creatorId: number,
+  async insert(
+    info: ReportCreateDto & {
+      creatorId: number;
+    },
   ): Promise<number> {
-    // @ts-ignore
-    moment.fn.weekOfMonth = function () {
-      return Math.ceil(this.date() / 7);
-    };
-    const data = await this.findAll(creatorId, {
-      date,
+    const { reportName, reportType, productNames, creatorId } = info;
+    const entity = plainToInstance(ReportEntity, {
+      creatorId,
+      reportName,
+      productNames,
       reportType,
     });
-    let entities;
-
-    // 周报
-    if (reportType === 1) {
-      entities = data.map((item) => {
-        const { year, weekalone } = item;
-        const date = moment().year(year).week(weekalone).add(1, 'weeks');
-
-        return {
-          creatorId: item.creatorId,
-          reportName: item.reportName,
-          productNames: item.productNames,
-          reportType: item.reportType,
-          startDate: date.startOf('week').format(dateFormat),
-          endDate: date.endOf('week').format(dateFormat),
-          date: date.format('gggg-ww'),
-          year: date.year(),
-          month: date.month() + 1,
-          weekalone: date.week(),
-          quarter: date.startOf('week').quarter(),
-          // @ts-ignore
-          monthWeek: date.startOf('week').weekOfMonth(),
-        };
-      });
-    } else if (reportType === 2) {
-      entities = data.map((item) => {
-        const { year, month } = item;
-        const date = moment()
-          .year(year)
-          .month(month - 1)
-          .add(1, 'month');
-
-        return {
-          creatorId: item.creatorId,
-          reportName: item.reportName,
-          productNames: item.productNames,
-          reportType: item.reportType,
-          startDate: date.startOf('month').format(dateFormat),
-          endDate: date.endOf('month').format(dateFormat),
-          date: date.format('gggg-ww'),
-          year: date.year(),
-          month: date.month() + 1,
-          weekalone: date.week(),
-          quarter: date.startOf('month').quarter(),
-          // @ts-ignore
-          monthWeek: item.monthWeek,
-        };
-      });
-    }
-    const res = await this.dataSource.manager.save(entities);
+    const res = await this.dataSource.manager.save(entity);
     return res.id;
   }
 

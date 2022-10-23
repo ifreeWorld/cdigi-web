@@ -14,10 +14,9 @@ import {
   ReportIdResult,
   ReportDataResult,
   ReportDeleteByReportNameDto,
-  SummaryDto,
+  DetailDto,
 } from './report.dto';
 import { ReportEntity } from './report.entity';
-import { CustomerType } from '../tag/customerType.enum';
 
 @ApiBearerAuth()
 @ApiTags('报告')
@@ -55,25 +54,11 @@ export class ReportController {
     type: ReportDataResult,
   })
   async findAll(
-    @Query() query: SearchDto,
+    @Body() body: SearchDto,
     @CurrentUser() currentUser,
   ): Promise<ReportEntity[]> {
-    const list = await this.reportService.findAll(currentUser.id, query);
+    const list = await this.reportService.findAll(currentUser.id, body);
     return list;
-  }
-
-  /** 汇总查询 */
-  @UseGuards(JwtGuard)
-  @Get('/summary')
-  async summary(
-    @Query() query: SummaryDto,
-    @CurrentUser() currentUser,
-  ): Promise<{
-    saleRingRatio: Record<CustomerType, number>;
-    stockRingRatio: Record<CustomerType, number>;
-  }> {
-    const data = await this.reportService.summary(currentUser.id, query);
-    return data;
   }
 
   /** 添加 */
@@ -126,5 +111,13 @@ export class ReportController {
   })
   async delete(@Body() { ids }: ReportDeleteDto) {
     return this.reportService.delete(ids);
+  }
+
+  /** 获取detail数据 */
+  @UseGuards(JwtGuard)
+  @Get('/detail')
+  async detail(@Body() body: DetailDto, @CurrentUser() currentUser) {
+    const list = await this.reportService.detail(currentUser.id, body);
+    return list;
   }
 }
