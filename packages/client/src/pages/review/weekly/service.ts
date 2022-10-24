@@ -19,6 +19,13 @@ export async function addReport(data: any) {
   });
 }
 
+export async function getReportDetail(data: any) {
+  return request<ResultSuccessPromise<WeeklyData[]>>('/api/report/detail', {
+    data,
+    method: 'POST',
+  });
+}
+
 export async function deleteReport(data: any) {
   return request<ResultSuccessPromise<WeeklyData[]>>('/api/report/deleteByReportName', {
     data,

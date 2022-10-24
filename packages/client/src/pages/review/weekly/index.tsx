@@ -15,7 +15,7 @@ import {
   setWeeklyGenerateDay,
   getWeeklyGenerateDay,
 } from './service';
-import { useRequest, history, Link } from 'umi';
+import { useRequest, Link } from 'umi';
 import { getAllValues } from '@/pages/analysis/create/service';
 import { CustomerType } from '@/types/common';
 
@@ -197,10 +197,10 @@ const Weekly = () => {
           </div>
         </div>
         <div className={styles.reportList}>
-          {weeklyData?.map((item, index) => {
+          {weeklyData?.map((item) => {
             const { saleRingRatio = {}, stockTurn = {}, saleNum = {}, stockNum = {} } = item;
             return (
-              <div className={styles.reportItem}>
+              <div key={item.reportName} className={styles.reportItem}>
                 <div className={styles.row}>
                   <div className={styles.left}>报告名称：</div>
                   <div className={styles.right}>{item.reportName}</div>

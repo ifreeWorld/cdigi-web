@@ -115,7 +115,7 @@ export class ReportController {
 
   /** 获取detail数据 */
   @UseGuards(JwtGuard)
-  @Get('/detail')
+  @Post('/detail')
   async detail(@Body() body: DetailDto, @CurrentUser() currentUser) {
     const list = await this.reportService.detail(currentUser.id, body);
     return list;

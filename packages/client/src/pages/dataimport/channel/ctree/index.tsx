@@ -3,10 +3,14 @@ import type { DataNode, TreeProps } from 'antd/es/tree';
 import { useRequest } from 'umi';
 import React, { useState, useMemo } from 'react';
 import { getAllCustomer } from '../../../customer/list/service';
-import type { CustomerType } from '@/types/common';
+import { CustomerType } from '@/types/common';
 
 interface Props {
-  onSelect: (customerId: number, customerType: CustomerType) => void;
+  onSelect: (customerId: number, customerType: CustomerType, isLeaf: boolean) => void;
+  /**
+   * 是否可以选择父节点
+   */
+  isSelectParent?: boolean;
 }
 
 const CTree: React.FC<Props> = (props) => {
@@ -15,7 +19,7 @@ const CTree: React.FC<Props> = (props) => {
     const res = await getAllCustomer({});
     if (res.data[0] && res.data[0].id) {
       setCustomerId(res.data[0].id);
-      props.onSelect(res.data[0].id, res.data[0].customerType);
+      props.onSelect(res.data[0].id, res.data[0].customerType, true);
     }
     return res;
   });
@@ -24,20 +28,23 @@ const CTree: React.FC<Props> = (props) => {
     const result = [
       {
         title: '品牌商',
-        selectable: false,
+        selectable: !!props.isSelectParent,
         key: 'vendor',
+        customerType: CustomerType.vendor,
         children: [],
       },
       {
         title: '代理商',
-        selectable: false,
+        selectable: !!props.isSelectParent,
         key: 'disty',
+        customerType: CustomerType.disty,
         children: [],
       },
       {
         title: '经销商',
-        selectable: false,
+        selectable: !!props.isSelectParent,
         key: 'dealer',
+        customerType: CustomerType.dealer,
         children: [],
       },
     ];
@@ -62,7 +69,7 @@ const CTree: React.FC<Props> = (props) => {
     const a = info.node.key as number;
     const b = info.node.customerType as CustomerType;
     setCustomerId(a);
-    props.onSelect(a, b);
+    props.onSelect(a, b, !info.node.children);
   };
 
   return (

@@ -23,6 +23,7 @@ import {
   getRingRatio,
   getSameRatio,
   getStockTurn,
+  sum,
 } from './util';
 import { CustomerType } from '../tag/customerType.enum';
 import { StockEntity } from '../stock/stock.entity';
@@ -152,22 +153,22 @@ export class ReportService {
       },
     });
 
-    let saleRingRatio: any = {
+    const saleRingRatio: any = {
       [CustomerType.vendor]: 0,
       [CustomerType.disty]: 0,
       [CustomerType.dealer]: 0,
     };
-    let stockTurn: any = {
+    const stockTurn: any = {
       [CustomerType.vendor]: 0,
       [CustomerType.disty]: 0,
       [CustomerType.dealer]: 0,
     };
-    let saleNum: any = {
+    const saleNum: any = {
       [CustomerType.vendor]: 0,
       [CustomerType.disty]: 0,
       [CustomerType.dealer]: 0,
     };
-    let stockNum: any = {
+    const stockNum: any = {
       [CustomerType.vendor]: 0,
       [CustomerType.disty]: 0,
       [CustomerType.dealer]: 0,
@@ -201,12 +202,12 @@ export class ReportService {
         .groupBy('week')
         .addGroupBy('customerType')
         .orderBy('week', 'ASC');
-      let curV = {
+      const curV = {
         [CustomerType.vendor]: 0,
         [CustomerType.disty]: 0,
         [CustomerType.dealer]: 0,
       };
-      let lastV = {
+      const lastV = {
         [CustomerType.vendor]: 0,
         [CustomerType.disty]: 0,
         [CustomerType.dealer]: 0,
@@ -315,7 +316,7 @@ export class ReportService {
       .format('gggg-ww');
     let lastSameWeek;
     // @ts-ignore
-    let curMonthWeek = moment(item, 'gggg-ww').startOf('week').weekOfMonth();
+    let curMonthWeek = moment(date, 'gggg-ww').startOf('week').weekOfMonth();
     if (curMonthWeek === 5) {
       curMonthWeek = 4;
     }
@@ -334,8 +335,8 @@ export class ReportService {
       let sql = `SELECT s.*, c.customer_type FROM tbl_sale s LEFT JOIN tbl_customer c ON s.customer_id = c.id`;
       const saleQb = this.dataSource
         .createQueryBuilder()
-        .select('t.week')
-        .select('t.product_name', 'productName')
+        .select('t.week', 'week')
+        .addSelect('t.product_name', 'productName')
         .addSelect('sum(t.quantity)', 'quantity')
         .where('week IN (:...dates)', {
           dates: dates,
@@ -452,12 +453,12 @@ export class ReportService {
         ),
       };
       saleRatioArr.push(saleRatioObj);
-      // TODO 计算库存
+      // 计算库存
       sql = `SELECT s.*, c.customer_type FROM tbl_stock s LEFT JOIN tbl_customer c ON s.customer_id = c.id`;
       const stockQb = this.dataSource
         .createQueryBuilder()
-        .select('t.week')
-        .select('t.product_name', 'productName')
+        .select('t.week', 'week')
+        .addSelect('t.product_name', 'productName')
         .addSelect('sum(t.quantity)', 'quantity')
         .where('week IN (:...dates)', {
           dates: dates,
@@ -477,6 +478,109 @@ export class ReportService {
         .addGroupBy('productName');
       stockQb.orderBy('week', 'ASC');
       const stockData = await stockQb.getRawMany();
+      // 库存数量
+      const stockNumArr = [];
+      allProductNames.forEach((productName) => {
+        const obj = {
+          productName,
+        };
+        dates.forEach((d) => {
+          obj[d] =
+            Number(
+              stockData.find(
+                (item) => item.productName === productName && item.week === d,
+              )?.quantity,
+            ) || 0;
+        });
+        stockNumArr.push(obj);
+      });
+      // 库存数量中的汇总
+      const stockSumObj = { productName: allFieldText };
+      dates.forEach((d) => {
+        const dNum = stockNumArr.reduce((prev, next) => prev + next[d], 0);
+        stockSumObj[d] = dNum;
+      });
+      stockNumArr.push(stockSumObj);
+      // 当前周的库存数据汇总
+      const curWeekStockTotal = stockSumObj[date];
+      // 上周的库存数据汇总
+      const lastWeekStockTotal = stockSumObj[lastWeek];
+      // 当前周的库存总环比
+      const curWeekStockRingRatio = getRingRatio(
+        curWeekStockTotal,
+        lastWeekStockTotal,
+      );
+      // 当前周的库存周转天数
+      const curWeekStockTurn = getStockTurn(
+        curWeekStockTotal,
+        saleSumObj[date] +
+          saleSumObj[lastWeek] +
+          saleSumObj[last2Week] +
+          saleSumObj[last3Week],
+      );
+      // 库存指标（比例）
+      const stockRatioArr = [];
+      allProductNames.forEach((productName) => {
+        const obj: any = {
+          productName,
+        };
+        const curWeekV =
+          Number(
+            stockData.find(
+              (item) => item.productName === productName && item.week === date,
+            )?.quantity,
+          ) || 0;
+        const lastWeekV =
+          Number(
+            stockData.find(
+              (item) =>
+                item.productName === productName && item.week === lastWeek,
+            )?.quantity,
+          ) || 0;
+        const lastSameV =
+          Number(
+            stockData.find(
+              (item) =>
+                item.productName === productName && item.week === lastSameWeek,
+            )?.quantity,
+          ) || 0;
+        const sale4WeeksTotal = saleData
+          .filter(
+            (item) =>
+              item.productName === productName &&
+              [last3Week, last2Week, lastWeek, date].includes(item.week),
+          )
+          .map((item) => Number(item.quantity));
+        obj.ringRatio = getRingRatio(curWeekV, lastWeekV);
+        obj.sameRatio = getSameRatio(curWeekV, lastSameV);
+        obj.turn = getStockTurn(curWeekV, sum(sale4WeeksTotal));
+
+        stockRatioArr.push(obj);
+      });
+      // 库存指标（比例）中的汇总
+      const stockRatioObj = {
+        productName: allFieldText,
+        ringRatio: curWeekStockRingRatio,
+        sameRatio: getSameRatio(curWeekStockTotal, stockSumObj[lastSameWeek]),
+        turn: getStockTurn(
+          curWeekStockTotal,
+          saleSumObj[date] +
+            saleSumObj[lastWeek] +
+            saleSumObj[last2Week] +
+            saleSumObj[last3Week],
+        ),
+      };
+      stockRatioArr.push(stockRatioObj);
+      return {
+        saleNumArr,
+        saleRatioArr,
+        curWeekSaleTotal,
+        curWeekSaleRingRatio,
+        stockNumArr,
+        stockRatioArr,
+        curWeekStockTotal,
+        curWeekStockTurn,
+      };
     }
   }
 
