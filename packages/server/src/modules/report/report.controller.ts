@@ -15,6 +15,7 @@ import {
   ReportDataResult,
   ReportDeleteByReportNameDto,
   DetailDto,
+  WeeklyDetailData,
 } from './report.dto';
 import { ReportEntity } from './report.entity';
 
@@ -49,7 +50,7 @@ export class ReportController {
 
   /** 全量客户列表 */
   @UseGuards(JwtGuard)
-  @Get('/all')
+  @Post('/all')
   @ApiOkResponse({
     type: ReportDataResult,
   })

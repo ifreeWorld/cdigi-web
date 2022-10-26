@@ -67,7 +67,7 @@ export function getAvgNum(arr) {
  */
 export function getStockTurn(stockNum, saleTotal) {
   if (saleTotal === 0) {
-    return 0;
+    return 'n/a';
   }
   return Number(((7 * stockNum) / (saleTotal / 4)).toFixed(4));
 }

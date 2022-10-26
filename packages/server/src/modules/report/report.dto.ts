@@ -106,3 +106,33 @@ export class ReportDataResult extends BaseResult {
 export class ReportIdResult extends BaseResult {
   data: number;
 }
+
+type ReportNum = number | 'n/a';
+
+export class SaleRatioItem {
+  productName: string;
+  ringRatio: ReportNum;
+  sameRatio: ReportNum;
+  avgRatio: ReportNum;
+}
+export class StockRatioItem {
+  productName: string;
+  ringRatio: ReportNum;
+  sameRatio: ReportNum;
+  turn: ReportNum;
+}
+
+export class WeeklyDetailData {
+  saleNumArr: (Record<string, number> & { productName: string })[];
+  saleRatioArr: SaleRatioItem[];
+  curWeekSaleTotal: number;
+  curWeekSaleRingRatio: ReportNum;
+  stockNumArr: (Record<string, number> & { productName: string })[];
+  stockRatioArr: StockRatioItem[];
+  curWeekStockTotal: number;
+  curWeekStockTurn: ReportNum;
+}
+
+export class ReportDetailResult extends BaseResult {
+  data: WeeklyDetailData;
+}

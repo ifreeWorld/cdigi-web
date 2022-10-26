@@ -155,6 +155,7 @@ export default defineConfig({
           icon: 'smile',
           path: '/review/weekly/detail',
           component: './review/weekly/detail',
+          hideInMenu: true,
         },
       ],
     },

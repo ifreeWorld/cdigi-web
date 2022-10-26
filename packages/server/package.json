@@ -8,7 +8,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
-    "generatesql:local": "cross-env NODE_ENV=production local=true typeorm-ts-node-esm migration:generate -o -d ./src/datasource.ts ./migrations/update",
+    "generatesql:local": "yarn run build && cross-env NODE_ENV=production local=true typeorm-ts-node-esm migration:generate -o -d ./src/datasource.ts ./migrations/update",
     "runsql:local": "cross-env NODE_ENV=production local=true typeorm-ts-node-esm migration:run -d ./src/datasource.ts",
     "revertsql:local": "cross-env NODE_ENV=production local=true typeorm-ts-node-esm migration:revert -d ./src/datasource.ts",
     "runsql": "cross-env NODE_ENV=production typeorm-ts-node-esm migration:run -d ./src/datasource.ts",

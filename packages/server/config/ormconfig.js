@@ -1,5 +1,6 @@
+// 开发环境是mysql，生产环境是mariadb
 const orm = {
-  type: 'mysql',
+  type: 'mariadb',
   host: process.env.orm_host,
   port: process.env.orm_port,
   username: process.env.orm_username,

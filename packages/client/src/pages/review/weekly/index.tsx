@@ -18,6 +18,7 @@ import {
 import { useRequest, Link } from 'umi';
 import { getAllValues } from '@/pages/analysis/create/service';
 import { CustomerType } from '@/types/common';
+import { formatNumber, formatPerfect } from '@/utils';
 
 const Weekly = () => {
   const cur = moment();
@@ -79,20 +80,6 @@ const Weekly = () => {
     setAddVisible(true);
   };
 
-  const formatPerfect = (v: number) => {
-    if (!v) {
-      return `0%`;
-    }
-    return `${v * 100}%`;
-  };
-
-  const formatNumber = (v: number) => {
-    if (!v) {
-      return 0;
-    }
-    return v;
-  };
-
   return (
     <PageContainer className={styles.pageContainer}>
       <div className={styles.container}>
@@ -109,7 +96,7 @@ const Weekly = () => {
             });
           }}
           submitter={{
-            render: (props) => {
+            render: () => {
               return [
                 <Button key="submit" htmlType="submit" type="primary">
                   查询
@@ -127,11 +114,11 @@ const Weekly = () => {
             allowClear={false}
             transform={(value: string) => {
               const date = moment(value);
-              const week = date.format('gggg-ww');
+              const weekstr = date.format('gggg-ww');
               const startDate = date.startOf('week').format(dateFormat);
               const endDate = date.endOf('week').format(dateFormat);
               return {
-                week,
+                week: weekstr,
                 weekStartDate: startDate,
                 weekEndDate: endDate,
               };
@@ -217,7 +204,7 @@ const Weekly = () => {
                   <div className={styles.absolute}>
                     <Link
                       key="create"
-                      to={`/review/weekly/detail?date=${item.date}&productNames=${item.productNames}&reportName=${item.reportName}`}
+                      to={`/review/weekly/detail?date=${item.date}&productNames=${item.productNames}&reportName=${item.reportName}&startDate=${item.startDate}&endDate=${item.endDate}`}
                       target="_blank"
                     >
                       <Button type="primary" style={{ marginRight: '4px' }}>

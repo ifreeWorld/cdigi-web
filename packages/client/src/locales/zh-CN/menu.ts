@@ -68,5 +68,6 @@ export default {
   'menu.review.search': '库存销售查询',
   'menu.review.suggest': '推荐订单',
   'menu.review.weekly': '周报',
+  'menu.review.weekly-detail': '周报详情',
   'menu.review.monthly': '月报',
 };

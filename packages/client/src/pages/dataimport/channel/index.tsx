@@ -24,12 +24,6 @@ const Channel: React.FC = () => {
       <div className={styles.container}>
         <div className={styles.leftTree}>
           <div className={styles.treeTitle}>用户选择</div>
-          {/* <Tree
-            defaultExpandAll
-            selectedKeys={[customerId]}
-            onSelect={onSelect}
-            treeData={treeData}
-          /> */}
           <CTree onSelect={onSelect} />
         </div>
         <div className={styles.right}>

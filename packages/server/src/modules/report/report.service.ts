@@ -12,6 +12,7 @@ import {
   SummaryDto,
   ReportSummaryRatio,
   DetailDto,
+  WeeklyDetailData,
 } from './report.dto';
 import { ERROR, ErrorConstant } from 'src/constant/error';
 import { setCreatorWhere } from '../../utils';
@@ -279,7 +280,7 @@ export class ReportService {
     };
   }
 
-  async detail(creatorId: number, body: DetailDto) {
+  async detail(creatorId: number, body: DetailDto): Promise<WeeklyDetailData> {
     const { date, reportType, productNames, customerId, customerType } = body;
     // @ts-ignore
     moment.fn.weekOfMonth = function () {
@@ -378,7 +379,7 @@ export class ReportService {
         const dNum = saleNumArr.reduce((prev, next) => prev + next[d], 0);
         saleSumObj[d] = dNum;
       });
-      saleNumArr.push(saleSumObj);
+      saleNumArr.unshift(saleSumObj);
       // 当前周的销售数据汇总
       const curWeekSaleTotal = saleSumObj[date];
       // 上周的销售数据汇总
@@ -452,7 +453,7 @@ export class ReportService {
           ]),
         ),
       };
-      saleRatioArr.push(saleRatioObj);
+      saleRatioArr.unshift(saleRatioObj);
       // 计算库存
       sql = `SELECT s.*, c.customer_type FROM tbl_stock s LEFT JOIN tbl_customer c ON s.customer_id = c.id`;
       const stockQb = this.dataSource
@@ -500,7 +501,7 @@ export class ReportService {
         const dNum = stockNumArr.reduce((prev, next) => prev + next[d], 0);
         stockSumObj[d] = dNum;
       });
-      stockNumArr.push(stockSumObj);
+      stockNumArr.unshift(stockSumObj);
       // 当前周的库存数据汇总
       const curWeekStockTotal = stockSumObj[date];
       // 上周的库存数据汇总
@@ -570,7 +571,7 @@ export class ReportService {
             saleSumObj[last3Week],
         ),
       };
-      stockRatioArr.push(stockRatioObj);
+      stockRatioArr.unshift(stockRatioObj);
       return {
         saleNumArr,
         saleRatioArr,

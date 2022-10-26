@@ -6,7 +6,12 @@ import { getAllCustomer } from '../../../customer/list/service';
 import { CustomerType } from '@/types/common';
 
 interface Props {
-  onSelect: (customerId: number, customerType: CustomerType, isLeaf: boolean) => void;
+  onSelect: (
+    customerId: number,
+    customerType: CustomerType,
+    customerName: string,
+    isLeaf: boolean,
+  ) => void;
   /**
    * 是否可以选择父节点
    */
@@ -19,7 +24,7 @@ const CTree: React.FC<Props> = (props) => {
     const res = await getAllCustomer({});
     if (res.data[0] && res.data[0].id) {
       setCustomerId(res.data[0].id);
-      props.onSelect(res.data[0].id, res.data[0].customerType, true);
+      props.onSelect(res.data[0].id, res.data[0].customerType, res.data[0].customerName, true);
     }
     return res;
   });
@@ -68,8 +73,9 @@ const CTree: React.FC<Props> = (props) => {
   const onSelect: TreeProps['onSelect'] = (selectedKeys, info) => {
     const a = info.node.key as number;
     const b = info.node.customerType as CustomerType;
+    const c = info.node.title;
     setCustomerId(a);
-    props.onSelect(a, b, !info.node.children);
+    props.onSelect(a, b, c, !info.node.children);
   };
 
   return (

@@ -2,7 +2,7 @@
 /* eslint-disable */
 import { request } from 'umi';
 import { ResultSuccessPromise } from '../../../types/common';
-import { WeeklyData } from './data';
+import { WeeklyData, WeeklyDetailData } from './data';
 
 /** 获取库存 POST /api/report/all */
 export async function getReportList(data: any) {
@@ -13,21 +13,21 @@ export async function getReportList(data: any) {
 }
 
 export async function addReport(data: any) {
-  return request<ResultSuccessPromise<WeeklyData[]>>('/api/report/add', {
+  return request('/api/report/add', {
     data,
     method: 'POST',
   });
 }
 
 export async function getReportDetail(data: any) {
-  return request<ResultSuccessPromise<WeeklyData[]>>('/api/report/detail', {
+  return request<ResultSuccessPromise<WeeklyDetailData>>('/api/report/detail', {
     data,
     method: 'POST',
   });
 }
 
 export async function deleteReport(data: any) {
-  return request<ResultSuccessPromise<WeeklyData[]>>('/api/report/deleteByReportName', {
+  return request('/api/report/deleteByReportName', {
     data,
     method: 'POST',
   });
