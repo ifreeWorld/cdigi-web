@@ -31,8 +31,6 @@ export class SuggestCreateDto {
   categorySecondName?: SuggestEntity['categorySecondName'];
 
   categoryThirdName?: SuggestEntity['categoryThirdName'];
-
-  tags?: SuggestEntity['tags'];
 }
 export class SuggestUpdateDto extends SuggestCreateDto {
   @IsNotEmpty({
