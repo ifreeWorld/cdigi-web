@@ -186,4 +186,8 @@ export class UploadSummaryDto {
     message: 'week不能为空',
   })
   week: string;
+
+  customerId?: CustomerEntity['id'];
+
+  customerType?: CustomerEntity['customerType'];
 }

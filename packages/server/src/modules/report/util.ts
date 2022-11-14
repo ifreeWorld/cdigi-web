@@ -16,7 +16,7 @@ export function getRingRatio(data, lastData) {
   if (lastData === 0) {
     return 'n/a';
   }
-  return Number(((data - lastData) / lastData).toFixed(4));
+  return Number(((data - lastData) / lastData).toFixed(3));
 }
 
 /**
@@ -29,7 +29,7 @@ export function getSameRatio(data, lastData) {
   if (lastData === 0) {
     return 'n/a';
   }
-  return Number(((data - lastData) / lastData).toFixed(4));
+  return Number(((data - lastData) / lastData).toFixed(3));
 }
 
 /**
@@ -42,7 +42,7 @@ export function getAvgRatio(data, lastData) {
   if (lastData === 0) {
     return 'n/a';
   }
-  return Number(((data - lastData) / lastData).toFixed(4));
+  return Number(((data - lastData) / lastData).toFixed(3));
 }
 
 /**
@@ -69,7 +69,7 @@ export function getStockTurn(stockNum, saleTotal) {
   if (saleTotal === 0) {
     return 'n/a';
   }
-  return Number(((7 * stockNum) / (saleTotal / 4)).toFixed(4));
+  return Number(((7 * stockNum) / (saleTotal / 4)).toFixed(1));
 }
 
 export function sum(arr: number[]) {

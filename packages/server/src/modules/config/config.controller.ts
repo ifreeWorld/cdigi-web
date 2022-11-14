@@ -78,7 +78,9 @@ export class ConfigController {
     const file = createReadStream(urlPath);
     res.set({
       'Content-Type': mimeType.xlsx,
-      'Content-Disposition': `attachment; filename="error.xlsx"`,
+      'Content-Disposition': `attachment; filename=${encodeURIComponent(
+        fileName,
+      )}`,
     });
     return new StreamableFile(file);
   }

@@ -5,5 +5,12 @@ export interface Summary {
   saleNumber: number;
   stockTotal: number;
   stockNumber: number;
-  noUpload: string[];
+  noSaleUpload: string[];
+  noStockUpload: string[];
+}
+
+export interface SummaryLeaf {
+  week: string;
+  sale: boolean;
+  stock: boolean;
 }

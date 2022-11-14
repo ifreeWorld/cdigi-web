@@ -126,29 +126,38 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           <AutoComplete
             placeholder="请输入品牌"
             options={allVendorNames.map((item) => ({ value: item }))}
+            filterOption={(inputValue: string, option?: { value: string }) => {
+              return !!option?.value.toLocaleLowerCase().includes(inputValue.toLocaleLowerCase());
+            }}
           />
         </ProForm.Item>
         <ProForm.Item name="categoryFirstName" label="一级分类">
           <AutoComplete
             placeholder="请输入一级分类"
             options={allFirstNames.map((item) => ({ value: item }))}
+            filterOption={(inputValue: string, option?: { value: string }) => {
+              return !!option?.value.toLocaleLowerCase().includes(inputValue.toLocaleLowerCase());
+            }}
           />
         </ProForm.Item>
         <ProForm.Item name="categorySecondName" label="二级分类">
           <AutoComplete
             placeholder="请输入二级分类"
             options={allSecondNames.map((item) => ({ value: item }))}
+            filterOption={(inputValue: string, option?: { value: string }) => {
+              return !!option?.value.toLocaleLowerCase().includes(inputValue.toLocaleLowerCase());
+            }}
           />
         </ProForm.Item>
         <ProForm.Item name="categoryThirdName" label="三级分类">
           <AutoComplete
             placeholder="请输入三级分类"
             options={allThirdNames.map((item) => ({ value: item }))}
+            filterOption={(inputValue: string, option?: { value: string }) => {
+              return !!option?.value.toLocaleLowerCase().includes(inputValue.toLocaleLowerCase());
+            }}
           />
         </ProForm.Item>
-        {/* <ProFormText name="categoryFirstName" label="一级分类" placeholder="请输入一级分类" />
-        <ProFormText name="categorySecondName" label="二级分类" placeholder="请输入二级分类" />
-        <ProFormText name="categoryThirdName" label="三级分类" placeholder="请输入三级分类" /> */}
         <ProFormSelect
           name="tags"
           mode="multiple"

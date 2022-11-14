@@ -131,7 +131,7 @@ export class CustomizeController {
     @CurrentUser() currentUser,
   ) {
     const list = await this.customizeService.getUploadSummary(
-      query.week,
+      query,
       currentUser.id,
     );
     return list;

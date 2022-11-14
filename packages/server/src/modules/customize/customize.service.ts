@@ -16,6 +16,7 @@ import {
   CustomizeCreateDto,
   CustomizeUpdateDto,
   SaleAndStockDto,
+  UploadSummaryDto,
 } from './customize.dto';
 import { CustomResponse, ERROR } from 'src/constant/error';
 import { getMonthAndWeekText, indexOfLike, setCreatorWhere } from '../../utils';
@@ -40,6 +41,7 @@ import { ConfigService } from '../config/config.service';
 import { TransitEntity } from '../transit/transit.entity';
 import { dateFormat } from 'src/constant/file';
 import { customerTypeMap } from 'src/constant/map';
+import { isEmpty } from 'class-validator';
 
 const timeFields = ['year', 'quarter', 'month', 'monthAndWeek', 'weekalone'];
 const allFieldText = '全部';
@@ -129,7 +131,7 @@ export class CustomizeService {
     if (!validator.isEmpty(column) && !validator.isEmpty(value)) {
       const { filter: columnFilter = { value: [] }, field: columnField } =
         column;
-      let { value: filterValue } = columnFilter;
+      const { value: filterValue } = columnFilter;
       const { field: valueField, aggregator } = value;
       if (!aggregator) {
         throw new CustomResponse('请先选择值的聚合类型');
@@ -811,79 +813,134 @@ export class CustomizeService {
     return result;
   }
 
-  async getUploadSummary(week: string, creatorId: number) {
-    const customerData = await this.customerRepository.find({
-      where: {
-        creatorId,
-      },
-    });
-    const sales = await this.dataSource
-      .getRepository(SaleEntity)
-      .createQueryBuilder('sale')
-      .select('customer_id', 'customerId')
-      .distinct(true)
-      .where('creator_id = :creatorId', { creatorId })
-      .andWhere('week = :week', { week })
-      .getRawMany();
-    const stocks = await this.dataSource
-      .getRepository(StockEntity)
-      .createQueryBuilder('stock')
-      .select('customer_id', 'customerId')
-      .distinct(true)
-      .where('creator_id = :creatorId', { creatorId })
-      .andWhere('week = :week', { week })
-      .getRawMany();
-    const saleData = sales.map((item) => item.customerId);
-    const stockData = stocks.map((item) => item.customerId);
-    const data = [
-      {
-        key: 'vendor',
-        title: '品牌商',
-        saleTotal: 0,
-        saleNumber: 0,
-        stockTotal: 0,
-        stockNumber: 0,
-        noUpload: [],
-      },
-      {
-        key: 'disty',
-        title: '代理商',
-        saleTotal: 0,
-        saleNumber: 0,
-        stockTotal: 0,
-        stockNumber: 0,
-        noUpload: [],
-      },
-      {
-        key: 'dealer',
-        title: '经销商',
-        saleTotal: 0,
-        saleNumber: 0,
-        stockTotal: 0,
-        stockNumber: 0,
-        noUpload: [],
-      },
-    ];
-    customerData.forEach((item) => {
-      const { customerType, id, customerName } = item;
-      const index = customerType - 1;
-      let flag = false;
-      if (stockData.includes(id)) {
-        data[index].stockNumber += 1;
-      } else {
-        flag = true;
+  async getUploadSummary(
+    { week, customerId, customerType }: UploadSummaryDto,
+    creatorId: number,
+  ) {
+    if (isEmpty(customerId)) {
+      // 是空的情况下，查询全量的
+      const customerData = await this.customerRepository.find({
+        where: {
+          creatorId,
+        },
+      });
+      const sales = await this.dataSource
+        .getRepository(SaleEntity)
+        .createQueryBuilder('sale')
+        .select('customer_id', 'customerId')
+        .distinct(true)
+        .where('creator_id = :creatorId', { creatorId })
+        .andWhere('week = :week', { week })
+        .getRawMany();
+      const stocks = await this.dataSource
+        .getRepository(StockEntity)
+        .createQueryBuilder('stock')
+        .select('customer_id', 'customerId')
+        .distinct(true)
+        .where('creator_id = :creatorId', { creatorId })
+        .andWhere('week = :week', { week })
+        .getRawMany();
+      const saleData = sales.map((item) => item.customerId);
+      const stockData = stocks.map((item) => item.customerId);
+      const data = [
+        {
+          key: 'vendor',
+          title: '品牌商',
+          saleTotal: 0,
+          saleNumber: 0,
+          stockTotal: 0,
+          stockNumber: 0,
+          noSaleUpload: [],
+          noStockUpload: [],
+        },
+        {
+          key: 'disty',
+          title: '代理商',
+          saleTotal: 0,
+          saleNumber: 0,
+          stockTotal: 0,
+          stockNumber: 0,
+          noSaleUpload: [],
+          noStockUpload: [],
+        },
+        {
+          key: 'dealer',
+          title: '经销商',
+          saleTotal: 0,
+          saleNumber: 0,
+          stockTotal: 0,
+          stockNumber: 0,
+          noSaleUpload: [],
+          noStockUpload: [],
+        },
+      ];
+      customerData.forEach((item) => {
+        const { customerType, id, customerName } = item;
+        const index = customerType - 1;
+        if (stockData.includes(id)) {
+          data[index].stockNumber += 1;
+        } else {
+          data[index].noStockUpload.push(customerName);
+        }
+        if (saleData.includes(id)) {
+          data[index].saleNumber += 1;
+        } else {
+          data[index].noSaleUpload.push(customerName);
+        }
+        data[index].stockTotal += 1;
+        data[index].saleTotal += 1;
+      });
+      return data;
+    } else {
+      // 非空的情况下，只查询这一个客户的近12周数据
+      // 查询周开始日
+      let weekStartIndex = '1';
+      weekStartIndex = await this.configService.hget(
+        'getWeekStartIndex',
+        String(creatorId),
+      );
+      if (!weekStartIndex) {
+        weekStartIndex = '1';
       }
-      if (saleData.includes(id)) {
-        data[index].saleNumber += 1;
-      } else {
-        flag = true;
+      moment.locale('zh-cn', {
+        week: {
+          dow: Number(weekStartIndex),
+        },
+      });
+      const weeks = [];
+      for (let i = 0; i < 12; i++) {
+        weeks.push(
+          moment(week, 'gggg-ww')
+            .subtract(i * 7, 'day')
+            .format('gggg-ww'),
+        );
       }
-      if (flag) {
-        data[index].noUpload.push(customerName);
-      }
-      data[index].stockTotal += 1;
-      data[index].saleTotal += 1;
-    });
-    return data;
+      const sales = await this.dataSource
+        .getRepository(SaleEntity)
+        .createQueryBuilder('sale')
+        .select('week')
+        .addSelect('count(*)', 'count')
+        .where('creator_id = :creatorId', { creatorId })
+        .andWhere('customer_id = :customerId', { customerId })
+        .andWhere('week IN (:...weeks)', { weeks })
+        .groupBy('week')
+        .getRawMany();
+      const stocks = await this.dataSource
+        .getRepository(StockEntity)
+        .createQueryBuilder('stock')
+        .select('week')
+        .addSelect('count(*)', 'count')
+        .where('creator_id = :creatorId', { creatorId })
+        .andWhere('customer_id = :customerId', { customerId })
+        .andWhere('week IN (:...weeks)', { weeks })
+        .groupBy('week')
+        .getRawMany();
+      const result = weeks.map((item) => ({
+        week: item,
+        sale: sales.some((s) => s.week === item && s.count > 0),
+        stock: stocks.some((s) => s.week === item && s.count > 0),
+      }));
+      return result;
+    }
   }
 }

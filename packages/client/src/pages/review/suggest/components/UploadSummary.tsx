@@ -9,6 +9,7 @@ interface Props {
   week: string;
 }
 
+// 上传汇总，品牌商、代理商、经销商
 const UploadSummary = (props: Props) => {
   const { data, run } = useRequest(
     async (params) => {
@@ -43,17 +44,24 @@ const UploadSummary = (props: Props) => {
       },
     },
     {
-      title: '未上传',
-      dataIndex: 'noUpload',
+      title: '库存未上传',
+      dataIndex: 'noStockUpload',
       render: (text: string, record: Summary) => {
-        return record.noUpload.join('、');
+        return record.noStockUpload.join('、');
+      },
+    },
+    {
+      title: '销售未上传',
+      dataIndex: 'noSaleUpload',
+      render: (text: string, record: Summary) => {
+        return record.noSaleUpload.join('、');
       },
     },
   ];
 
   return (
     <div className={styles.box}>
-      <Table columns={columns} dataSource={data} pagination={false} />
+      <Table columns={columns} dataSource={data as Summary[]} pagination={false} />
     </div>
   );
 };

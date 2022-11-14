@@ -18,7 +18,7 @@ import {
 import { useRequest, Link } from 'umi';
 import { getAllValues } from '@/pages/analysis/create/service';
 import { CustomerType } from '@/types/common';
-import { formatNumber, formatPerfect } from '@/utils';
+import { formatNumber, formatPerfect, toRed } from '@/utils';
 
 const Weekly = () => {
   const cur = moment();
@@ -233,35 +233,47 @@ const Weekly = () => {
                 </div>
                 <div className={styles.row}>
                   <div className={styles.left}>销售汇总：</div>
-                  <div className={styles.right}>{`Vendor实现销售数值（${formatNumber(
-                    saleNum[CustomerType.vendor],
-                  )}），销售指标（环比）实现数值（${formatPerfect(
-                    saleRingRatio[CustomerType.vendor],
-                  )}）；Disty实现销售数值（${formatNumber(
-                    saleNum[CustomerType.disty],
-                  )}）销售指标（环比）实现数值（${formatPerfect(
-                    saleRingRatio[CustomerType.disty],
-                  )}）；Dealer实现销售量数值（${formatNumber(
-                    saleNum[CustomerType.dealer],
-                  )}）,销售指标（环比）实现数值（${formatPerfect(
-                    saleRingRatio[CustomerType.dealer],
-                  )}）。`}</div>
+                  <div className={styles.right}>
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: `<b>品牌</b>实现销售（${toRed(
+                          formatNumber(saleNum[CustomerType.vendor]),
+                        )}），环比实现（${toRed(
+                          formatPerfect(saleRingRatio[CustomerType.vendor]),
+                        )}）；<b>代理</b>实现销售（${toRed(
+                          formatNumber(saleNum[CustomerType.disty]),
+                        )}），环比实现（${toRed(
+                          formatPerfect(saleRingRatio[CustomerType.disty]),
+                        )}）；<b>经销商</b>实现销售（${toRed(
+                          formatNumber(saleNum[CustomerType.dealer]),
+                        )}），环比实现（${toRed(
+                          formatPerfect(saleRingRatio[CustomerType.dealer]),
+                        )}）。`,
+                      }}
+                    />
+                  </div>
                 </div>
                 <div className={styles.row}>
                   <div className={styles.left}>库存汇总：</div>
-                  <div className={styles.right}>{`Vendor实现库存数值（${formatNumber(
-                    stockNum[CustomerType.vendor],
-                  )}），库存指标（库存周转天数）实现数值（${formatNumber(
-                    stockTurn[CustomerType.vendor],
-                  )}）；Disty实现库存数值（${formatNumber(
-                    stockNum[CustomerType.disty],
-                  )}），库存指标（库存周转天数）实现数值（${formatNumber(
-                    stockTurn[CustomerType.vendor],
-                  )}）；Dealer实现库存量数值（${formatNumber(
-                    stockNum[CustomerType.dealer],
-                  )}），库存指标（库存周转天数）实现数值（${formatNumber(
-                    stockTurn[CustomerType.vendor],
-                  )}）。`}</div>
+                  <div className={styles.right}>
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: `<b>品牌</b>实现库存（${toRed(
+                          formatNumber(stockNum[CustomerType.vendor]),
+                        )}），库存周转天数实现（${toRed(
+                          formatNumber(stockTurn[CustomerType.vendor]),
+                        )}）；<b>代理</b>实现库存（${toRed(
+                          formatNumber(stockNum[CustomerType.disty]),
+                        )}），库存周转天数实现（${toRed(
+                          formatNumber(stockTurn[CustomerType.vendor]),
+                        )}）；<b>经销商</b>实现库存（${toRed(
+                          formatNumber(stockNum[CustomerType.dealer]),
+                        )}），库存周转天数实现（${toRed(
+                          formatNumber(stockTurn[CustomerType.vendor]),
+                        )}）。`,
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             );

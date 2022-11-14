@@ -17,3 +17,10 @@ export const formatNumber = (v: number | 'n/a') => {
   }
   return `${v}`;
 };
+
+export const toRed = (v: string) => {
+  if (v === '0' || v === '0%' || v[0] === '-') {
+    return `<span style="color: red">${v}</span>`;
+  }
+  return v;
+};

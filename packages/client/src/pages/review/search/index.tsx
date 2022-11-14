@@ -109,7 +109,7 @@ const Search = () => {
     const keys = Object.keys(tableData[0]);
     const etas = Object.keys(tableData[0].transit || {}) || [];
     const etaColumn: ProColumns = {
-      title: 'eta',
+      title: '在途库存（ETA）',
       children: [],
       hideInSearch: true,
     };
@@ -131,11 +131,13 @@ const Search = () => {
               title: '销量',
               dataIndex: [key, 'sale'],
               hideInSearch: true,
+              sorter: (a, b) => a[key].sale - b[key].sale,
             },
             {
               title: '库存',
               dataIndex: [key, 'stock'],
               hideInSearch: true,
+              sorter: (a, b) => a[key].stock - b[key].stock,
             },
           ],
         });
@@ -161,7 +163,8 @@ const Search = () => {
             }}
             scroll={{ x: 'max-content' }}
             pagination={false}
-            request={async (params) => {
+            request={async (params, sort) => {
+              console.log(sort);
               if (!customerId) {
                 return {
                   data: [],
