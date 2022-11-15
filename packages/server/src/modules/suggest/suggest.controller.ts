@@ -1,20 +1,24 @@
-import { Controller, Post, Get, Body, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Query,
+  UseGuards,
+  Res,
+  StreamableFile,
+} from '@nestjs/common';
 import { ApiOkResponse, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../decorators';
 import { SuggestService } from './suggest.service';
-import { Pager } from '../../interface';
 import { JwtGuard } from '../../guards';
-import { getSkip } from '../../utils';
 import {
-  SearchDto,
-  SuggestListResult,
-  SuggestCreateDto,
-  SuggestUpdateDto,
-  SuggestDeleteDto,
-  SuggestIdResult,
-  SuggestDataResult,
+  SuggestStatusResult,
+  SuggestConfigDto,
+  exportDto,
 } from './suggest.dto';
-import { SuggestEntity } from './suggest.entity';
+import { mimeType } from 'src/constant/file';
+import { query } from 'express';
 
 @ApiBearerAuth()
 @ApiTags('产品')
@@ -22,78 +26,35 @@ import { SuggestEntity } from './suggest.entity';
 export class SuggestController {
   constructor(private suggestService: SuggestService) {}
 
-  /** 推荐订单列表 */
+  /** 保存 */
   @UseGuards(JwtGuard)
-  @Get('/list')
+  @Post('/save')
   @ApiOkResponse({
-    type: SuggestListResult,
+    type: SuggestStatusResult,
   })
-  async find(
-    @Query() query: SearchDto,
+  async save(
+    @Body() body: SuggestConfigDto,
     @CurrentUser() currentUser,
-  ): Promise<Pager<SuggestEntity>> {
-    const { current, pageSize } = query;
-    const [list, total] = await this.suggestService.find(
-      currentUser.id,
-      getSkip(current, pageSize),
-      pageSize,
-      query,
-    );
-    return {
-      list: list,
-      total: total,
-    };
+  ): Promise<boolean> {
+    return this.suggestService.save(body, currentUser.id);
   }
 
-  /** 全量推荐订单列表 */
+  /** 生成报告并下载 */
   @UseGuards(JwtGuard)
-  @Get('/all')
-  @ApiOkResponse({
-    type: SuggestDataResult,
-  })
-  async findAll(
-    @Query() query: SearchDto,
+  @Get('/export')
+  async export(
+    @Res({ passthrough: true }) res,
     @CurrentUser() currentUser,
-  ): Promise<SuggestEntity[]> {
-    const list = await this.suggestService.findAll(currentUser.id, query);
-    return list;
-  }
-
-  /** 插入 */
-  @UseGuards(JwtGuard)
-  @Post('/add')
-  @ApiOkResponse({
-    type: SuggestIdResult,
-  })
-  async insert(
-    @Body() body: SuggestCreateDto,
-    @CurrentUser() currentUser,
-  ): Promise<number> {
-    return this.suggestService.insert({
-      ...body,
-      creatorId: currentUser.id,
+    @Query() query: exportDto,
+  ): Promise<StreamableFile> {
+    const buf = await this.suggestService.export(query, currentUser.id);
+    const fileName = '推荐订单.xlsx';
+    res.set({
+      'Content-Type': mimeType.xlsx,
+      'Content-Disposition': `attachment; filename=${encodeURIComponent(
+        fileName,
+      )}`,
     });
-  }
-
-  /** 更新 */
-  @UseGuards(JwtGuard)
-  @Post('/update')
-  @ApiOkResponse({
-    type: SuggestIdResult,
-  })
-  async update(@Body() body: SuggestUpdateDto): Promise<number> {
-    return this.suggestService.update(body.id, body);
-  }
-
-  /**
-   * 删除
-   */
-  @UseGuards(JwtGuard)
-  @Post('/delete')
-  @ApiOkResponse({
-    type: SuggestIdResult,
-  })
-  async delete(@Body() { ids }: SuggestDeleteDto) {
-    return this.suggestService.delete(ids);
+    return new StreamableFile(buf);
   }
 }

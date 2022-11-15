@@ -82,6 +82,7 @@ export class CustomerService {
     return await this.repository.find({
       where: where,
       order: {
+        customerType: 'ASC',
         customerName: 'ASC',
       },
       relations: {

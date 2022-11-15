@@ -18,6 +18,7 @@ import { TransitModule } from './modules/transit/transit.module';
 import { CustomizeModule } from './modules/customize/customize.module';
 import { ReportModule } from './modules/report/report.module';
 import { REDIS_CONFIG } from './constant/app.config';
+import { SuggestModule } from './modules/suggest/suggest.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { REDIS_CONFIG } from './constant/app.config';
     TransitModule,
     CustomizeModule,
     ReportModule,
+    SuggestModule,
     RedisModule.forRoot({
       config: {
         port: REDIS_CONFIG.port,

@@ -61,6 +61,8 @@ export const saleSheetName = '销售';
 export const transitSheetName = '在途库存';
 export const storeSheetName = '门店';
 export const productSheetName = '产品';
+export const suggestSheetName = '推荐订单';
+export const suggestStoreSheetName = '推荐订单(门店)';
 
 export const dateFormat = 'YYYY-MM-DD';
 export const dateTimeFormat = 'YYYY-MM-DD HH:mm:ss';

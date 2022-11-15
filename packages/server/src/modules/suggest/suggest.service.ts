@@ -1,130 +1,98 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository, DataSource } from 'typeorm';
+import { DataSource } from 'typeorm';
+import { WorkSheet, utils, write, WorkBook } from 'xlsx';
 import * as validator from 'class-validator';
-import { plainToInstance } from 'class-transformer';
-import { SuggestEntity } from './suggest.entity';
-import { SearchDto, SuggestCreateDto, SuggestUpdateDto } from './suggest.dto';
 import { ERROR } from 'src/constant/error';
-import { indexOfLike, setCreatorWhere } from '../../utils';
+import {
+  suggestSheetName,
+  suggestStoreSheetName,
+  tmpPath,
+  dateFormat,
+} from '../../constant/file';
+import { ConfigService } from '../config/config.service';
+import { exportDto, SuggestConfigDto } from './suggest.dto';
 
 @Injectable()
 export class SuggestService {
   constructor(
-    @InjectRepository(SuggestEntity)
-    private repository: Repository<SuggestEntity>,
     private dataSource: DataSource,
+    private configService: ConfigService,
   ) {}
 
   /**
-   * 分页按条件查询
+   * 保存
    */
-  async find(
-    creatorId: number,
-    skip: number,
-    take: number,
-    query: SearchDto,
-  ): Promise<[SuggestEntity[], number]> {
-    const where: FindOptionsWhere<SuggestEntity> = {};
-    const {
-      suggestName,
-      vendorName,
-      categoryFirstName,
-      categorySecondName,
-      categoryThirdName,
-    } = query;
-    if (validator.isNotEmpty(suggestName)) {
-      where.suggestName = indexOfLike(suggestName);
-    }
-    if (validator.isNotEmpty(vendorName)) {
-      where.vendorName = indexOfLike(vendorName);
-    }
-    if (validator.isNotEmpty(categoryFirstName)) {
-      where.categoryFirstName = indexOfLike(categoryFirstName);
-    }
-    if (validator.isNotEmpty(categorySecondName)) {
-      where.categorySecondName = indexOfLike(categorySecondName);
-    }
-    if (validator.isNotEmpty(categoryThirdName)) {
-      where.categoryThirdName = indexOfLike(categoryThirdName);
-    }
-    setCreatorWhere(where, creatorId);
-    return await this.repository.findAndCount({
-      where: where,
-      take: take,
-      skip: skip,
-    });
-  }
-
-  /**
-   * 全量查询
-   */
-  async findAll(creatorId: number, query: SearchDto): Promise<SuggestEntity[]> {
-    const where: FindOptionsWhere<SuggestEntity> = {};
-    const {
-      suggestName,
-      vendorName,
-      categoryFirstName,
-      categorySecondName,
-      categoryThirdName,
-    } = query;
-    if (validator.isNotEmpty(suggestName)) {
-      where.suggestName = indexOfLike(suggestName);
-    }
-    if (validator.isNotEmpty(vendorName)) {
-      where.vendorName = vendorName;
-    }
-    if (validator.isNotEmpty(categoryFirstName)) {
-      where.categoryFirstName = categoryFirstName;
-    }
-    if (validator.isNotEmpty(categorySecondName)) {
-      where.categorySecondName = categorySecondName;
-    }
-    if (validator.isNotEmpty(categoryThirdName)) {
-      where.categoryThirdName = categoryThirdName;
-    }
-    setCreatorWhere(where, creatorId);
-    return await this.repository.find({
-      where: where,
-    });
-  }
-
-  /**
-   * 新增
-   */
-  async insert(
-    info: SuggestCreateDto & {
-      creatorId: number;
-    },
-  ): Promise<number> {
-    const entity = plainToInstance(SuggestEntity, {
-      ...info,
-    });
-    const res = await this.dataSource.manager.save(entity);
-    return res.id;
-  }
-
-  /** 修改 */
-  async update(id: number, data: Partial<SuggestUpdateDto>): Promise<number> {
-    const info = await this.repository.findOneBy({
-      id,
-    });
-    if (!info) {
-      throw ERROR.RESOURCE_NOT_EXITS;
-    }
-    const entity = plainToInstance(SuggestEntity, {
-      ...info,
-      ...data,
-    });
-    const res = await this.dataSource.manager.save(entity);
-    return res.id;
-  }
-  /**
-   * 根据 ids 删除
-   * @param ids
-   */
-  async delete(ids: number[]): Promise<boolean> {
-    await this.repository.delete(ids);
+  async save(body: SuggestConfigDto, creatorId: number): Promise<boolean> {
+    await this.configService.hset(
+      { key: 'suggestConfig', value: JSON.stringify(body) },
+      String(creatorId),
+    );
     return true;
+  }
+
+  /**
+   * 生成报告并下载
+   */
+  async export(query: exportDto, creatorId: number) {
+    const { week, customerIds } = query;
+    const wb = utils.book_new();
+    const header = [
+      ['Brand Selling Report'],
+      ['Date:', '2020-07-06 —— 2022-07-06'],
+      ['Consumer:', '2B'],
+      ['Model', 'Stock', 'Sellout', 'Suggestion', 'Quantity'],
+    ];
+    // 数据获取
+    const configStr = await this.configService.hget(
+      'suggestConfig',
+      String(creatorId),
+    );
+    const config: SuggestConfigDto = JSON.parse(configStr);
+
+    const sheet = utils.aoa_to_sheet(header);
+    sheet['!merges'] = [
+      {
+        //合并第一行数据[A1,B1,C1,D1,E1]
+        s: {
+          //s为开始
+          c: 0, //开始列
+          r: 0, //开始取值范围
+        },
+        e: {
+          //e结束
+          c: 4, //结束列
+          r: 0, //结束范围
+        },
+      },
+      {
+        //合并第二行数据[B1,C1,D1,E1]
+        s: {
+          //s为开始
+          c: 1, //开始列
+          r: 1, //开始取值范围
+        },
+        e: {
+          //e结束
+          c: 4, //结束列
+          r: 1, //结束范围
+        },
+      },
+      {
+        //合并第三行数据[B1,C1,D1,E1]
+        s: {
+          //s为开始
+          c: 1, //开始列
+          r: 2, //开始取值范围
+        },
+        e: {
+          //e结束
+          c: 4, //结束列
+          r: 2, //结束范围
+        },
+      },
+    ];
+    utils.book_append_sheet(wb, sheet, suggestSheetName);
+    const buf = write(wb, { type: 'buffer', bookType: 'xlsx' });
+    return buf;
   }
 }

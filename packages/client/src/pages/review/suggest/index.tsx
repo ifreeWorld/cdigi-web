@@ -3,7 +3,7 @@ import ProForm, {
   ProFormDependency,
   ProFormSelect,
   ProFormSwitch,
-  ProFormText,
+  ProFormDigit,
   QueryFilter,
 } from '@ant-design/pro-form';
 import { Button } from 'antd';
@@ -19,6 +19,9 @@ import { dateFormat } from '@/constants';
 import styles from './style.less';
 import UploadSummaryLeaf from './components/UploadSummaryLeaf';
 import { getAllProduct } from '@/pages/dataimport/product/service';
+import { getAllCustomer } from '@/pages/customer/list/service';
+import { exportSuggestReport, saveSuggestConfig } from './service';
+import { useDebounceEffect } from 'ahooks';
 
 const defaultValues = {
   monthCount: 3,
@@ -49,6 +52,15 @@ const Suggest = () => {
     return await getAllProduct({});
   });
 
+  const { data: allCustomerList, run: runCustomer } = useRequest(
+    async (params) => {
+      return await getAllCustomer(params);
+    },
+    {
+      manual: true,
+    },
+  );
+
   const productOptions = useMemo(() => {
     return allProductList?.map((item) => {
       return {
@@ -57,6 +69,21 @@ const Suggest = () => {
       };
     });
   }, [allProductList]);
+
+  const customerOptions = useMemo(() => {
+    return allCustomerList?.map((item) => {
+      return {
+        label: item.customerName,
+        value: item.id,
+      };
+    });
+  }, [allCustomerList]);
+
+  useDebounceEffect(() => {
+    runCustomer({
+      customerType: customerType,
+    });
+  }, [customerType]);
 
   return (
     <PageContainer className={styles.pageContainer}>
@@ -118,11 +145,19 @@ const Suggest = () => {
               layout="horizontal"
               onFinish={async (values) => {
                 console.log(values);
+                const res = await saveSuggestConfig(values);
+                if (res.data) {
+                  const params = {
+                    week,
+                    customerIds: isLeaf ? [customerId] : values.customerIds,
+                  };
+                  await exportSuggestReport(params);
+                }
               }}
               submitter={{
                 render: () => {
                   return [
-                    <Button htmlType="submit" type="primary" key="create">
+                    <Button htmlType="submit" type="primary" key="save">
                       保存并下载报告
                     </Button>,
                   ];
@@ -130,6 +165,33 @@ const Suggest = () => {
               }}
             >
               <>
+                {!isLeaf && (
+                  <>
+                    <div className={styles.subTitle}>客户选择:</div>
+                    <div className={styles.subContent}>
+                      <ProForm.Item
+                        name="customerIds"
+                        label="客户"
+                        rules={[
+                          {
+                            required: true,
+                            message: '请选择',
+                          },
+                        ]}
+                      >
+                        <SensdSelect
+                          mode="multiple"
+                          showDropdownSearch
+                          showCheckAll
+                          showConfirm
+                          selectorSimpleMode
+                          options={customerOptions}
+                          selectAllText="全选"
+                        />
+                      </ProForm.Item>
+                    </div>
+                  </>
+                )}
                 <div className={styles.subTitle}>产品型号设置：</div>
                 <div className={styles.subContent}>
                   <ProFormSelect
@@ -139,7 +201,7 @@ const Suggest = () => {
                     rules={[
                       {
                         required: true,
-                        message: '请选择!',
+                        message: '请选择',
                       },
                     ]}
                     options={[
@@ -178,7 +240,7 @@ const Suggest = () => {
                       计算公式：(推荐订单数量 = 期望安全库存周数 * 周均销量 - 现有库存 - 未入库库存)
                     </div>
                   </ProForm.Item>
-                  <ProFormText
+                  <ProFormDigit
                     name="expectSafeStockPeriod"
                     label="期望安全库存周数"
                     rules={[
@@ -188,7 +250,7 @@ const Suggest = () => {
                       },
                     ]}
                   />
-                  <ProFormText
+                  <ProFormDigit
                     name="calcWeekCount"
                     label="平均销量的周数"
                     rules={[
@@ -198,7 +260,7 @@ const Suggest = () => {
                       },
                     ]}
                   />
-                  <ProFormText
+                  <ProFormDigit
                     name="minSafeStock"
                     label="最小安全库存(推荐订单会保证最小安全库存)"
                     rules={[
@@ -216,7 +278,7 @@ const Suggest = () => {
                           <ProForm.Item>
                             <div>计算公式：(门店的推荐订单数量 = 周均销量 * 系数)</div>
                           </ProForm.Item>
-                          <ProFormText
+                          <ProFormDigit
                             name="storeCalcWeekCount"
                             label="平均销量的周数"
                             rules={[
@@ -226,7 +288,7 @@ const Suggest = () => {
                               },
                             ]}
                           />
-                          <ProFormText
+                          <ProFormDigit
                             style={{ marginBottom: 0 }}
                             name="storeCoefficient"
                             label="系数"
@@ -245,7 +307,7 @@ const Suggest = () => {
                             {({ storeSafeSwitch }) => {
                               return storeSafeSwitch ? (
                                 <>
-                                  <ProFormText
+                                  <ProFormDigit
                                     name="storeBeforeWeekCount"
                                     label="N"
                                     rules={[
@@ -255,7 +317,7 @@ const Suggest = () => {
                                       },
                                     ]}
                                   />
-                                  <ProFormText
+                                  <ProFormDigit
                                     name="storeMinSafeStock"
                                     label="最小安全库存(推荐订单会保证最小安全库存)"
                                     rules={[
@@ -276,35 +338,6 @@ const Suggest = () => {
                 </div>
               </>
             </ProForm>
-            {/* <div className={styles.subTitle}>产品型号设置：</div> */}
-            {/* <div className={styles.subContent}>
-              <span className={styles.marginRight8}>过去一段时间库存或销售&gt;0的机型:</span>
-              <div className={classnames(styles.marginRight8, styles.marginTop8)}>
-                <span className={styles.marginRight8}>剔除的产品型号:</span>
-                <SensdSelect
-                  mode="multiple"
-                  showDropdownSearch
-                  showCheckAll
-                  showConfirm
-                  selectorSimpleMode
-                  options={productOptions}
-                  selectAllText="全选"
-                  value={}
-                />
-              </div>
-              <div className={classnames(styles.marginRight8, styles.marginTop8)}>
-                <span className={styles.marginRight8}>添加的产品型号:</span>
-                <SensdSelect
-                  mode="multiple"
-                  showDropdownSearch
-                  showCheckAll
-                  showConfirm
-                  selectorSimpleMode
-                  options={productOptions}
-                  selectAllText="全选"
-                />
-              </div>
-            </div> */}
           </div>
         </div>
       </div>
