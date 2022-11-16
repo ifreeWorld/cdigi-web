@@ -3,7 +3,6 @@ import {
   Post,
   Get,
   Body,
-  Query,
   UseGuards,
   Res,
   StreamableFile,
@@ -18,13 +17,24 @@ import {
   exportDto,
 } from './suggest.dto';
 import { mimeType } from 'src/constant/file';
-import { query } from 'express';
 
 @ApiBearerAuth()
 @ApiTags('产品')
 @Controller('suggest')
 export class SuggestController {
   constructor(private suggestService: SuggestService) {}
+
+  /** 获取配置 */
+  @UseGuards(JwtGuard)
+  @Get('/getConfig')
+  @ApiOkResponse({
+    type: SuggestConfigDto,
+  })
+  async getSuggestConfig(
+    @CurrentUser() currentUser,
+  ): Promise<SuggestConfigDto> {
+    return this.suggestService.getSuggestConfig(currentUser.id);
+  }
 
   /** 保存 */
   @UseGuards(JwtGuard)
@@ -41,13 +51,13 @@ export class SuggestController {
 
   /** 生成报告并下载 */
   @UseGuards(JwtGuard)
-  @Get('/export')
+  @Post('/export')
   async export(
     @Res({ passthrough: true }) res,
     @CurrentUser() currentUser,
-    @Query() query: exportDto,
+    @Body() body: exportDto,
   ): Promise<StreamableFile> {
-    const buf = await this.suggestService.export(query, currentUser.id);
+    const buf = await this.suggestService.export(body, currentUser.id);
     const fileName = '推荐订单.xlsx';
     res.set({
       'Content-Type': mimeType.xlsx,
