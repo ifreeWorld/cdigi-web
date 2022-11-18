@@ -34,10 +34,7 @@ export class SuggestConfigDto {
   minSafeStock: number;
 
   // 开启门店推荐订单
-  @IsNotEmpty({
-    message: 'storeSwitch不能为空',
-  })
-  storeSwitch: boolean;
+  storeSwitch?: boolean;
 
   // 平均销量的周数
   storeCalcWeekCount?: number;
@@ -67,11 +64,14 @@ export class exportDto {
   customerIds: CustomerEntity['id'][];
 }
 
-export interface TempData {
+export interface CustomerData {
   customerId: number;
   productName: string;
   week: string;
   quantity: number;
+}
+export interface StoreData extends CustomerData {
+  storeName: string;
 }
 
 export class SuggestStatusResult extends BaseResult {

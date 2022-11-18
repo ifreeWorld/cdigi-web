@@ -11,7 +11,8 @@ import {
 import { history } from 'umi';
 import { PageContainer } from '@ant-design/pro-layout';
 import type { Key } from 'rc-tree/lib/interface';
-import { DndProvider, DragSourceMonitor, useDrag, useDrop } from 'react-dnd';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import type { DragSourceMonitor } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import styles from './style.less';
 import OperationModal from './components/OperationModal';
@@ -699,7 +700,10 @@ const Channel: React.FC = () => {
                   pivot: clientData,
                 });
                 if (res.code === 0) {
-                  history.push('/analysis/list');
+                  message.success('创建成功');
+                  setTimeout(() => {
+                    history.push('/analysis/list');
+                  }, 1500);
                 }
               }}
               submitter={{

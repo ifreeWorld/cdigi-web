@@ -188,6 +188,43 @@ const OperationModal: FC<OperationModalProps> = (props) => {
     );
   }
 
+  // 展示tree select
+  if (field === 'productName') {
+    let result: any = [];
+    const map = {};
+    if (modalOptions && modalOptions.length > 0) {
+      modalOptions.forEach((item) => {
+        if (!map[item.categoryFirstName]) {
+          map[item.categoryFirstName] = {
+            title: item.categoryFirstName,
+            key: item.categoryFirstName,
+            value: item.categoryFirstName,
+            children: [],
+          };
+        }
+        const obj = {
+          title: item.label,
+          key: item.value,
+          value: item.value,
+          children: [],
+        };
+        map[item.categoryFirstName].children.push(obj);
+      });
+      result = Object.values(map).map((item) => item);
+    }
+    select = (
+      <TreeSelect
+        treeData={result}
+        showSearch
+        showCheckAll
+        showConfirm
+        multiple
+        selectorSimpleMode
+        selectAllText="全选"
+      />
+    );
+  }
+
   return (
     <ModalForm
       visible={visible}

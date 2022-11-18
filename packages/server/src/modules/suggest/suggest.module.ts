@@ -7,6 +7,7 @@ import { CustomerEntity } from '../customer/customer.entity';
 import { SaleEntity } from '../sale/sale.entity';
 import { StockEntity } from '../stock/stock.entity';
 import { TransitEntity } from '../transit/transit.entity';
+import { StoreEntity } from '../store/store.entity';
 import { CustomerModule } from '../customer/customer.module';
 
 @Module({
@@ -17,6 +18,7 @@ import { CustomerModule } from '../customer/customer.module';
       SaleEntity,
       StockEntity,
       TransitEntity,
+      StoreEntity,
     ]),
     ConfigModule,
     CustomerModule,

@@ -22,7 +22,7 @@ import { getAllProduct } from '@/pages/dataimport/product/service';
 import { getAllCustomer } from '@/pages/customer/list/service';
 import { exportSuggestReport, getSuggestConfig, saveSuggestConfig } from './service';
 import { useDebounceEffect } from 'ahooks';
-import { isEmpty } from 'lodash';
+import { cloneDeep, isEmpty } from 'lodash';
 
 const defaultValues = {
   monthCount: 3,
@@ -146,8 +146,9 @@ const Suggest = () => {
                 initialValues={isEmpty(suggestConfig) ? defaultValues : suggestConfig}
                 layout="horizontal"
                 onFinish={async (values) => {
-                  console.log(values);
-                  const res = await saveSuggestConfig(values);
+                  const temp = cloneDeep(values);
+                  delete temp.customerIds;
+                  const res = await saveSuggestConfig(temp);
                   if (res.data) {
                     const params = {
                       week,

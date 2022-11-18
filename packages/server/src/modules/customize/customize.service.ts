@@ -4,7 +4,6 @@ import {
   DataSource,
   FindOptionsWhere,
   In,
-  IsNull,
   LessThanOrEqual,
   MoreThanOrEqual,
   Repository,
@@ -25,7 +24,6 @@ import { appLogger } from 'src/logger';
 import { setFilterQb } from './util';
 import {
   getMonthText,
-  getMonthWeekText,
   getQuarterText,
   getWeekaloneText,
   getYearText,
@@ -42,6 +40,7 @@ import { TransitEntity } from '../transit/transit.entity';
 import { dateFormat } from 'src/constant/file';
 import { customerTypeMap } from 'src/constant/map';
 import { isEmpty } from 'class-validator';
+import { ProductService } from '../product/product.service';
 
 const timeFields = ['year', 'quarter', 'month', 'monthAndWeek', 'weekalone'];
 const allFieldText = '全部';
@@ -61,6 +60,7 @@ export class CustomizeService {
     private storeService: StoreService,
     private dataSource: DataSource,
     private configService: ConfigService,
+    private productService: ProductService,
   ) {}
 
   /**
@@ -126,7 +126,7 @@ export class CustomizeService {
     //   qb.addSelect('t.month');
     // }
 
-    let finalColumns;
+    const finalColumns = [];
 
     if (!validator.isEmpty(column) && !validator.isEmpty(value)) {
       const { filter: columnFilter = { value: [] }, field: columnField } =
@@ -138,12 +138,12 @@ export class CustomizeService {
       }
       // 用户选择了列的filter，就拼接CASE WHEN
       if (filterValue && filterValue.length > 0) {
-        finalColumns = filterValue;
         filterValue.forEach((v) => {
           let alias = v;
           if (['customerType', 'buyerCustomerType'].includes(columnField)) {
             alias = customerTypeMap[v];
           }
+          finalColumns.push(alias);
           qb.addSelect(
             `IFNULL(${aggregator}( CASE WHEN t.${columnField} = '${v}' THEN t.${valueField} END ),0)`,
             alias,
@@ -163,12 +163,12 @@ export class CustomizeService {
       } else {
         // 用户没选择，就先查询数据库中column field的所有的选项
         const data = await this.getAllValues(columnField, type, creatorId);
-        finalColumns = data.map((item) => item.value);
         data.forEach((item) => {
           let alias = item.value;
           if (['customerType', 'buyerCustomerType'].includes(columnField)) {
             alias = customerTypeMap[item.value];
           }
+          finalColumns.push(alias);
           qb.addSelect(
             `IFNULL(${aggregator}( CASE WHEN t.${columnField} = '${item.value}' THEN t.${valueField} END ),0)`,
             alias,
@@ -252,7 +252,7 @@ export class CustomizeService {
             // 设置format
             if (key !== row.field && key !== allFieldText) {
               const newKey = getYearText(key);
-              sort = sort.map((s) => (s === Number(key) ? newKey : s));
+              sort = sort.map((s) => (s === key ? newKey : s));
               item[newKey] = Number(item[key]);
               delete item[key];
             }
@@ -269,7 +269,7 @@ export class CustomizeService {
             // 设置format
             if (key !== row.field && key !== allFieldText) {
               const newKey = getMonthText(key);
-              sort = sort.map((s) => (s === Number(key) ? newKey : s));
+              sort = sort.map((s) => (s === key ? newKey : s));
               item[newKey] = Number(item[key]);
               delete item[key];
             }
@@ -286,7 +286,7 @@ export class CustomizeService {
             // 设置format
             if (key !== row.field && key !== allFieldText) {
               const newKey = getQuarterText(key);
-              sort = sort.map((s) => (s === Number(key) ? newKey : s));
+              sort = sort.map((s) => (s === key ? newKey : s));
               item[newKey] = Number(item[key]);
               delete item[key];
             }
@@ -303,7 +303,7 @@ export class CustomizeService {
             // 设置format
             if (key !== row.field && key !== allFieldText) {
               const newKey = getWeekaloneText(key);
-              sort = sort.map((s) => (s === Number(key) ? newKey : s));
+              sort = sort.map((s) => (s === key ? newKey : s));
               item[newKey] = Number(item[key]);
               delete item[key];
             }
@@ -320,7 +320,7 @@ export class CustomizeService {
             // 设置format
             if (key !== row.field && key !== allFieldText) {
               const newKey = getMonthAndWeekText(key);
-              sort = sort.map((s) => (s === Number(key) ? newKey : s));
+              sort = sort.map((s) => (s === key ? newKey : s));
               item[newKey] = Number(item[key]);
               delete item[key];
             }
@@ -460,10 +460,6 @@ export class CustomizeService {
   async getAllValues(field: string, type: 'sale' | 'stock', creatorId: number) {
     // 规范的字段map
     const field2DataMap = {
-      productName: {
-        field: 'product_name',
-        entity: ProductEntity,
-      },
       categoryFirstName: {
         field: 'category_first_name',
         entity: ProductEntity,
@@ -620,6 +616,15 @@ export class CustomizeService {
             value: item.value,
             label: item.value,
           }));
+      }
+      // 5.productName，需要带上所属一级分类
+      if (field === 'productName') {
+        const res = await this.productService.findAll(creatorId, {});
+        return res.map((item) => ({
+          value: item.productName,
+          label: item.productName,
+          categoryFirstName: item.categoryFirstName || '空',
+        }));
       }
     }
     return [];
