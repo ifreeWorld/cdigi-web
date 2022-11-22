@@ -187,6 +187,7 @@ const Suggest = () => {
                             showDropdownSearch
                             showCheckAll
                             showConfirm
+                            optionFilterProp="label"
                             selectorSimpleMode
                             options={customerOptions}
                             selectAllText="全选"

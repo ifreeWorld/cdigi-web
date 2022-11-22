@@ -138,6 +138,7 @@ const OperationModal: FC<OperationModalProps> = (props) => {
         }
       });
     }
+    console.log(result);
     select = (
       <TreeSelect
         treeData={result}
@@ -160,8 +161,8 @@ const OperationModal: FC<OperationModalProps> = (props) => {
         if (!map[item.customerId]) {
           map[item.customerId] = {
             title: item.customerName,
-            key: item.customerId,
-            value: item.customerId,
+            key: item.customerName,
+            value: item.customerName,
             children: [],
           };
         }
@@ -169,11 +170,11 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           title: item.label,
           key: item.value,
           value: item.value,
-          children: [],
         };
         map[item.customerId].children.push(obj);
       });
       result = Object.values(map).map((item) => item);
+      console.log(result);
     }
     select = (
       <TreeSelect
@@ -206,7 +207,6 @@ const OperationModal: FC<OperationModalProps> = (props) => {
           title: item.label,
           key: item.value,
           value: item.value,
-          children: [],
         };
         map[item.categoryFirstName].children.push(obj);
       });

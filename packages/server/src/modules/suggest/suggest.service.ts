@@ -81,6 +81,12 @@ export class SuggestService {
       customerMap[item.id] = item.customerName;
     });
 
+    const dateRangeStr = `${moment(week, 'gggg-ww')
+      .startOf('week')
+      .format(dateFormat)} —— ${moment(week, 'gggg-ww')
+      .endOf('week')
+      .format(dateFormat)}`;
+
     const wb = utils.book_new();
     // 数据获取
     const configStr = await this.configService.hget(
@@ -185,13 +191,7 @@ export class SuggestService {
       }
       const header = [
         ['Brand Selling Report'],
-        [
-          'Date:',
-          `${moment(week, 'gggg-ww').startOf('week')} —— ${moment(
-            week,
-            'gggg-ww',
-          ).endOf('week')}`,
-        ],
+        ['Date:', dateRangeStr],
         ['Consumer:', customerName],
         ['Model', 'Stock', 'Sellout', 'Suggestion', 'Quantity'],
       ];
@@ -263,12 +263,14 @@ export class SuggestService {
           Number(
             transits.find((item) => item.productName === productName)?.quantity,
           ) || 0;
-        // 计算公式：(推荐订单数量 = 期望安全库存周数 * 周均销量 - 现有库存 - 未入库库存)
-        const suggestValue = Math.max(
-          Math.max(expectSafeStockPeriod * avgSales, minSafeStock) -
-            productStock -
-            productTransit,
-          0,
+        // 计算公式：(推荐订单数量 = 期望安全库存周数 * 周均销量 - 现有库存 - 未入库库存)，向上取整
+        const suggestValue = Math.ceil(
+          Math.max(
+            Math.max(expectSafeStockPeriod * avgSales, minSafeStock) -
+              productStock -
+              productTransit,
+            0,
+          ),
         );
         data.push([
           productName,
@@ -422,13 +424,7 @@ export class SuggestService {
 
         const header = [
           ['Brand Selling Report'],
-          [
-            'Date:',
-            `${moment(week, 'gggg-ww').startOf('week')} —— ${moment(
-              week,
-              'gggg-ww',
-            ).endOf('week')}`,
-          ],
+          ['Date:', dateRangeStr],
           ['Consumer:', customerName],
           ['Store', 'Model', 'Stock', 'Sellout', 'Suggestion', 'Quantity'],
         ];
@@ -556,6 +552,8 @@ export class SuggestService {
                 }
               }
             }
+            // 向上取整
+            suggestValue = Math.ceil(suggestValue);
             temp.push([
               storeName,
               productName,
@@ -623,6 +621,12 @@ export class SuggestService {
     }
 
     const buf = write(wb, { type: 'buffer', bookType: 'xlsx' });
-    return buf;
+    const fileName = `${week.split('-')[1]} ${dateRangeStr} 推荐订单 ${
+      customerIds.length > 1 ? '批量' : customerMap[customerIds[0]]
+    }.xlsx`;
+    return {
+      fileName,
+      buf,
+    };
   }
 }

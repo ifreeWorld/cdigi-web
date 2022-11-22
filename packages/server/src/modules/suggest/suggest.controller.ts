@@ -17,6 +17,7 @@ import {
   exportDto,
 } from './suggest.dto';
 import { mimeType } from 'src/constant/file';
+import * as moment from 'moment';
 
 @ApiBearerAuth()
 @ApiTags('产品')
@@ -57,8 +58,10 @@ export class SuggestController {
     @CurrentUser() currentUser,
     @Body() body: exportDto,
   ): Promise<StreamableFile> {
-    const buf = await this.suggestService.export(body, currentUser.id);
-    const fileName = '推荐订单.xlsx';
+    const { buf, fileName } = await this.suggestService.export(
+      body,
+      currentUser.id,
+    );
     res.set({
       'Content-Type': mimeType.xlsx,
       'Content-Disposition': `attachment; filename=${encodeURIComponent(

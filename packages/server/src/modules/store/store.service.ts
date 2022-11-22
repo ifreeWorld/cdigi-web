@@ -82,6 +82,9 @@ export class StoreService {
     setCreatorWhere(where, creatorId);
     return await this.repository.find({
       where: where,
+      order: {
+        storeName: 'ASC',
+      },
       relations: {
         customer: relation || false,
       },

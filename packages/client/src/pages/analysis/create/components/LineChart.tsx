@@ -43,6 +43,9 @@ const LineChart = ({
     xField,
     yField,
     seriesField,
+    legend: {
+      maxRow: 1,
+    },
   };
 
   const title = (

@@ -64,7 +64,7 @@
     "@sensd/tools": "file:vendor/sensd-tools-1.0.0-alpha.5.tgz"
   },
   "dependencies": {
-    "@ant-design/charts": "^0.9.4",
+    "@ant-design/charts": "^1.4.2",
     "@ant-design/icons": "^4.7.0",
     "@ant-design/pro-card": "^1.19.0",
     "@ant-design/pro-descriptions": "^1.10.0",
