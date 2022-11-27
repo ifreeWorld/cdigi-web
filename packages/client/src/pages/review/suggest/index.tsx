@@ -49,9 +49,18 @@ const Suggest = () => {
     setIsLeaf(d);
   };
 
-  const { data: suggestConfig, loading } = useRequest(async () => {
-    return await getSuggestConfig();
-  });
+  const {
+    data: suggestConfig,
+    loading,
+    run: runSuggestConfig,
+  } = useRequest(
+    async (params) => {
+      return await getSuggestConfig(params);
+    },
+    {
+      manual: true,
+    },
+  );
 
   const { data: allProductList } = useRequest(async () => {
     return await getAllProduct({});
@@ -89,6 +98,12 @@ const Suggest = () => {
       customerType: customerType,
     });
   }, [customerType]);
+
+  useDebounceEffect(() => {
+    runSuggestConfig({
+      customerId,
+    });
+  }, [customerId]);
 
   return (
     <PageContainer className={styles.pageContainer}>
@@ -148,10 +163,13 @@ const Suggest = () => {
                 onFinish={async (values) => {
                   const temp = cloneDeep(values);
                   delete temp.customerIds;
+                  // 推荐订单配置要根据左侧的树选择来分开保存
+                  temp.customerId = customerId;
                   const res = await saveSuggestConfig(temp);
                   if (res.data) {
                     const params = {
                       week,
+                      customerId: customerId,
                       customerIds: isLeaf ? [customerId] : values.customerIds,
                     };
                     await exportSuggestReport(params);

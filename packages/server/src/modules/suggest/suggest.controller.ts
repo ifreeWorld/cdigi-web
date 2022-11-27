@@ -6,6 +6,7 @@ import {
   UseGuards,
   Res,
   StreamableFile,
+  Query,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../decorators';
@@ -17,7 +18,6 @@ import {
   exportDto,
 } from './suggest.dto';
 import { mimeType } from 'src/constant/file';
-import * as moment from 'moment';
 
 @ApiBearerAuth()
 @ApiTags('产品')
@@ -32,9 +32,10 @@ export class SuggestController {
     type: SuggestConfigDto,
   })
   async getSuggestConfig(
+    @Query('customerId') customerId: SuggestConfigDto['customerId'],
     @CurrentUser() currentUser,
   ): Promise<SuggestConfigDto> {
-    return this.suggestService.getSuggestConfig(currentUser.id);
+    return this.suggestService.getSuggestConfig(customerId, currentUser.id);
   }
 
   /** 保存 */

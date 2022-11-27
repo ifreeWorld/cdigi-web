@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as moment from 'moment';
 import { WorkSheet, utils, write, WorkBook } from 'xlsx';
-import * as validator from 'class-validator';
+import * as archiver from 'archiver';
+import * as fs from 'fs';
 import { CustomResponse, ERROR } from 'src/constant/error';
 import { uniq } from 'lodash';
 import {
@@ -23,6 +24,8 @@ import { StockEntity } from '../stock/stock.entity';
 import { TransitEntity } from '../transit/transit.entity';
 import { CustomerService } from '../customer/customer.service';
 import { StoreEntity } from '../store/store.entity';
+import { isEmpty } from 'class-validator';
+import { getMax, zipFiles } from 'src/utils';
 
 @Injectable()
 export class SuggestService {
@@ -35,20 +38,38 @@ export class SuggestService {
   /**
    * 保存
    */
-  async getSuggestConfig(creatorId: number): Promise<SuggestConfigDto> {
+  async getSuggestConfig(
+    customerId: SuggestConfigDto['customerId'],
+    creatorId: number,
+  ): Promise<SuggestConfigDto> {
     const res = await this.configService.hget(
       'suggestConfig',
       String(creatorId),
     );
-    return JSON.parse(res);
+    if (res) {
+      const obj = JSON.parse(res);
+      return obj[customerId] || {};
+    } else {
+      return {} as SuggestConfigDto;
+    }
   }
 
   /**
    * 保存
    */
   async save(body: SuggestConfigDto, creatorId: number): Promise<boolean> {
+    const { customerId } = body;
+    const currentJsonStr = await this.configService.hget(
+      'suggestConfig',
+      String(creatorId),
+    );
+    let currentObj = {};
+    if (currentJsonStr) {
+      currentObj = JSON.parse(currentJsonStr);
+    }
+    currentObj[customerId] = body;
     await this.configService.hset(
-      { key: 'suggestConfig', value: JSON.stringify(body) },
+      { key: 'suggestConfig', value: JSON.stringify(currentObj) },
       String(creatorId),
     );
     return true;
@@ -73,7 +94,11 @@ export class SuggestService {
       },
     });
 
+    const workbookMap: Record<number, WorkBook> = {};
     const { week, customerIds } = body;
+    if (!customerIds || customerIds.length === 0) {
+      throw new CustomResponse('customerIds数据为空');
+    }
     // customerId：customerName
     const customerMap = {};
     const allCustomer = await this.customerService.findAll(creatorId);
@@ -87,13 +112,11 @@ export class SuggestService {
       .endOf('week')
       .format(dateFormat)}`;
 
-    const wb = utils.book_new();
     // 数据获取
-    const configStr = await this.configService.hget(
-      'suggestConfig',
-      String(creatorId),
+    const config: SuggestConfigDto = await this.getSuggestConfig(
+      body.customerId,
+      creatorId,
     );
-    const config: SuggestConfigDto = JSON.parse(configStr) || {};
     const {
       monthCount,
       addProduct = [],
@@ -121,7 +144,7 @@ export class SuggestService {
       .subtract(monthCount, 'month')
       .format('gggg-ww');
     // 先计算出monthCount（月）和calcWeekCount（周）中的最大值，再基于这个最大值去查询数据库
-    const maxWeek = Math.max(monthCount * 4, calcWeekCount);
+    const maxWeek = getMax(monthCount * 4, calcWeekCount);
     // 有maxWeek的数据
     const maxWeeks = [];
     for (let i = 0; i < maxWeek; i++) {
@@ -265,8 +288,8 @@ export class SuggestService {
           ) || 0;
         // 计算公式：(推荐订单数量 = 期望安全库存周数 * 周均销量 - 现有库存 - 未入库库存)，向上取整
         const suggestValue = Math.ceil(
-          Math.max(
-            Math.max(expectSafeStockPeriod * avgSales, minSafeStock) -
+          getMax(
+            getMax(expectSafeStockPeriod * avgSales, minSafeStock) -
               productStock -
               productTransit,
             0,
@@ -326,17 +349,19 @@ export class SuggestService {
           },
         },
       ];
+      const wb = utils.book_new();
       utils.book_append_sheet(
         wb,
         sheet,
         `${suggestSheetName}(${customerName})`,
       );
+      workbookMap[customerId] = wb;
     }
 
     if (storeSwitch) {
       // 门店直接用storeCalcWeekCount
       // 先计算出storeCalcWeekCount和storeBeforeWeekCount中的最大值，再基于这个最大值去查询数据库
-      const maxWeek = Math.max(storeCalcWeekCount, storeBeforeWeekCount);
+      const maxWeek = getMax(storeCalcWeekCount, storeBeforeWeekCount);
       const maxWeeks = [];
       for (let i = 0; i < maxWeek; i++) {
         maxWeeks.push(
@@ -517,7 +542,7 @@ export class SuggestService {
              * 门店计算公式
              * 门店的计算公式=周均销量*系数
              */
-            let suggestValue = Math.max(avgSales * storeCoefficient, 0);
+            let suggestValue = getMax(avgSales * storeCoefficient, 0);
             if (storeSafeSwitch) {
               /**
                * storeSafeSwitch为true就进阶
@@ -532,7 +557,7 @@ export class SuggestService {
                */
               if (suggestValue > 0) {
                 if (productStock === 0) {
-                  suggestValue = Math.max(suggestValue, storeMinSafeStock);
+                  suggestValue = getMax(suggestValue, storeMinSafeStock);
                 }
               } else {
                 for (let i = 1; i < storeBeforeWeekCount; i++) {
@@ -612,6 +637,10 @@ export class SuggestService {
             },
           },
         ];
+        let wb = workbookMap[customerId];
+        if (!wb) {
+          wb = utils.book_new();
+        }
         utils.book_append_sheet(
           wb,
           sheet,
@@ -619,14 +648,38 @@ export class SuggestService {
         );
       }
     }
-
-    const buf = write(wb, { type: 'buffer', bookType: 'xlsx' });
-    const fileName = `${week.split('-')[1]} ${dateRangeStr} 推荐订单 ${
-      customerIds.length > 1 ? '批量' : customerMap[customerIds[0]]
-    }.xlsx`;
-    return {
-      fileName,
-      buf,
-    };
+    let buf;
+    // 批量就给xlsx
+    if (customerIds.length > 1) {
+      const files = Object.keys(workbookMap).map((key) => {
+        const wb = workbookMap[key];
+        const name = `${week.split('-')[1]} ${dateRangeStr} 推荐订单 ${
+          customerMap[key]
+        }.xlsx`;
+        return {
+          name,
+          data: write(wb, { type: 'buffer', bookType: 'xlsx' }),
+        };
+      });
+      buf = await zipFiles(files);
+      const fileName = `${
+        week.split('-')[1]
+      } ${dateRangeStr} 推荐订单 批量.zip`;
+      return {
+        fileName,
+        buf,
+      };
+    } else {
+      // 单个
+      const wb = workbookMap[customerIds[0]];
+      const buf = write(wb, { type: 'buffer', bookType: 'xlsx' });
+      const fileName = `${week.split('-')[1]} ${dateRangeStr} 推荐订单 ${
+        customerMap[customerIds[0]]
+      }.xlsx`;
+      return {
+        fileName,
+        buf,
+      };
+    }
   }
 }

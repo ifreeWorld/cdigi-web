@@ -18,8 +18,11 @@ export async function getUploadSummary(params: any) {
 }
 
 /**  GET /api/suggest/getConfig */
-export async function getSuggestConfig() {
+export async function getSuggestConfig(params: any) {
   return request<ResultSuccessPromise<SuggestConfig>>('/api/suggest/getConfig', {
+    params: {
+      ...params,
+    },
     method: 'GET',
   });
 }

@@ -40,9 +40,9 @@ const LineChart = ({
 
   const config = {
     data: result,
-    xField,
+    xField: seriesField,
     yField,
-    seriesField,
+    seriesField: xField,
     legend: {
       maxRow: 1,
     },

@@ -5,6 +5,7 @@ import * as dayjs from 'dayjs';
 
 export * from './sqlUtil';
 export * from './creatorUtil';
+export * from './fileUtil';
 
 export function splice<T>(data: T[], search: PaginationDto): T[] {
   return data.splice((search.current - 1) * search.pageSize, search.pageSize);
@@ -91,6 +92,16 @@ export function lowerCase(n: string | undefined | null) {
 
 export function random() {
   return Math.random().toString(16).substring(2);
+}
+
+export function getMax(...values: number[]) {
+  const temp = values.map((item) => {
+    if (item === undefined || item === null) {
+      return 0;
+    }
+    return item;
+  });
+  return Math.max(...temp);
 }
 
 export function getYearText(year: string | number) {

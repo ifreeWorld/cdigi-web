@@ -246,13 +246,14 @@ export class CustomizeService {
       });
       // @ts-ignore
     } else if (timeFields.includes(column.field)) {
+      // 列为时间字段时，需要进行format
       if (column.field === 'year') {
         data = data.map((item) => {
           for (const key in item) {
             // 设置format
             if (key !== row.field && key !== allFieldText) {
               const newKey = getYearText(key);
-              sort = sort.map((s) => (s === key ? newKey : s));
+              sort = sort.map((s) => (String(s) === key ? newKey : s));
               item[newKey] = Number(item[key]);
               delete item[key];
             }
@@ -269,7 +270,7 @@ export class CustomizeService {
             // 设置format
             if (key !== row.field && key !== allFieldText) {
               const newKey = getMonthText(key);
-              sort = sort.map((s) => (s === key ? newKey : s));
+              sort = sort.map((s) => (String(s) === key ? newKey : s));
               item[newKey] = Number(item[key]);
               delete item[key];
             }
@@ -286,7 +287,7 @@ export class CustomizeService {
             // 设置format
             if (key !== row.field && key !== allFieldText) {
               const newKey = getQuarterText(key);
-              sort = sort.map((s) => (s === key ? newKey : s));
+              sort = sort.map((s) => (String(s) === key ? newKey : s));
               item[newKey] = Number(item[key]);
               delete item[key];
             }
@@ -303,7 +304,7 @@ export class CustomizeService {
             // 设置format
             if (key !== row.field && key !== allFieldText) {
               const newKey = getWeekaloneText(key);
-              sort = sort.map((s) => (s === key ? newKey : s));
+              sort = sort.map((s) => (String(s) === key ? newKey : s));
               item[newKey] = Number(item[key]);
               delete item[key];
             }
@@ -320,7 +321,7 @@ export class CustomizeService {
             // 设置format
             if (key !== row.field && key !== allFieldText) {
               const newKey = getMonthAndWeekText(key);
-              sort = sort.map((s) => (s === key ? newKey : s));
+              sort = sort.map((s) => (String(s) === key ? newKey : s));
               item[newKey] = Number(item[key]);
               delete item[key];
             }

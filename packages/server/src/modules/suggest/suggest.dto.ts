@@ -3,6 +3,12 @@ import { BaseResult } from 'src/interface/base.interface';
 import { CustomerEntity } from '../customer/customer.entity';
 
 export class SuggestConfigDto {
+  // 客户id，如果是批量，就是'vendor' | 'disty' | 'dealer'
+  @IsNotEmpty({
+    message: 'customerId不能为空',
+  })
+  customerId: number | string;
+
   // 过去一段时间库存或销售>0的机型
   @IsNotEmpty({
     message: 'monthCount不能为空',
@@ -57,6 +63,11 @@ export class exportDto {
     message: 'week不能为空',
   })
   week: string;
+
+  @IsNotEmpty({
+    message: 'customerId不能为空',
+  })
+  customerId: string;
 
   @IsNotEmpty({
     message: 'customerIds不能为空',
